@@ -445,7 +445,7 @@ export default {
           type: "warning",
           beforeClose: (action, instance, done) => {
             if (action === "confirm") {
-              this.downHandler(`/software/downloadAttachment?fileId=${id}`);
+              this.downHandler(`/software/downloadAttachments?fileId=${id}`);
             }
             done();
           },

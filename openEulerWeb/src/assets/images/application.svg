@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="242px" height="188px" viewBox="0 0 242 188" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>申请</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="个人中心-企业实名认证中" transform="translate(-1019.000000, -271.000000)" stroke="#000000">
+            <g id="申请" transform="translate(1020.000000, 272.000000)">
+                <path d="M161.062614,69 C161.062614,69 147.795912,98.3044817 169.210637,87.9178926 C180.55165,82.4047212 193.567175,77.7570989 206.3163,77.4635648 C210.955459,77.3431406 216.40904,77.8662333 219.944544,81.1703729 C221.500891,82.6802723 222.542504,84.6323929 222.924414,86.7550462 C223.354459,89.0130003 223.666527,93.5025659 222.106186,95.3315087 C219.248099,98.6845706 217.105485,94.6691755 217.082651,92.1252138 C216.964674,84.8546014 227.441791,95.2374273 227.441791,95.2374273 C227.441791,95.2374273 272.120814,143.087239 192.931621,146" id="路径"></path>
+                <path d="M16.2204036,99 C16.2204036,99 -23.1834794,53.282779 20.839673,35.8992847 C20.839673,35.8992847 41.5468735,26.823519 51.3230651,10.5920805 C61.0992567,-5.63935798 89.7008644,-3.76489109 109.283538,20.0290518 C109.283538,20.0290518 119.828346,30.9792844 133.360533,18.5081862 C146.892721,6.03708794 172.503163,52.1497341 155.192261,67.2519298" id="路径"></path>
+                <circle id="椭圆形" fill="#7400A5" fill-rule="nonzero" cx="96.5" cy="171.5" r="5.5"></circle>
+                <circle id="椭圆形" fill="#002F9F" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" cx="183.5" cy="53.5" r="9.5"></circle>
+                <rect id="矩形" fill="#FFFFFF" fill-rule="nonzero" x="56" y="30" width="110" height="127"></rect>
+                <rect id="矩形" fill="#DEE0E5" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="56" y="30" width="110" height="14"></rect>
+                <circle id="椭圆形" fill="#000000" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" cx="63" cy="37" r="2"></circle>
+                <circle id="椭圆形" fill="#FFCD6E" fill-rule="nonzero" cx="71" cy="37" r="2"></circle>
+                <circle id="椭圆形" fill="#3165EB" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" cx="78" cy="37" r="2"></circle>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="27.8117312 90 34 103.661712 11.1882688 114 5 100.342043 19.5131426 102.001878"></polygon>
+                <path d="M5,99.7369734 L28,90 L21.1397531,100.829466 C20.5873621,101.677876 19.5388453,102.12829 18.4895473,101.967921 L5,99.7369734 Z" id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+                <rect id="矩形" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="64" y="70" width="95" height="56"></rect>
+                <rect id="矩形" fill="#DBDDE2" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="72" y="79" width="49" height="37"></rect>
+                <rect id="矩形" fill="#002F9F" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="29" y="145" width="46" height="2"></rect>
+                <rect id="矩形" fill="#002F9F" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="35" y="138" width="46" height="2"></rect>
+                <polygon id="矩形" fill="#FFCA6E" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(183.016040, 157.910714) rotate(-33.980000) translate(-183.016040, -157.910714) " points="162.683621 137.825416 203.332342 137.841727 203.34846 177.996012 162.699739 177.979701"></polygon>
+                <line x1="162" y1="163" x2="196" y2="141" id="路径" stroke-linecap="round" stroke-linejoin="round"></line>
+                <line x1="170" y1="175" x2="204" y2="153" id="路径" stroke-linecap="round" stroke-linejoin="round"></line>
+                <line x1="177" y1="186" x2="211" y2="164" id="路径" stroke-linecap="round" stroke-linejoin="round"></line>
+                <line x1="166" y1="145" x2="189" y2="179" id="路径" stroke-linecap="round" stroke-linejoin="round"></line>
+                <line x1="177" y1="137" x2="200" y2="171" id="路径" stroke-linecap="round" stroke-linejoin="round"></line>
+            </g>
+        </g>
+    </g>
+</svg>

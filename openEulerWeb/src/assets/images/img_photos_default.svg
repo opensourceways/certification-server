@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128px" height="128px" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>img_photos_default</title>
+    <defs>
+        <circle id="path-1" cx="64" cy="64" r="64"></circle>
+        <rect id="path-3" x="0" y="0" width="128" height="128"></rect>
+        <rect id="path-5" x="0" y="0" width="128" height="128"></rect>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="个人中心-企业信息（未完善）" transform="translate(-356.000000, -224.000000)">
+            <g id="img_photos_default" transform="translate(356.000000, 224.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="蒙版" fill="#D8D8D8" xlink:href="#path-1"></use>
+                <g mask="url(#mask-2)">
+                    <g id="img_photos_default-a-link" fill="#D9DCE0" fill-rule="nonzero">
+                        <rect id="img_photos_default-a" x="0" y="0" width="128" height="128"></rect>
+                    </g>
+                    <g id="Clipped">
+                        <mask id="mask-4" fill="white">
+                            <use xlink:href="#path-3"></use>
+                        </mask>
+                        <g id="img_photos_default-a"></g>
+                        <circle id="椭圆形" fill="#B8BDC3" fill-rule="nonzero" mask="url(#mask-4)" cx="64" cy="40.195122" r="24.5853659"></circle>
+                    </g>
+                    <g id="Clipped">
+                        <mask id="mask-6" fill="white">
+                            <use xlink:href="#path-5"></use>
+                        </mask>
+                        <g id="img_photos_default-a"></g>
+                        <circle id="椭圆形" fill="#B8BDC3" fill-rule="nonzero" mask="url(#mask-6)" cx="63.8372683" cy="123.707317" r="52.6829268"></circle>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
