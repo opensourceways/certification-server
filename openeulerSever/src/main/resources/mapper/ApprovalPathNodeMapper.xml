@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.ApprovalPathNodeMapper">
+    <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.ApprovalPathNode">
+        <result column="ic_id" property="icId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="software_status" property="softwareStatus"/>
+        <result column="approval_node_name" property="approvalNodeName"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="user_uuid" property="userUuid"/>
+    </resultMap>
+
+    <sql id="allFields">
+        id, ic_id, role_id, software_status, approval_node_name, username, update_time, user_uuid
+    </sql>
+
+    <select id="findNodeByIcIdAndStatus" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select <include refid="allFields"></include>
+        from approval_path_node_t
+        where ic_id = #{icId} and software_status = #{status}
+    </select>
+
+    <select id="findNodeByIcId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select apnt.id, apnt.ic_id, apnt.role_id, apnt.software_status, apnt.approval_node_name, apnt.username,
+               apnt.update_time, apnt.user_uuid, u.telephone as userTelephone
+        from approval_path_node_t apnt
+        left join user_t u on u.uuid = apnt.user_uuid
+        where ic_id = #{icId}
+        order by software_status asc
+    </select>
+
+    <select id="findDefaultNode" resultMap="BaseResultMap">
+        select <include refid="allFields"></include>
+        from approval_path_node_t
+        where ic_id in (select id from innovation_center_t where type = 'default')
+        order by software_status asc
+    </select>
+
+</mapper>

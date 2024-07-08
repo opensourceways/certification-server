@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.NodeMapper">
+
+    <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Node">
+        <result column="id" property="id"/>
+        <result column="software_id" property="softwareId"/>
+        <result column="node_name" property="nodeName"/>
+        <result column="handler" property="handler"/>
+        <result column="status" property="status"/>
+        <result column="handler_time" property="handlerTime"/>
+        <result column="handler_result" property="handlerResult"/>
+        <result column="transferred_comments" property="transferredComments"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="insertNode" parameterType="com.huawei.it.euler.model.entity.Node">
+        insert into node_t (software_id, node_name, handler, status, handler_time, transferred_comments, update_time, handler_result)
+        values (#{softwareId}, #{nodeName}, #{handler}, #{status}, #{handlerTime}, #{transferredComments}, #{updateTime}, #{handlerResult})
+    </insert>
+
+    <select id="findLatestNodeById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select id, software_id, node_name, handler, status, handler_time, transferred_comments, update_time
+        from node_t
+        where software_id = #{softwareId}
+        and handler_result = 0
+        order by update_time desc limit 1
+    </select>
+
+    <update id="updateNodeById" parameterType="com.huawei.it.euler.model.entity.Node">
+        update node_t
+        set handler_result = #{handlerResult},
+            transferred_comments = #{transferredComments},
+            handler_time = #{handlerTime}
+        where id = #{id}
+    </update>
+
+</mapper>

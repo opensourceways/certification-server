@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.ProtocolMapper">
+    <resultMap id="protocolMap" type="com.huawei.it.euler.model.entity.Protocol">
+        <result column="id" property="id"/>
+        <result column="protocol_type" property="protocolType"/>
+        <result column="protocol_name" property="protocolName"/>
+        <result column="status" property="status"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_by" property="updatedBy"/>
+        <result column="updated_time" property="updatedTime"/>
+    </resultMap>
+
+    <sql id="insertFields">
+        protocol_type, protocol_name, status, created_by, created_time, updated_by, updated_time
+    </sql>
+
+    <sql id="allFields">
+        id, protocol_type, protocol_name, status, created_by, created_time, updated_by, updated_time
+    </sql>
+
+    <insert id="insertUserSignProtocol" parameterType="com.huawei.it.euler.model.entity.Protocol">
+        insert into protocol_t (<include refid="insertFields"/>)
+        values (#{protocolType}, #{protocolName}, #{status}, #{createdBy}, #{createdTime}, #{updatedBy}, #{updatedTime})
+    </insert>
+
+    <select id="selectProtocolByType" resultMap="protocolMap">
+        select <include refid="allFields"/>
+        from protocol_t
+        where protocol_type = #{protocolType} and created_by = #{uuid} and status = 1
+    </select>
+
+    <update id="cancelSignedProtocol">
+        update protocol_t
+        set status = 0
+        where id = #{id}
+    </update>
+
+    <select id="selectProtocolDesc" resultMap="protocolMap">
+        select <include refid="allFields"/>
+        from protocol_t
+        where protocol_type = #{protocolType} and created_by = #{uuid}
+        order by updated_time desc
+        limit 1
+    </select>
+
+</mapper>
