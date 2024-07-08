@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.CompanyMapper">
+    <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Company">
+        <result column="user_id" property="userId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="credit_code" property="creditCode"/>
+        <result column="legal_person" property="legalPerson"/>
+        <result column="registration_capital" property="registrationCapital"/>
+        <result column="registration_date" property="registrationDate"/>
+        <result column="expiration_date" property="expirationDate"/>
+        <result column="approval_comment" property="approvalComment"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="apply_time" property="applyTime"/>
+        <result column="user_telephone" property="userTelephone"/>
+        <result column="logo_name" property="logoName"/>
+        <result column="license_name" property="licenseName"/>
+        <result column="user_uuid" property="userUuid"/>
+        <result column="company_mail" property="companyMail"/>
+        <result column="is_checked_pass" property="isCheckedPass"/>
+    </resultMap>
+
+    <resultMap id="UserCompanyResultMap" type="com.huawei.it.euler.model.vo.UserCompanyVo">
+        <result column="company_name" property="companyName"/>
+        <result column="logo_name" property="logoName"/>
+        <result column="license_name" property="licenseName"/>
+        <result column="user_uuid" property="userUuid"/>
+    </resultMap>
+
+    <sql id="allFields">
+        id, user_id, status, logo, region, license, company_name, credit_code, address, legal_person,
+        registration_capital, registration_date, expiration_date, approval_comment, update_time, apply_time,
+        user_telephone, logo_name, license_name, user_uuid, company_mail, is_checked_pass
+    </sql>
+
+    <insert id="insertCompany" parameterType="com.huawei.it.euler.model.entity.Company">
+        insert into company_t (user_id, status, logo, region, license, company_name, credit_code, address, legal_person,
+                               registration_capital, registration_date, expiration_date, approval_comment, update_time,
+                               apply_time, user_telephone, logo_name, license_name, user_uuid, company_mail, is_checked_pass)
+        values (#{userId}, #{status}, #{logo}, #{region}, #{license}, #{companyName}, #{creditCode}, #{address},
+                #{legalPerson}, #{registrationCapital}, #{registrationDate}, #{expirationDate}, #{approvalComment},
+                #{updateTime}, #{applyTime}, #{userTelephone}, #{logoName}, #{licenseName}, #{userUuid}, #{companyMail},
+                #{isCheckedPass})
+    </insert>
+
+    <update id="updateCompany" parameterType="com.huawei.it.euler.model.entity.Company">
+        update company_t
+        set status = #{status},
+            logo = #{logo},
+            region = #{region},
+            license = #{license},
+            company_name = #{companyName},
+            credit_code = #{creditCode},
+            address = #{address},
+            legal_person = #{legalPerson},
+            registration_capital = #{registrationCapital},
+            registration_date = #{registrationDate},
+            expiration_date = #{expirationDate},
+            approval_comment = #{approvalComment},
+            update_time = #{updateTime},
+            apply_time = #{applyTime},
+            user_telephone = #{userTelephone},
+            logo_name = #{logoName},
+            license_name = #{licenseName},
+            user_uuid = #{userUuid},
+            company_mail = #{companyMail},
+            is_checked_pass = #{isCheckedPass}
+        where user_uuid = #{userUuid}
+    </update>
+
+    <select id="findCompaniesByCompanyNameAndStatus" resultMap="UserCompanyResultMap">
+        select c.company_name, c.logo, c.logo_name, c.license, c.license_name, c.status, u.telephone, u.mail, u.username,
+               c.company_mail, c.user_uuid
+        from company_t c
+        left join user u on c.user_uuid = u.uuid
+        where 1=1
+        <if test="companyName != null">
+            and instr(company_name, #{companyName})
+        </if>
+        <if test="list != null">
+            and status in
+            <foreach collection="list" item = "item" open="(" separator="," close =")">
+                #{item}
+            </foreach>
+        </if>
+        order by status asc, apply_time desc
+    </select>
+
+    <select id="findCompanyByUserUuid" resultMap="BaseResultMap">
+        select <include refid="allFields"></include>
+        from company_t
+        where user_uuid = #{userUuid}
+    </select>
+
+    <select id="findRegisterSuccessCompanyByUserUuid" resultMap="BaseResultMap">
+        select <include refid="allFields"></include>
+        from company_t
+        where user_uuid = #{userUuid} and status = 1
+    </select>
+
+    <select id="findCompanyNameByUserUuid" resultMap="BaseResultMap">
+        select company_name
+        from company_t
+        where user_uuid = #{userUuid}
+    </select>
+
+    <select id="findCompanyByCreditCode" resultMap="BaseResultMap">
+        select <include refid="allFields"></include>
+        from company_t
+        where credit_code = #{code} and status = 1
+    </select>
+
+</mapper>

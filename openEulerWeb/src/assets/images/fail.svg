@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="242px" height="180px" viewBox="0 0 242 180" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>运作</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="个人中心-企业实名认证中失败" transform="translate(-1019.000000, -271.000000)" stroke="#000000">
+            <g id="运作" transform="translate(1020.000000, 272.000000)">
+                <path d="M47,62.7238763 L125.010673,15.9385524 C129.313191,13.3538159 134.686809,13.3538159 138.989327,15.9385524 L217,62.7238763 L217,139 L47,130.451541 L47,62.7238763 Z" id="路径" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+                <rect id="矩形" fill="#FFFFFF" fill-rule="nonzero" x="62" y="30" width="140" height="121"></rect>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="30.3686055 86 38 94.873983 23.6313945 108 16 99.1299946 27 96.990056"></polygon>
+                <path d="M15,99 L30,86 L27.4892704,96.1833333 C27.2843734,96.9843315 26.6057748,97.5849331 25.771191,97.7039394 L15,99 Z" id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="193 19.2455568 216 23 200.84715 12 200.019506 15.4392456 194.419371 16.3928183"></polygon>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="216 23 196.881481 12.2926829 178 11"></polygon>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="201 11.9978873 216 23 204.51072 6"></polygon>
+                <rect id="矩形" fill="#FFD26E" fill-rule="nonzero" x="97" y="69" width="72" height="43"></rect>
+                <circle id="椭圆形" fill="#6CC4FF" fill-rule="nonzero" cx="101.5" cy="4.5" r="4.5"></circle>
+                <polygon id="路径" fill="#FFFFFF" fill-rule="nonzero" points="217 63 217 165 47 165 47 63 92.225522 90.135946 132 113.986161 171.84942 90.0884987"></polygon>
+                <path d="M217,164 L47,164 L55.0266821,158.253746 L85.7174014,136.295971 L124.864733,108.292822 C129.128269,105.235726 134.871731,105.235726 139.135267,108.292822 L217,164 Z" id="路径" fill="#FFFFFF" fill-rule="nonzero"></path>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="125.618677 138 146 126 127.400778 127.159206 128.828794 130.418714 125 134.837428"></polygon>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="146 126 124.590238 130.000793 109 141"></polygon>
+                <polygon id="路径" fill="#E3E5EA" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="127.88 127 147 125.850029 127 120"></polygon>
+                <path d="M130,128.286041 C130,128.286041 46.3993619,140.649532 23.8729029,140.959588 C1.34644391,141.269644 3.04054683,139.750369 0.52494157,137.952043 C-0.870433225,136.955987 0.882629193,134.351515 1.55476747,133.471731 C3.79129778,130.537824 7.22667122,128.522459 10.6384609,127.173714 C14.0726791,125.869273 17.6805046,125.062492 21.3494364,124.77853 C23.2243484,124.61575 25.0992605,124.542112 26.9741725,124.518858 C28.4874663,124.495604 30.7672336,124.092531 32.1861922,124.828914 C32.7020295,125.07086 33.023156,125.591488 33.0037639,126.154404 C33.0037639,128.049623 30.3820315,128.948786 28.7744026,128.332549 C26.6125543,127.526403 27.6698946,124.235932 28.1730157,122.743786 C28.2476977,122.507368 28.3420329,122.270951 28.4127843,122.030657 C31.8717415,112.674711 46.7177432,119.236275 46.7177432,119.236275" id="路径" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle id="椭圆形" fill="#002F9F" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" cx="224.5" cy="162.5" r="15.5"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

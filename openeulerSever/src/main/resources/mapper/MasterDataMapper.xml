@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.MasterDataMapper">
+
+    <select id="selectAllOs" resultType="com.huawei.it.euler.model.entity.Os">
+        select os_name osName, os_version osVersion
+        from os_t
+    </select>
+
+    <select id="selectAllProduct" resultType="com.huawei.it.euler.model.entity.Product">
+        select product_type productType, product_children_tpe productChildrenType
+        from product_T
+    </select>
+
+    <select id="selectAllComputingPlatform" resultType="com.huawei.it.euler.model.entity.ComputingPlatform">
+        select platform_name platformName, server_provider serverProvider, server_type serverType
+        from coputing_platform_T
+    </select>
+
+    <select id="selectAllInnovationCenter" resultType="java.lang.String">
+        select ict.name
+        from innovation_center_t ict
+        order by ict.type asc
+    </select>
+
+    <select id="findOsByNameAndVersion" resultType="java.lang.Integer">
+        select count(1)
+        from os_t
+        where os_name = #{name} and os_version = #{version}
+    </select>
+
+    <select id="findPlatformByParam" resultType="java.lang.Integer">
+        select count(1)
+        from computing_platform_t
+        where platform_name = #{name} and server_provider = #{provider} and server_type = #{type}
+    </select>
+
+    <select id="findProduct" resultType="java.lang.Integer">
+        select count(1)
+        from product_t
+        where product_type = #{productType} and product_children_type = #{productChildrenType}
+    </select>
+
+    <insert id="insertAuditLog">
+        insert into audit_logs_t (time, host_ip, uuid, module, operate, message)
+        values (#{time}, #{hostIp}, #{uuid}, #{module}, #{operate}, #{message})
+    </insert>
+
+</mapper>

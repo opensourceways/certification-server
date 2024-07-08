@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="145px" height="124px" viewBox="0 0 145 124" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 40</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="个人中心-企业实名认证完成" transform="translate(-916.000000, -186.000000)">
+            <g id="编组-40" transform="translate(916.000000, 189.000000)">
+                <circle id="椭圆形" stroke="#EF858A" stroke-width="6" cx="72" cy="59" r="59"></circle>
+                <circle id="椭圆形备份" stroke="#EEB2B5" stroke-width="3" cx="72" cy="59" r="50.5"></circle>
+                <rect id="矩形" fill="#EF858A" fill-rule="nonzero" transform="translate(72.500000, 59.000000) rotate(-12.000000) translate(-72.500000, -59.000000) " x="3" y="39" width="139" height="40" rx="6"></rect>
+                <g id="认证成功" transform="translate(70.147661, 59.904897) rotate(-12.000000) translate(-70.147661, -59.904897) translate(22.147661, 45.404897)" fill="#FFFFFF" fill-rule="nonzero" font-family="FZLTCHJW--GB1-0, FZLanTingHeiS-B-GB" font-size="24" font-weight="normal" stroke="#FFFFFF">
+                    <text>
+                        <tspan x="0" y="22">认证成功</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.RoleMapper">
+
+    <select id="findByUserId" parameterType="java.util.List">
+        select role_t.role
+        from role_t
+        where id in
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findRoleInfoByUserId" parameterType="java.lang.Integer" resultType="java.lang.String">
+        select r.role
+        from role_t r
+        left join user_role_mapping_t ur on r.id = ur.role_id
+        where ur.user_id = {userId}
+    </select>
+
+    <insert id="insertDefaultRole" parameterType="java.lang.Integer">
+        insert into user_role_mapping_t (user_id, role_id, update_time)
+        values (#{userId}, 1, NOW())
+    </insert>
+
+    <select id="findUserByRole" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select user_id
+        from user_role_mapping_t
+        where role_id = #{roleId}
+    </select>
+
+</mapper>

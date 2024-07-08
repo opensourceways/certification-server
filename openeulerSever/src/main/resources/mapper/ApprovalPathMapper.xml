@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.ApprovalPathMapper">
+    <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.ApprovalPath">
+        <result column="ic_id" property="icId"/>
+        <result column="plan_review" property="planReview"/>
+        <result column="report_first_trial" property="reportFirstTrial"/>
+        <result column="report_reexamination" property="reportReexamination"/>
+        <result column="cert_firs_trial" property="certFirstTrial"/>
+        <result column="cert_reexamination" property="certReexamination"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="findApprovalPathByPage" resultMap="BaseResultMap">
+        select id, ic_id, plan_review, report_first_trial, report_reexamination, cert_firs_trial, cert_reexamination, update_time
+        from approval_path_t
+    </select>
+
+    <select id="findApprovalPathByIcAndPage" resultMap="BaseResultMap">
+        select id, ic_id, plan_review, report_first_trial, report_reexamination, cert_firs_trial, cert_reexamination, update_time
+        from approval_path_t
+        where ic_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")" index="">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>

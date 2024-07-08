@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.CompatibleDataMapper">
+    <resultMap id="dataInfoMap" type="com.huawei.it.euler.model.entity.CompatibleDataInfo">
+        <result column="data_id" property="dataId"/>
+        <result column="upload_company" property="uploadCompany"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="uuid" property="uuid"/>
+        <result column="company_name" property="companyName"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_version" property="productVersion"/>
+        <result column="product_functions" property="productFunctions"/>
+        <result column="usage_scene" property="usageScene"/>
+        <result column="system_name" property="systemName"/>
+        <result column="system_version" property="systemVersion"/>
+        <result column="server_platform" property="serverPlatform"/>
+        <result column="server_supplier" property="serverSupplier"/>
+        <result column="server_model" property="serverModel"/>
+        <result column="product_type" property="productType"/>
+        <result column="product_subtype" property="productSubtype"/>
+        <result column="region" property="region"/>
+        <result column="issuance_date" property="issuanceDate"/>
+        <result column="status" property="status"/>
+        <result column="apply_time" property="applyTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <resultMap id="dataApprovalMap" type="com.huawei.it.euler.model.entity.CompatibleDataApproval">
+        <result column="data_id" property="dataId"/>
+        <result column="product_name" property="productName"/>
+        <result column="handler_result" property="handlerResult"/>
+        <result column="handler_comment" property="handlerComment"/>
+        <result column="handler" property="handler"/>
+        <result column="handler_time" property="handlerTime"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <sql id="dataInfoFields">
+        data_id, upload_company, created_by, company_name, product_name, product_version, product_functions,
+        usage_scene, system_name, system_version, server_platform, server_supplier, server_model,
+        product_type, product_subtype, region, issuance_date
+    </sql>
+
+    <insert id="insertDataList" parameterType="java.util.List">
+        insert into compatible_data_info_t (data_id, upload_company, created_by, uuid, company_name, product_name,
+            product_version, product_functions, usage_scene, system_name, system_version, server_platform, server_supplier,
+            server_model, product_type, product_subtype, region, issuance_date, status, apply_time, update_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.dataId, jdbcType=BIGINT}, #{item.uploadCompany, jdbcType=VARCHAR}, #{item.createdBy, jdbcType=VARCHAR},
+             #{item.uuid, jdbcType=VARCHAR}, #{item.companyName, jdbcType=VARCHAR}, #{item.productName, jdbcType=VARCHAR},
+             #{item.productVersion, jdbcType=VARCHAR}, #{item.productFunctions, jdbcType=VARCHAR},
+             #{item.usageScene, jdbcType=VARCHAR}, #{item.systemName, jdbcType=VARCHAR},
+             #{item.systemVersion, jdbcType=VARCHAR}, #{item.serverPlatform, jdbcType=VARCHAR},
+             #{item.serverSupplier, jdbcType=VARCHAR}, #{item.serverModel, jdbcType=VARCHAR},
+             #{item.productType, jdbcType=VARCHAR}, #{item.productSubtype, jdbcType=VARCHAR},
+             #{item.region, jdbcType=VARCHAR}, #{item.issuanceDate, jdbcType=DATE}, #{item.status, jdbcType=VARCHAR},
+             #{item.applyTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+
+    <select id="selectMaxDataId" resultType="java.lang.Integer">
+        select MAX(data_id) from compatible_data_info_t
+    </select>
+
+    <insert id="insertDataApproval" parameterType="java.util.List">
+        insert into compatible_data_approval_t (data_id, product_time, handler_result, status) values
+        <foreach collection="list" item="item" index = "index" separator=",">
+            (#{item.dataId, jdbcType=BIGINT}, #{item.productTime, jdbcType=VARCHAR}, 0, #{item.status, jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+
+    <select id="getDataList" parameterType="com.huawei.it.euler.model.vo.CompatibleDataSearchVo" resultMap="dataInfoMap">
+        select data_id, upload_company, created_by, company_name, product_name, product_version, system_name,
+               system_version, server_platform, server_supplier, server_model, product_type, status
+        from compatible_data_info_t
+        where 1=1
+        <if test="uuid != null and uuid != '' ">
+            and uuid = #{uuid}
+        </if>
+        <if test="productTypes != null and productTypes.size() > 0">
+            and product_type in
+            <foreach collection="productTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="statusStr != null and statusStr.size() > 0">
+            and status in
+            <foreach collection="statusStr" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="productName != null and productName != '' ">
+            and lower(product_name) like lower(concat('%/',#{productName},'%')) escape '/'
+        </if>
+        order by field(status, '审核中') desc, product_name asc
+    </select>
+
+    <select id="selectDataByDataId" resultMap="dataInfoMap">
+        select <include refid="dataInfoFields"></include>
+        from compatible_data_info_t
+        where data_id = #{dataId}
+    </select>
+
+    <select id="selectDataApproval" resultMap="dataApprovalMap">
+        select data_id, product_name, handler_result, handler_comment, handler, handler_time, status
+        from compatible_data_approval_t
+        where data_id = #{dataId}
+        order by handler_time desc
+        limit 1
+    </select>
+
+    <select id="getStatus" resultType="java.lang.String">
+        select distinct status
+        from compatible_data_info_t
+        where data_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectDataInfoDetail" resultMap="dataInfoMap">
+        select <include refid="dataInfoFields"></include>
+        from compatible_data_info_t
+        where 1=1
+        <if test="dataIdList != null and dataIdList.size() > 0">
+            and data_id in
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="updateDataInfo">
+        update compatible_data_info_t
+        set status = #{status}, update_time = #{updateTime}
+        where data_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <insert id="insertApprovalInfo" parameterType="java.util.List">
+        insert into compatible_data_approval_t
+            (data_id, product_name, handler_result, handler_comment, handler, handler_time, status) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.dataId}, #{item.productName}, #{item.handlerResult}, #{item.handlerComment}, #{item.handler},
+             #{item.handlerTime}, #{item.status})
+        </foreach>
+    </insert>
+
+    <select id="selectUserRoleByUuid" resultType="java.lang.Integer">
+        select role_id
+        from user_role_mapping_t
+        where user_id = (select id from user_t where uuid = #{uuid})
+    </select>
+
+    <select id="selectDataByStatus" resultType="com.huawei.it.euler.model.vo.CompatibleSimilarVo">
+        select product_name, product_version, system_name, system_version, server_platform
+        from compatible_data_info_t
+        where status in ('审核中', '已通过')
+    </select>
+
+</mapper>

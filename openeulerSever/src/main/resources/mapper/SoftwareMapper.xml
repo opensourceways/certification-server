@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.it.euler.mapper.SoftwareMapper">
+
+    <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Software">
+        <id column="id" property="id"/>
+        <id column="company_id" property="companyId"/>
+        <id column="company_name" property="companyName"/>
+        <id column="product_name" property="productName"/>
+        <id column="product_function_desc" property="productFunctionDesc"/>
+        <id column="usage_scenes_desc" property="usageScenesDesc"/>
+        <id column="product_version" property="productVersion"/>
+        <id column="os_name" property="osName"/>
+        <id column="os_version" property="osVersion"/>
+        <id column="hashrate_platform" property="jsonHashratePlatform"/>
+        <id column="product_type" property="productType"/>
+        <id column="test_organization" property="testOrganization"/>
+        <id column="status" property="status"/>
+        <id column="update_time" property="updateTime"/>
+        <id column="application_time" property="applicationTime"/>
+        <id column="user_telephone" property="userTelephone"/>
+        <id column="user_uuid" property="userUuid"/>
+    </resultMap>
+
+    <resultMap id="softwareMap" type="com.huawei.it.euler.model.vo.SoftwareListVo">
+        <id column="id" property="id"/>
+        <result column="company_name" property="companyName"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_type" property="productType"/>
+        <result column="product_version" property="productVersion"/>
+        <result column="os_name" property="osName"/>
+        <result column="os_version" property="osVersion"/>
+        <result column="hashrate_platform" property="hashratePlatform"/>
+        <result column="test_organization" property="testOrganization"/>
+        <result column="application_time" property="applicationTime"/>
+        <result column="node_name" property="status"/>
+        <result column="reviewer" property="reviewerUuid"/>
+        <result column="username" property="applicant"/>
+        <result column="reviewername" property="applicationTime"/>
+        <result column="authentication_status" property="authenticationStatus"/>
+    </resultMap>
+
+    <resultMap id="compatibilityMap" type="com.huawei.it.euler.model.entity.Compatibility">
+        <id column="id" property="certId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_type" property="type"/>
+        <result column="product_version" property="productVersion"/>
+        <result column="os_name" property="osName"/>
+        <result column="os_version" property="osVersion"/>
+        <result column="hashrate_platform" property="jsonPlatformTypeAndServerModel"/>
+        <result column="test_organization" property="testOrganization"/>
+    </resultMap>
+
+    <resultMap id="AttachmentsMap" type="com.huawei.it.euler.model.entity.Attachments">
+        <result column="filename" property="fileName"/>
+        <result column="file_path" property="filePath"/>
+        <result column="software_id" property="softwareId"/>
+        <result column="file_type" property="fileType"/>
+    </resultMap>
+
+    <resultMap id="AttachmentsVoMap" type="com.huawei.it.euler.model.vo.AttachmentsVo">
+        <result column="filename" property="fileName"/>
+        <result column="file_id" property="fileId"/>
+    </resultMap>
+
+    <resultMap id="AuditRecordsVoMap" type="com.huawei.it.euler.model.vo.AuditRecordsVo">
+        <result column="node_name" property="nodeName"/>
+        <result column="username" property="handlerName"/>
+        <result column="handler_result" property="handlerResult"/>
+        <result column="handler_time" property="handlerTime"/>
+        <result column="transferred_comments" property="transferredComments"/>
+    </resultMap>
+
+    <sql id="baseFields">
+        id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
+        hashrate_platform, server_type, product_type, test_organization, status, update_time, application_time, user_telephone,
+        reviewer, user_uuid
+    </sql>
+
+    <sql id="insertFields">
+        company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
+        hashrate_platform, product_type, test_organization, status, update_time, application_time, user_telephone,
+        reviewer, user_uuid
+    </sql>
+
+    <sql id="insertAttachFields">
+        filename, fileid, software_id, update_time, file_path, file_type, uuid
+    </sql>
+
+    <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select <include refid="baseFields"></include>
+        from software_t where id = #{id}
+    </select>
+
+    <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
+        update software_t
+        set product_version = #{productVersion}, os_name = #{osName}, os_version = #{osVersion},
+            hashrate_platform = #{jsonHashRatePlatform}, update_time = NOW()
+        where id = #{id}
+    </update>
+
+    <update id="updateCertificationInfoById" parameterType="com.huawei.it.euler.model.vo.CertificateInfoVo">
+        update software_t
+        set certificate_type = #{certificateType}, certificate_interests = #{certificateInterests},
+            validity_period = #{validityPeriod}
+        where id = #{softwareId}
+    </update>
+
+    <insert id="insertSoftware" parameterType="com.huawei.it.euler.model.entity.Software"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into software_t(<include refid="insertFields"></include>) values (#{companyId}, #{companyName}, #{productName},
+        #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
+        #{productType}, #{testOrganization}, #{status}, #{updateTime}, #{applicationTime}, #{userTelephone}, #{reviewer}, #{userUuid})
+    </insert>
+
+    <update id="updateSoftwareStatusAndReviewer" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
+        update software_t
+        set status = #{status},
+            reviewer = #{reviewer},
+            update_time = #{updateTime},
+            authentication_status = #{authenticationStatus}
+        where id = #{id}
+    </update>
+
+    <select id="getSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
+            resultMap="softwareMap">
+        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
+               s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
+               n.node_name, u2.username as reviewername, u.username
+        from software_t AS s
+        left join user_t AS u on s.user_uuid = u.uuid
+        left join user_t AS u2 on s.reviewer = u2.uuid
+        left join node_name_t AS n on s.status = u.id
+        <where>
+            <if test="status != null and status.size() > 0">
+                and s.status in (select id from node_name_t where node_name in
+                <foreach collection="status" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>)
+            </if>
+            <if test="testOrganization != null and testOrganization.size() > 0">
+                and test_organization in
+                <foreach collection="testOrganization" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="productType != null and productType.size() > 0">
+                and
+                <foreach collection="productType" item="item" open="(" separator="," close=")">
+                    instr(product_type, #{item})
+                </foreach>
+            </if>
+            <if test="companyName != null and companyName != ''">
+                and company_name = #{companyName}
+            </if>
+            <if test="applicant != null and applicant != ''">
+                and user_uuid = #{applicant}
+            </if>
+            <if test="productName != null and productName != ''">
+                and lower(product_name) like lower(concat('%/',#{productName},'%')) escape '/'
+            </if>
+        </where>
+        order by status ASC, s.update_time ASC
+    </select>
+
+    <select id="getReviewSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
+            resultMap="softwareMap">
+        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
+        s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
+        n.node_name, u.username as reviewername
+        from software_t AS s
+        left join user_t AS u on s.reviewer = u.uuid
+        left join node_name_t AS n on s.status = u.id
+        where s.id in (select software_id from node_t where handler = #{applicant})
+            <if test="status != null and status.size() > 0">
+                and s.status in (select id from node_name_t where node_name in
+                <foreach collection="status" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>)
+            </if>
+            <if test="testOrganization != null and testOrganization.size() > 0">
+                and test_organization in
+                <foreach collection="testOrganization" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="productType != null and productType.size() > 0">
+                and
+                <foreach collection="productType" item="item" open="(" separator="," close=")">
+                    instr(product_type, #{item})
+                </foreach>
+            </if>
+            <if test="productName != null and productName != ''">
+                and concat(lower(product_name), lower(company_name)) like lower(concat('%/',#{productName},'%')) escape '/'
+            </if>
+        order by status ASC, s.update_time ASC
+    </select>
+
+    <select id="getAuditRecordsList" parameterType="java.lang.Integer" resultType="com.huawei.it.euler.model.vo.AuditRecordsVo">
+        select node_name, handler, handler_time, transferred_comments, status,
+               case handler_result
+                    when '0' then '待处理'
+                    when '1' then '通过'
+                    when '2' then '已驳回'
+                    when '3' then '转审'
+                    end as handler_result
+        from node_t
+        where software_id = #{softwareId}
+        order by status DESC
+    </select>
+
+    <select id="getAuditRecordsListPage" resultMap="AuditRecordsVoMap">
+        select node_name, u.username, handler_time, transferred_comments, status,
+               case handler_result
+                   when '0' then '待处理'
+                   when '1' then '通过'
+                   when '2' then '已驳回'
+                   when '3' then '转审'
+                   end as handler_result
+        from node_t AS n
+        left join user_t AS u ON n.handler = u.uuid
+        where software_id = #{softwareId}
+        <if test="nodeName != null and nodeName != ''">
+            and node_name = #{nodeName}
+        </if>
+        order by case when handler_time is null then 1 else 0 end DESC, handler_time DESC
+    </select>
+
+    <select id="certificateInfo" parameterType="java.lang.Integer" resultType="com.huawei.it.euler.model.vo.CertificateInfoVo">
+        select certificate_type, certificate_interests, validity_period
+        from software_t
+        where id = #{softwareId}
+    </select>
+
+    <insert id="insertAttachment" parameterType="com.huawei.it.euler.model.entity.FileModel"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into attachments_t (<include refid="insertAttachFields"/>)
+        values (#{fileName}, #{fileId}, #{softwareId}, #{updateTime}, #{filePath}, #{fileType}, #{uuid})
+    </insert>
+
+    <update id="updateSign" parameterType="com.huawei.it.euler.model.entity.FileModel"
+            useGeneratedKeys="true" keyProperty="id">
+        update attachments_t
+        set fileid = #{fileId}, filename = #{fileName}, update_time = #{updateTime}, file_path = #{filePath}
+        where software_id = #{softwareId} and file_type = 'sign'
+    </update>
+
+    <select id="getAttachmentsNames" parameterType="java.util.Map" resultMap="AttachmentsVoMap">
+        select filename, fileid
+        from attachments_t where software_id = #{softwareId} and file_type = #{fileType}
+    </select>
+
+    <select id="downloadAttachments" parameterType="java.lang.String" resultMap="AttachmentMap">
+        select file_path, filename, software_id, uuid, file_type
+        from attachments_t where fileid = #{fileId}
+    </select>
+
+    <update id="recommit" parameterType="com.huawei.it.euler.model.entity.Software">
+        update software_t
+        set product_name = #{productName},
+            product_version = #{productVersion},
+            os_name = #{osName},
+            os_version = #{osVersion},
+            product_function_desc = #{productFunctionDesc},
+            usage_scenes_desc = #{usageScenesDesc},
+            hashrate_platform = #{jsonHashratePlatform},
+            update_time = #{updateTime},
+            product_type = #{productType},
+            test_organization = #{testOrganization}
+        where id = #{id}
+    </update>
+
+    <select id="generateCertificate" parameterType="java.lang.Integer"
+            resultType="com.huawei.it.euler.model.entity.GenerateCertificate">
+        select id, company_name, product_name, product_version, os_name, os_version, hashrate_platform,
+               test_organization, validity_period
+        from software_t where id = #{softwareId}
+    </select>
+
+    <select id="getSignedFileId" parameterType="java.lang.Integer" resultType="java.lang.String">
+        select fileid
+        from attachments_t where software_id = #{softwareId} and file_type = 'sign';
+    </select>
+
+</mapper>

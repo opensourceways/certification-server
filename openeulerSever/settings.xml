@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <servers>
+        <server>
+            <username>clouddragon</username>
+            <password>password</password>
+            <id>CloudArtifact-central</id>
+        </server>
+        <server>
+            <username>clouddragon</username>
+            <password>password</password>
+            <id>CloudArtifact-central</id>
+        </server>
+        <server>
+            <id>artifactory-dg</id>
+            <username>xxxxxxxx</username>
+            <password>xxxxxxxx</password>
+        </server>
+    </servers>
+    <mirrors>
+        <mirror>
+            <id>central</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Nexus aliyun</name>
+            <url>https://maven.aliyun.com/repository/central</url>
+        </mirror>
+    </mirrors>
+    <profiles>
+        <profile>
+            <id>internal</id>
+            <repositories>
+                <repository>
+                    <id>aliyunmaven</id>
+                    <name>aliyun maven</name>
+                    <url>http://maven.aliyun.com/repository/public</url>
+                    <layout>default</layout>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>maven-group</id>
+                    <url>https://maven.apache.org/</url>
+                </repository>
+                <repository>
+                    <id>jitpack.io</id>
+                    <url>https://jitpack.io</url>
+                </repository>
+                <repository>
+                    <id>central</id>
+                    <url>https://maven.aliyun.com/repository/central</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>artifactory-plugin</id>
+                    <name>Nexus plugins</name>
+                    <url>https://dgg.maven.repo.cmc.tools.huawei.com/artifactory/BPIT-public-maven/</url>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>huawei-central-plugin</id>
+                    <name>huawei central plugin</name>
+                    <url>https://cmc.centralrepo.rnd.huawei.com/maven/</url>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>huawei-product-maven-plugin</id>
+                    <name>huawei product maven plugin</name>
+                    <url>https://cmc.centralrepo.rnd.huawei.com/artifactory/product_maven</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>internal</activeProfile>
+        <activeProfile>JDK1.8</activeProfile>
+    </activeProfiles>
+</settings>
