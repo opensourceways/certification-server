@@ -50,7 +50,7 @@
       审核记录
     </div>
     <img
-      :src="require('@/assets/image/topArrowhead.png')"
+      :src="require('@/assets/images/topArrowhead.png')"
       alt=""
       style="margin-top: 45px; margin-left: 20px"
       @click="isAuditRecords = false"
@@ -58,7 +58,7 @@
       class="cursor"
     />
     <img
-      :src="require('@/assets/image/bottomArrowhead.png')"
+      :src="require('@/assets/images/bottomArrowhead.png')"
       alt=""
       style="margin-top: 45px; margin-left: 20px"
       @click="isAuditRecords = true"
@@ -469,7 +469,7 @@ export default {
   data() {
     return {
       src: require("@/assets/images/screening.png"),
-      src1: require("@/assets/images/screeningColor.png"),
+      src1: require("@/assets/images/screeingColor.png"),
       command: "",
       transferredComments: "",
       processStatus: "",
@@ -582,12 +582,11 @@ export default {
   methods: {
     handleResult() {},
     transferredCommentsChange(value) {
-      this,
-        (form.transferredComments = value
-          .split(" ")
-          .join("")
-          .split("\n")
-          .join(""));
+      this.form.transferredComments = value
+        .split(" ")
+        .join("")
+        .split("\n")
+        .join("");
     },
     handleCommand(command1) {
       this.command = command1;
@@ -880,7 +879,7 @@ export default {
           };
           this.axios
             .post("/software/update", params)
-            .then((res) => {
+            .then(() => {
               this.$message({
                 message: "证书信息已确认",
                 type: "success",
@@ -907,7 +906,7 @@ export default {
           this.information.hashratePlatformList[index].serverTypes = [
             this.serverTypes[index][0],
           ];
-          falg = false;
+          flag = false;
         }
       });
     },
