@@ -12,7 +12,7 @@ module.exports = defineConfig({
                 changeOrigin: true,
             },
         },
-        host: 'localhost.huawei.com',
+        host: 'localhost',
     },
     pwa: {
         iconPaths: {

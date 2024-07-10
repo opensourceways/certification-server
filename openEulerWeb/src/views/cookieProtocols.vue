@@ -1,6 +1,6 @@
 <template>
   <div style="width: 100%">
-    <div content="banner">
+    <div class="banner">
       <span class="legal">COOKIE PROTOCOLS</span>
       <span class="privacy">openEuler兼容性平台Cookie政策</span>
     </div>

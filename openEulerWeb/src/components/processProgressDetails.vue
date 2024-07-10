@@ -36,7 +36,7 @@
       审核记录
     </div>
     <img
-      :src="require('@/assets/image/topArrowhead.png')"
+      :src="require('@/assets/images/topArrowhead.png')"
       alt=""
       style="margin-top: 45px; margin-left: 20px"
       @click="isAuditRecords = false"
@@ -44,7 +44,7 @@
       class="cursor"
     />
     <img
-      :src="require('@/assets/image/bottomArrowhead.png')"
+      :src="require('@/assets/images/bottomArrowhead.png')"
       alt=""
       style="margin-top: 45px; margin-left: 20px"
       @click="isAuditRecords = true"
@@ -441,7 +441,7 @@ export default {
     return {
       flag: true,
       src: require("@/assets/images/screening.png"),
-      src1: require("@/assets/images/screeningColor.png"),
+      src1: require("@/assets/images/screeingColor.png"),
       testReport: [],
       form: {},
       forma: {},
@@ -593,7 +593,7 @@ export default {
     onSuccess(response) {
       if (response.code === 400) {
         this.$message({
-          message: reponse.message,
+          message: response.message,
           type: "error",
         });
       } else {

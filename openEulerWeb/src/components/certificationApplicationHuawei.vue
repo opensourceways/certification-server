@@ -1,10 +1,10 @@
 <template>
-  <div class="certificationApplication">
+  <div class="certificationApplicationHuawei">
     <div
       class="topMenu"
       v-if="
         $store.state.useName.roleNames &&
-        $store.state.useName.roleNames.includes('OSV伙伴')
+        $store.state.useName.roleNames.includes('欧拉社区旗舰店')
       "
     >
       <div
@@ -12,10 +12,10 @@
         :class="{ active: isactive == 'true' }"
         style="margin-left: 0px"
       >
-        测评申请
+        测评审核
       </div>
       <div @click="isactive = 'false'" :class="{ active: isactive == 'false' }">
-        兼容性数据管理
+        兼容性数据审核
       </div>
     </div>
     <div class="content" v-show="isactive == 'true'">
@@ -39,15 +39,10 @@
         :textTitle="textTitle2"
         @handleChange="handleChange3"
       ></ScreenCondition>
-      <ScreenCondition
-        :textList="applicant"
-        :textTitle="textTitle3"
-        @handleChange="handleChange4"
-      ></ScreenCondition>
       <el-table :data="tableData" style="width: 100%; margin-top: 24px">
         <el-table-column
           prop="productName"
-          label="产品名称"
+          label="测评名称"
           show-overflow-tooltip
           width="160"
         >
@@ -61,13 +56,18 @@
           </template>
         </el-table-column>
         <el-table-column
+          prop="companyName"
+          label="企业名称"
+          show-overflow-tooltip
+        ></el-table-column>
+        <el-table-column
           prop="productType"
-          label="产品类型"
+          label="测评类型"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           prop="productVersion"
-          label="产品版本"
+          label="测评版本"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
@@ -93,11 +93,6 @@
         <el-table-column
           prop="applicationTime"
           label="申请日期"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="aplicant"
-          label="申请人"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
@@ -153,39 +148,37 @@
         ></el-agination>
       </div>
     </div>
-    <CompatibleView v-show="isactive == false"></CompatibleView>
+    <CompatibleHuawei v-show="isactive == false"></CompatibleHuawei>
   </div>
 </template>
 <script>
 import TitleInput from "@/components/titleInput.vue";
 import ScreenCondition from "@/components/screenCondition.vue";
-import CompatibleView from "@/components/CompatibleView.vue";
+import CompatibleHuawei from "@/components/compatibleHuawei.vue";
 import {
   authenticationStatus,
   testOrganization,
   industryType,
-} from "@/assets/js/publicData";
+} from "@/assets/js/publicData.js";
 export default {
   components: {
-    CompatibleView,
+    CompatibleHuawei,
     TitleInput,
     ScreenCondition,
   },
   data() {
     return {
       isactive: "true",
-      title: "测评申请",
+      title: "测评审核",
       textTitle: "测评状态",
       textTitle1: "测试机构",
       textTitle2: "产品类型",
-      textTitle3: "申请人",
       authenticationStatus: [],
       testOrganization: [],
       industryType: [],
       textList1: [],
       textList2: [],
       textList3: [],
-      applicant: [{ name: "我的申请", active: false }],
       placeholder: "请输入产品名称搜索内容",
       currentPage: 1,
       pageSize: 10,
@@ -193,7 +186,6 @@ export default {
       inputValue: "",
       reviewStatus: [],
       productName: "",
-      selectMyApplication: [],
       testOrgan: [],
       tableData: [],
     };
@@ -212,21 +204,21 @@ export default {
       );
       this.testOrganization = JSON.parse(JSON.stringify(testOrganization));
       this.industryType = JSON.parse(JSON.stringify(industryType));
-      for (var i = 0; i < this.authenticationStatus.length; i++) {
+      for (let i = 0; i < this.authenticationStatus.length; i++) {
         this.authenticationStatus[i] = {
           name: this.authenticationStatus[i],
           active: false,
         };
       }
       this.textList1 = JSON.parse(JSON.stringify(this.authenticationStatus));
-      for (var i = 0; i < this.testOrganization.length; i++) {
+      for (let i = 0; i < this.testOrganization.length; i++) {
         this.testOrganization[i] = {
           name: this.testOrganization[i],
           active: false,
         };
       }
       this.textList2 = JSON.parse(JSON.stringify(this.testOrganization));
-      for (var i = 0; i < this.industryType.length; i++) {
+      for (let i = 0; i < this.industryType.length; i++) {
         this.industryType[i] = {
           name: this.industryType[i],
           active: false,
@@ -254,25 +246,19 @@ export default {
       this.productType = value;
       this.getTableList();
     },
-    handleChange4(value) {
-      this.currentPage = 1;
-      this.selectMyApplication = value;
-      this.getTableList();
-    },
     getTableList() {
       let params = {
         pageNum: this.currentPage,
         pageSize: this.pageSize,
         productName: this.inputValue,
         productType: this.productType,
-        selectMyApplication: this.selectMyApplication,
         status: this.testOrgan,
         testOrganization: this.reviewStatus,
       };
-      this.axios.post("/software/softwareList", params).then((response) => {
+      this.axios.post("/software/reviewSoftwareList", params).then((response) => {
         if (response.data.code === 200) {
           this.tableData = response.data.result.list;
-          this.total = reponse.data.result.total;
+          this.total = response.data.result.total;
         } else if (response.data.code != 401) {
           this.$message.error(response.data.result.message);
         } else {
@@ -290,9 +276,9 @@ export default {
     },
     goDetails(row) {
       this.$router.push({
-        path: "/certificationDetails",
+        path: "/certificationDetailsHuawei",
         query: {
-          id: row.id,
+          softwareId: row.id,
         },
       });
     },
@@ -357,29 +343,29 @@ export default {
       color: #fff;
       text-align: center;
     }
-    .edits{
-        color: #002fa7;
+    .edits {
+      color: #002fa7;
     }
-    .pagination{
-        height: 100px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .pagination {
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   }
 }
 </style>
 <style lang="less">
-.certificationApplication{
-    .el-table th.el-table__cell{
-        background: #e5e8f0;
-        color: #000;
-    }
-    .el-table th.el-table__cell > .cell{
-        padding-left: 40px;
-    }
-    .el-table .cell{
-        padding-left: 40px;
-    }
+.certificationApplication {
+  .el-table th.el-table__cell {
+    background: #e5e8f0;
+    color: #000;
+  }
+  .el-table th.el-table__cell > .cell {
+    padding-left: 40px;
+  }
+  .el-table .cell {
+    padding-left: 40px;
+  }
 }
 </style>
