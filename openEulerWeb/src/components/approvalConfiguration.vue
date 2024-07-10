@@ -67,7 +67,7 @@
 <script>
 import TitleInput from "@/components/titleInput.vue";
 import ScreenCondition from "@/components/screenCondition.vue";
-import { testOrganization } from "@/assets/js/publicData";
+import { testOrganization } from "@/assets/js/publicData.js";
 export default {
   components: {
     TitleInput,
@@ -123,7 +123,7 @@ export default {
         .then((response) => {
           if (response.data.code === 200) {
             this.tableData = response.data.result.records;
-            this.total = reponse.data.result.total;
+            this.total = response.data.result.total;
           } else {
             this.$message.error(response.data.result.errorMsg);
           }

@@ -185,8 +185,8 @@ import ScreenCondition from "@/components/screenCondition.vue";
 import {
   status,
   testOrganization,
-  parentIndustryType,
-} from "@/assets/js/publicData";
+  parentIndustryType
+} from "@/assets/js/publicData.js";
 export default {
   components: {
     TitleInput,
@@ -290,25 +290,25 @@ export default {
     },
     initializingProcessFn() {
       this.authenticationStatus = JSON.parse(
-        JSON.stringify(authenticationStatus)
+        JSON.stringify(status)
       );
       this.testOrganization = JSON.parse(JSON.stringify(testOrganization));
-      this.industryType = JSON.parse(JSON.stringify(industryType));
-      for (var i = 0; i < this.authenticationStatus.length; i++) {
+      this.industryType = JSON.parse(JSON.stringify(parentIndustryType));
+      for (let i = 0; i < this.authenticationStatus.length; i++) {
         this.authenticationStatus[i] = {
           name: this.authenticationStatus[i],
           active: false,
         };
       }
       this.textList1 = JSON.parse(JSON.stringify(this.authenticationStatus));
-      for (var i = 0; i < this.testOrganization.length; i++) {
+      for (let i = 0; i < this.testOrganization.length; i++) {
         this.testOrganization[i] = {
           name: this.testOrganization[i],
           active: false,
         };
       }
       this.textList2 = JSON.parse(JSON.stringify(this.testOrganization));
-      for (var i = 0; i < this.industryType.length; i++) {
+      for (let i = 0; i < this.industryType.length; i++) {
         this.industryType[i] = {
           name: this.industryType[i],
           active: false,
@@ -355,7 +355,7 @@ export default {
         .then((response) => {
           if (response.data.code === 200) {
             this.tableData = response.data.result.data;
-            this.total = reponse.data.result.total;
+            this.total = response.data.result.total;
           } else {
             this.$message.error(response.data.message);
           }
