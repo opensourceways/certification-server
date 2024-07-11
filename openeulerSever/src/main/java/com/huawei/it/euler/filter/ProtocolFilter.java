@@ -11,6 +11,10 @@ import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FilterUtils;
 import com.huawei.it.euler.util.UserUtils;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +35,8 @@ import java.util.Objects;
  * @since 2024/06/29
  */
 @Slf4j
-public class ProtocolFilter extends BasicAuthenticationFilter {
+@Component
+public class ProtocolFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolFilter.class);
 
     @Value("${protocol.url.whitelist}")
@@ -49,9 +51,6 @@ public class ProtocolFilter extends BasicAuthenticationFilter {
     @Autowired
     private SoftwareServiceImpl softwareService;
 
-    public ProtocolFilter(AuthenticationManager authenticationManager) {
-        super(authenticationManager);
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

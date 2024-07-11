@@ -7,19 +7,23 @@ package com.huawei.it.euler.filter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.util.FilterUtils;
+import com.huawei.it.euler.util.SessionManagement;
 import com.huawei.it.euler.util.UserUtils;
+import jakarta.annotation.Resource;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.annotation.Resource;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.*;
 
 /**
@@ -28,22 +32,23 @@ import java.util.*;
  * @since 2024/06/28
  */
 @Slf4j
-public class CsrfFilter extends BasicAuthenticationFilter {
+@Component
+public class CsrfFilter extends OncePerRequestFilter {
     @Value("${oauth.cookie.path}")
     private String cookiePath;
 
     @Resource
     private Cache<String, Object> caffeineCache;
 
-    public CsrfFilter(AuthenticationManager authenticationManager) {
-        super(authenticationManager);
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        // todo 随机数生成token
-        String token = UUID.randomUUID().toString();
+        String token;
+        try {
+            token = SessionManagement.generateTokenToHex();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException("XSRF-TOKEN Generation failed.");
+        }
         Cookie cookie = new Cookie("XSRF-TOKEN", token);
         cookie.setPath(cookiePath);
         cookie.setSecure(true);

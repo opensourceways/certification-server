@@ -19,6 +19,8 @@ import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
 import com.huawei.it.euler.util.StringPropertyUtils;
 import com.huawei.it.euler.util.UserUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -28,8 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

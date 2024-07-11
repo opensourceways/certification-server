@@ -10,8 +10,10 @@ import com.huawei.it.euler.model.entity.Os;
 import com.huawei.it.euler.model.entity.Product;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.MasterDataService;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
  *
  * @since 2024/07/04
  */
+@Service
+@Transactional
 public class MasterDataServiceImpl implements MasterDataService {
     @Resource
     private MasterDataMapper masterDataMapper;

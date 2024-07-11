@@ -26,6 +26,8 @@ import com.huawei.it.euler.model.vo.UserCompanyVo;
 import com.huawei.it.euler.service.CompanyService;
 import com.huawei.it.euler.third.JwtTokenClient;
 import com.huawei.it.euler.util.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,10 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import sun.misc.BASE64Encoder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -464,8 +463,7 @@ public class CompanyServiceImpl implements CompanyService {
         } catch (IOException e) {
             throw new IOException("图片转换报错");
         }
-        BASE64Encoder encoder = new BASE64Encoder();
-        return encoder.encode(data);
+        return Base64.getEncoder().encodeToString(data);
     }
 
     @Override

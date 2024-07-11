@@ -6,6 +6,7 @@ package com.huawei.it.euler.exception;
 
 import com.alibaba.fastjson.JSONException;
 import com.huawei.it.euler.common.JsonResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
@@ -19,11 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.naming.InsufficientResourcesException;
-import javax.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.AccessDeniedException;
-import java.security.AccessControlException;
-import java.security.acl.NotOwnerException;
 import java.util.ConcurrentModificationException;
 import java.util.MissingResourceException;
 import java.util.jar.JarException;
@@ -211,17 +209,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 敏感异常：NotOwnerException
-     *
-     * @return JsonResponse
-     */
-    @ExceptionHandler(value = NotOwnerException.class)
-    public JsonResponse<String> resolveNotOwnerException() {
-        log.error("NotOwnerException");
-        return JsonResponse.failed("服务内部错误");
-    }
-
-    /**
      * 敏感异常：ConcurrentModificationException
      *
      * @return JsonResponse
@@ -273,17 +260,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = StackOverflowError.class)
     public JsonResponse<String> resolveStackOverflowError() {
         log.error("StackOverflowError");
-        return JsonResponse.failed("服务内部错误");
-    }
-
-    /**
-     * 敏感异常：AccessControlException
-     *
-     * @return JsonResponse
-     */
-    @ExceptionHandler(value = AccessControlException.class)
-    public JsonResponse<String> resolveAccessControlException() {
-        log.error("AccessControlException");
         return JsonResponse.failed("服务内部错误");
     }
 }
