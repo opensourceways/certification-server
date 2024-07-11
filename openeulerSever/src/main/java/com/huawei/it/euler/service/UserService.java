@@ -8,10 +8,11 @@ import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.vo.EulerUserVo;
 import com.huawei.it.euler.model.vo.RoleVo;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 /**

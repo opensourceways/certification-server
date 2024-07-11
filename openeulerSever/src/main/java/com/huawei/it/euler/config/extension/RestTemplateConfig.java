@@ -5,7 +5,7 @@
 package com.huawei.it.euler.config.extension;
 
 import com.huawei.it.euler.util.HttpClientUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -52,7 +52,7 @@ public class RestTemplateConfig {
         CloseableHttpClient httpClient = HttpClientUtils.acceptsUntrustedCertsHttClient();
         HttpComponentsClientHttpRequestFactory httpFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         httpFactory.setConnectTimeout(40000);
-        httpFactory.setReadTimeout(40000);
+        httpFactory.setConnectionRequestTimeout(40000);
         return httpFactory;
     }
 }

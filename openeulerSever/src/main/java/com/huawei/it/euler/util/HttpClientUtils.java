@@ -4,16 +4,13 @@
 
 package com.huawei.it.euler.util;
 
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.util.TimeValue;
 
 import javax.net.ssl.SSLContext;
 import java.security.KeyManagementException;
@@ -26,25 +23,32 @@ import java.security.NoSuchAlgorithmException;
  * @since 2024/06/28
  */
 public class HttpClientUtils {
+
     /**
-     * 获取CloseableHttpClient方法
+     * 获取 CloseableHttpClient 方法
      *
      * @return CloseableHttpClient
      */
     public static CloseableHttpClient acceptsUntrustedCertsHttClient()
             throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial((arg0, arg1) -> true).build();
-        builder.setSSLContext(sslContext);
-        DefaultHostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
-        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-        Registry<ConnectionSocketFactory> socketFactoryRegistry
-                = RegistryBuilder.<ConnectionSocketFactory>create().register("http",
-                PlainConnectionSocketFactory.getSocketFactory()).register("https", sslSocketFactory).build();
-        PoolingHttpClientConnectionManager connMgr = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-        connMgr.setMaxTotal(200);
-        connMgr.setDefaultMaxPerRoute(100);
-        builder.setConnectionManager(connMgr);
-        return builder.build();
+        // 设置 SSL 上下文，以接受不受信任的证书
+        SSLContext sslContext = SSLContextBuilder.create()
+                .loadTrustMaterial((chain, authType) -> true).build();
+
+        // 创建 SSL 连接工厂
+        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext);
+
+        // 创建连接管理器
+        PoolingHttpClientConnectionManager mgr = PoolingHttpClientConnectionManagerBuilder
+                .create().setSSLSocketFactory(sslSocketFactory).build();
+        mgr.setMaxTotal(200);
+        mgr.setDefaultMaxPerRoute(100);
+
+        // 创建 HttpClient 构建器
+        return HttpClients.custom()
+                .setConnectionManager(mgr)
+                .evictIdleConnections(TimeValue.ofSeconds(30))
+                .build();
     }
 }
+

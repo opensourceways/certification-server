@@ -6,12 +6,12 @@ package com.huawei.it.euler.util;
 
 import com.huawei.it.euler.mapper.MasterDataMapper;
 import com.huawei.it.euler.model.entity.AuditLog;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 /**

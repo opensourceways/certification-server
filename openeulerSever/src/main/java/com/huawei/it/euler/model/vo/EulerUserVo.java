@@ -6,12 +6,12 @@ package com.huawei.it.euler.model.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.huawei.it.euler.model.entity.EulerUser;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
 import java.util.List;
 
 /**
