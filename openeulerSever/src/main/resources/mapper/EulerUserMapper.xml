@@ -23,7 +23,7 @@
         where uuid = #{uuid}
     </select>
 
-    <select id="findByUserId" parameterType="java.lang.List" resultMap="BaseResultMap">
+    <select id="findByUserId" parameterType="java.util.List" resultMap="BaseResultMap">
         select <include refid="allFields"></include>
         from user_t
         where id in

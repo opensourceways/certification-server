@@ -14,7 +14,11 @@ import com.huawei.it.euler.model.vo.EulerUserVo;
 import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
+import com.huawei.it.euler.util.SessionManagement;
 import com.huawei.it.euler.util.UserUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class LoginController {
     @Value("${oauth.cookie.path}")
     private String cookiePath;
 
-    @Value("${idass.clientId}")
+    @Value("${idaas.clientId}")
     private String clientId;
 
     @Value("${idaas.authCodeUrl}")
@@ -100,7 +101,7 @@ public class LoginController {
      */
     @GetMapping("/login")
     public JsonResponse<String> login() throws GeneralSecurityException {
-        String state = UUID.randomUUID().toString();
+        String state = SessionManagement.genSessionIdToHex();
         String loginUrl = authCodeUrl + "?response_type=code" + "&scope=base.profile" + "&state="
                 + state + "&client_id=" + clientId + "&redirect_uri=" + redirectUrl;
         return JsonResponse.success(loginUrl);

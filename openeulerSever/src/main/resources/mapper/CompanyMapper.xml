@@ -98,7 +98,7 @@
         where user_uuid = #{userUuid} and status = 1
     </select>
 
-    <select id="findCompanyNameByUserUuid" resultMap="BaseResultMap">
+    <select id="findCompanyNameByUserUuid" resultType="java.lang.String">
         select company_name
         from company_t
         where user_uuid = #{userUuid}

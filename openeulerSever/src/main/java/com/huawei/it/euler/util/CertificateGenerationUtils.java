@@ -10,6 +10,8 @@ import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.model.entity.FileModel;
 import com.huawei.it.euler.model.entity.GenerateCertificate;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -22,8 +24,7 @@ import wiki.xsx.core.pdf.doc.XEasyPdfPositionStyle;
 import wiki.xsx.core.pdf.handler.XEasyPdfHandler;
 import wiki.xsx.core.pdf.util.XEasyPdfImageUtil;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

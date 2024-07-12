@@ -251,7 +251,7 @@
         from attachments_t where software_id = #{softwareId} and file_type = #{fileType}
     </select>
 
-    <select id="downloadAttachments" parameterType="java.lang.String" resultMap="AttachmentMap">
+    <select id="downloadAttachments" parameterType="java.lang.String" resultMap="AttachmentsMap">
         select file_path, filename, software_id, uuid, file_type
         from attachments_t where fileid = #{fileId}
     </select>
