@@ -5,12 +5,14 @@
 package com.huawei.it.euler.model.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
 import java.util.Date;
 import java.util.List;
+
 
 /**
  * SoftwareVo

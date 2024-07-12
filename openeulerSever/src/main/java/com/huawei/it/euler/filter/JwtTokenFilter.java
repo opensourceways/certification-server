@@ -10,6 +10,12 @@ import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FilterUtils;
 import com.huawei.it.euler.util.UserUtils;
+import jakarta.annotation.Resource;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +24,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.annotation.Resource;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Objects;
 
@@ -34,7 +37,8 @@ import java.util.Objects;
  * @since 2024/06/29
  */
 @Slf4j
-public class JwtTokenFilter extends BasicAuthenticationFilter {
+@Component
+public class JwtTokenFilter extends OncePerRequestFilter {
     @Value("${url.whitelist}")
     private String urlWhitelist;
 
@@ -47,9 +51,6 @@ public class JwtTokenFilter extends BasicAuthenticationFilter {
     @Resource
     private Cache<String, Object> caffeineCache;
 
-    public JwtTokenFilter(AuthenticationManager authenticationManager) {
-        super(authenticationManager);
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
