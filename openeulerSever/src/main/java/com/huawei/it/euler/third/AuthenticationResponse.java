@@ -37,6 +37,5 @@ public class AuthenticationResponse {
     @JsonProperty("token_type")
     private TokenType tokenType;
 
-    @JsonProperty("access_token")
     private String enterprise;
 }

@@ -42,6 +42,8 @@ public class PublicKey {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("iam-sdk-version", SDK_VERSION);
         headers.set("iam-sdk-register-info", REGISTER_INFO);
+        headers.set("X-HW-ID","com.huawei.cabg.oem");
+        headers.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
         HttpEntity<Object> entity = new HttpEntity<>(null, headers);
         try {
             ResponseEntity<PublicKeyDTO> exchange =
