@@ -415,7 +415,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     private String getHedsIamToken() {
-        JwtTokenClient jwtTokenClient = new JwtTokenClient(tokenUrl, hedsAppid, iamSecret, hedsAppid, enterprise);
+        JwtTokenClient jwtTokenClient = new JwtTokenClient(tokenUrl, hedsAppid, iamSecret,enterprise ,hedsAppid);
         return jwtTokenClient.getJwtToken();
     }
 
