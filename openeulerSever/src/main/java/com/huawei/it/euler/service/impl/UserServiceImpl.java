@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.ProtocolMapper;
@@ -101,6 +102,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public EulerUser findByUuid(String uuid) {
         return userMapper.findByUuid(uuid);
+    }
+
+    @Override
+    public EulerUser findByUserNameAndTelPhone(String userName, String telephone) {
+        LambdaQueryWrapper<EulerUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EulerUser::getUsername,userName).eq(EulerUser::getTelephone,telephone);
+        return userMapper.selectOne(queryWrapper);
     }
 
     @Override

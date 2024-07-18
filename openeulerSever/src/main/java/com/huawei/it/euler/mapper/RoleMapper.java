@@ -17,6 +17,9 @@ import java.util.List;
  */
 @Repository
 public interface RoleMapper {
+
+    List<String> findByIdList(@Param("idList") List<Integer> idList);
+
     List<String> findByUserId(@Param("userId") Integer userId);
 
     List<RoleVo> findRoleInfoByUserId(@Param("userId") Integer userId);

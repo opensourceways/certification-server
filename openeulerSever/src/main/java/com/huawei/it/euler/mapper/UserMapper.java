@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.vo.EulerUserVo;
 import org.apache.ibatis.annotations.Param;
@@ -17,7 +18,7 @@ import java.util.List;
  * @since 2024/06/29
  */
 @Repository
-public interface UserMapper {
+public interface UserMapper extends BaseMapper<EulerUser> {
     EulerUser findByUuid(String uuid);
 
     List<EulerUser> findByUserId(@Param("idList") List<Integer> idList);
