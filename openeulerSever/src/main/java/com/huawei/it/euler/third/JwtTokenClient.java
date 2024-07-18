@@ -33,6 +33,8 @@ public class JwtTokenClient extends JwtTokenParent {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("X-HW-ID","com.huawei.cabg.oem");
+            headers.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
             HttpEntity<Object> entity = new HttpEntity<>(data, headers);
             ResponseEntity<AuthenticationResponse> responseEntity =
                     restTemplate.postForEntity(iamEndpoint + "/iam/auth/token", entity, AuthenticationResponse.class);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.SoftwareMapper">
 
     <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Software">
@@ -12,7 +12,7 @@
         <id column="product_version" property="productVersion"/>
         <id column="os_name" property="osName"/>
         <id column="os_version" property="osVersion"/>
-        <id column="hashrate_platform" property="jsonHashratePlatform"/>
+        <id column="hashrate_platform" property="jsonHashRatePlatform"/>
         <id column="product_type" property="productType"/>
         <id column="test_organization" property="testOrganization"/>
         <id column="status" property="status"/>
@@ -36,7 +36,7 @@
         <result column="node_name" property="status"/>
         <result column="reviewer" property="reviewerUuid"/>
         <result column="username" property="applicant"/>
-        <result column="reviewername" property="applicationTime"/>
+        <result column="reviewername" property="reviewer"/>
         <result column="authentication_status" property="authenticationStatus"/>
     </resultMap>
 
@@ -61,7 +61,7 @@
 
     <resultMap id="AttachmentsVoMap" type="com.huawei.it.euler.model.vo.AttachmentsVo">
         <result column="filename" property="fileName"/>
-        <result column="file_id" property="fileId"/>
+        <result column="fileid" property="fileId"/>
     </resultMap>
 
     <resultMap id="AuditRecordsVoMap" type="com.huawei.it.euler.model.vo.AuditRecordsVo">
@@ -131,7 +131,7 @@
         from software_t AS s
         left join user_t AS u on s.user_uuid = u.uuid
         left join user_t AS u2 on s.reviewer = u2.uuid
-        left join node_name_t AS n on s.status = u.id
+        left join node_name_t AS n on s.status = n.id
         <where>
             <if test="status != null and status.size() > 0">
                 and s.status in (select id from node_name_t where node_name in
@@ -147,7 +147,7 @@
             </if>
             <if test="productType != null and productType.size() > 0">
                 and
-                <foreach collection="productType" item="item" open="(" separator="," close=")">
+                <foreach collection="productType" item="item" open="(" separator="or" close=")">
                     instr(product_type, #{item})
                 </foreach>
             </if>
@@ -166,12 +166,11 @@
 
     <select id="getReviewSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
             resultMap="softwareMap">
-        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
-        s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
-        n.node_name, u.username as reviewername
+        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version, s.reviewer,
+        s.hashrate_platform, s.test_organization, s.application_time, n.node_name,u.username as reviewername,s.authentication_status
         from software_t AS s
         left join user_t AS u on s.reviewer = u.uuid
-        left join node_name_t AS n on s.status = u.id
+        left join node_name_t AS n on s.status = n.id
         where s.id in (select software_id from node_t where handler = #{applicant})
             <if test="status != null and status.size() > 0">
                 and s.status in (select id from node_name_t where node_name in
@@ -187,7 +186,7 @@
             </if>
             <if test="productType != null and productType.size() > 0">
                 and
-                <foreach collection="productType" item="item" open="(" separator="," close=")">
+                <foreach collection="productType" item="item" open="(" separator="or" close=")">
                     instr(product_type, #{item})
                 </foreach>
             </if>

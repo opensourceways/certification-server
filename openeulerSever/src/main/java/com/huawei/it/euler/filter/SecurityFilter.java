@@ -5,6 +5,7 @@
 package com.huawei.it.euler.filter;
 
 import com.huawei.it.euler.util.FilterUtils;
+import com.huawei.it.euler.util.RequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * SecurityFilter
@@ -45,8 +47,22 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-
+        String shortUri = RequestUtils.getShortUri(request);
+        // 校验referer
+        int checkReferer = checkReferer(request, shortUri);
+        if (!Objects.equals(HttpStatus.OK.value(), checkReferer)) {
+            FilterUtils.writeErrorResp(response,
+                    "The Referer request header is not found or the verification fails", checkReferer);
+            return;
+        }
+        //校验origin
+        int checkOrigin = checkOrigin(request, shortUri);
+        if (!Objects.equals(HttpStatus.OK.value(), checkOrigin)) {
+            FilterUtils.writeErrorResp(response,
+                    "The Origin is not found or the verification fails", checkOrigin);
+            return;
+        }
+        filterChain.doFilter(request, response);
     }
 
     private int checkReferer(HttpServletRequest httpRequest, String shortUri) {

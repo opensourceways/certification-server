@@ -27,6 +27,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,7 +36,6 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * LoginController
@@ -105,6 +105,30 @@ public class LoginController {
         String loginUrl = authCodeUrl + "?response_type=code" + "&scope=base.profile" + "&state="
                 + state + "&client_id=" + clientId + "&redirect_uri=" + redirectUrl;
         return JsonResponse.success(loginUrl);
+    }
+
+    @GetMapping("/temporary/login")
+    public JsonResponse<String> temporaryLogin(@RequestParam(name = "userName")String userName,
+                                               @RequestParam(name = "telephone")String telephone,
+                                               HttpServletRequest request,
+                                               HttpServletResponse response) throws IOException {
+        EulerUser user = userService.findByUserNameAndTelPhone(userName, telephone);
+        if (user != null) {
+            writeCookie(response, user.getUuid());
+            logUtils.insertAuditLog(request, user.getUuid(), "login", "login in", "user login in");
+            response.sendRedirect(frontCallbackUrl);
+            return JsonResponse.success("ok");
+        }
+        return JsonResponse.success("fail");
+    }
+
+    @GetMapping("/temporary/logout")
+    public void temporaryLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.info("user logout");
+        cleanCookie(request, response);
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        logUtils.insertAuditLog(request, cookieUuid, "login", "login out", "user login out");
+        response.sendRedirect(frontUrl);
     }
 
     /**
