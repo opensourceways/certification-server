@@ -22,27 +22,27 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="processName">
-      <div class="nameModel">
-        <span
-          class="name"
-          :class="{
-            'name-red': item.handlerResult === '已驳回',
-            'name-blue': item.handlerResult === '待处理',
-            'name-pass': item.handlerResult === '通过',
-          }"
-          >{{ item.nodeName }}</span
-        >
-        <div
-          class="line"
-          :class="{ 'line-blud': item.handlerResult === '通过' }"
-          v-show="item.nodeName != '证书签发'"
-        ></div>
-      </div>
-      <div class="details">
-        <div class="content">{{ item.handlerName }}</div>
-        <div class="content">{{ item.handlerTime }}</div>
+      <div class="processName">
+        <div class="nameModel">
+          <span
+            class="name"
+            :class="{
+              'name-red': item.handlerResult === '已驳回',
+              'name-blue': item.handlerResult === '待处理',
+              'name-pass': item.handlerResult === '通过',
+            }"
+            >{{ item.nodeName }}</span
+          >
+          <div
+            class="line"
+            :class="{ 'line-blue': item.handlerResult === '通过' }"
+            v-show="item.nodeName != '证书签发'"
+          ></div>
+        </div>
+        <div class="details">
+          <div class="content">{{ item.handlerName }}</div>
+          <div class="content">{{ item.handlerTime }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -101,57 +101,57 @@ export default {
         }
       }
       .number-red {
-        border: 2px solid #e42421;
-        .inline-blue {
-          background: #e42421;
+        border: 2px solid #e42121;
+        .inline-red {
+          background: #e42121;
           color: white;
         }
       }
       .number-pass {
         border: 1px solid #002fa7;
-        .inline-blue {
-          background: #002fa7;
+        .inline-pass {
+          color: #002fa7;
         }
       }
     }
-    .processName{
-        width: 126px;
-        padding-top: 30px;
-        .nameModel{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            .name{
-                font-size: 14px;
-                color: #6d7278;
-            }
-            .name-blue{
-                color: #002fa7;
-            }
-            .name-red{
-                font-weight:400 ;
-                color: #e42421;
-            }
-            .name-pass{
-                font-weight: 400;
-                color: #002fa7;
-            }
-            .line{
-                width: 64px;
-                height: 1px;
-                background: #6d7278;
-            }
-            .line-blue{
-                background: #002fa7;
-            }
+    .processName {
+      width: 126px;
+      padding-top: 30px;
+      .nameModel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .name {
+          font-size: 14px;
+          color: #6d7278;
         }
-        .details{
-            margin-top: 10px;
-            .content{
-                font-size: 12px;
-                color: #555;
-            }
+        .name-blue {
+          color: #002fa7;
         }
+        .name-red {
+          font-weight: 400;
+          color: #e42121;
+        }
+        .name-pass {
+          font-weight: 400;
+          color: #002fa7;
+        }
+        .line {
+          width: 64px;
+          height: 1px;
+          background: #6d7278;
+        }
+        .line-blue {
+          background: #002fa7;
+        }
+      }
+      .details {
+        margin-top: 10px;
+        .content {
+          font-size: 12px;
+          color: #555;
+        }
+      }
     }
   }
 }

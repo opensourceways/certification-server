@@ -96,20 +96,17 @@
       </el-table-column>
       <el-table-column prop="handlerTime" label="完成时间"> </el-table-column>
     </el-table>
-    <div
-      style="display: flex; justify-content: center; margin-top: 20px"
+    <el-pagination
+      class="pagination"
       v-if="isAuditRecords"
-    >
-      <el-agination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage"
-        :page-sizes="[10, 20, 50, 100]"
-        :page-size="pageSize"
-        layout="sizes,prev,pager,next,jumper"
-        :total="total"
-      ></el-agination>
-    </div>
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[10, 20, 30, 40]"
+      :page-size="pageSize"
+      layout="total,sizes,prev,pager,next,jumper"
+      :total="total"
+    ></el-pagination>
     <div
       class="modelTitle"
       v-if="
@@ -227,7 +224,7 @@
         <el-form-item label="算力平台">
           <span
             style="display: inline-block"
-            v-for="item in forms.platforms"
+            v-for="item in information.platforms"
             :key="item"
             >{{ item }}</span
           >
@@ -298,12 +295,12 @@
         v-if="form.handlerResult == 3"
       >
         <el-select v-model="form.transferredUser" placeholder="请选择"
-          ><el-options
+          ><el-option
             v-for="item in options"
             :key="item.uuid"
             :label="item.username"
             :value="item.uuid"
-          ></el-options
+          ></el-option
         ></el-select> </el-form-item
       ><el-form-item label>
         <div class="operation">
@@ -321,12 +318,16 @@
       label-width="150px"
       label-position="left"
     >
-      <el-form-item label="企业名称">{{
-        information.companyName
-      }}</el-form-item>
-      <el-form-item label="产品名称">{{
-        information.productName
-      }}</el-form-item>
+      <el-form-item label="企业名称">
+        <span class="cerInfor">{{
+          information.companyName
+        }}</span></el-form-item
+      >
+      <el-form-item label="产品名称"
+        ><span class="cerInfor">{{
+          information.productName
+        }}</span></el-form-item
+      >
       <el-form-item label="产品版本" prop="productVersion"
         ><el-input
           v-model="information.productVersion"
@@ -340,21 +341,21 @@
           v-model="information.osName"
           placeholder="请选择"
           @change="getOsVersion"
-          ><el-options
+          ><el-option
             v-for="item in allOs"
             :key="item.value"
             :label="item.osName"
             :value="item.osName"
-          ></el-options></el-select
+          ></el-option></el-select
       ></el-form-item>
       <el-form-item label="OS版本" prop="osVersion"
         ><el-select v-model="information.osVersion" placeholder="请选择"
-          ><el-options
+          ><el-option
             v-for="item in osVersions"
             :key="item"
             :label="item"
             :value="item"
-          ></el-options></el-select
+          ></el-option></el-select
       ></el-form-item>
       <el-form-item label="算力平台" required>
         <div
@@ -367,12 +368,12 @@
             v-model="item.platformName"
             placeholder="请选择算力平台"
             @change="(name) => changeFlatform(name, index)"
-            ><el-options
+            ><el-option
               v-for="(item, index) in computingPlatform"
               :key="index"
               :label="item.platformName"
               :value="item.platformName"
-            ></el-options
+            ></el-option
           ></el-select>
           <el-select
             class="select"
@@ -391,7 +392,7 @@
             class="select select1"
             v-model="item.serverTypes"
             placeholder="选择硬件型号"
-            collapes-tags
+            collapse-tags
             ><el-options
               v-for="item in serverType[index]"
               :key="item"
@@ -441,7 +442,7 @@
       <span class="certificates">证书预览</span>
     </div>
     <div
-      class="cancels cancels cursor"
+      class="cancels cancels2 cursor"
       v-if="
         node === '测试阶段' ||
         node === '证书确认' ||
@@ -472,7 +473,7 @@ export default {
       src1: require("@/assets/images/screeingColor.png"),
       command: "",
       transferredComments: "",
-      processStatus: "",
+      processStaus: "",
       formb: {},
       isAuditRecords: true,
       tableData: [],
@@ -481,7 +482,7 @@ export default {
       total: 1,
       rules: {
         productVersion: [
-          { required: true, message: "请输入铲平版本", trigger: "blur" },
+          { required: true, message: "请输入产品版本", trigger: "blur" },
         ],
         osName: [
           { required: true, message: "请选择Os名称", trigger: "change" },
@@ -492,7 +493,7 @@ export default {
         hashratePlatformList: {
           platformName: [{ required: true, trigger: "change" }],
           serverProvider: [{ required: true, trigger: "change" }],
-          serverType: [{ required: true, trigger: "change" }],
+          serverTypes: [{ required: true, trigger: "change" }],
         },
         handlerResult: [
           { required: true, message: "请选择审核结果", trigger: "change" },
@@ -574,7 +575,7 @@ export default {
         this.getTransferredUserList();
       }
       if (this.node === "证书签发") {
-        this.Sign();
+        this.getSign();
       }
     }, 1000);
     this.form.softwareId = this.softwareId;
@@ -605,7 +606,7 @@ export default {
       this.getauditRecordsList();
     },
     getauditRecordsList() {
-      this.tableLoading = false;
+      this.tableLoading = true;
       this.axios
         .get("/software/auditRecordsList", {
           params: {
@@ -622,7 +623,7 @@ export default {
             this.tableData[1] &&
             this.tableData[1].handlerResult == "已驳回"
           ) {
-            this.processStatus = "已驳回";
+            this.processStaus = "已驳回";
             this.transferredComments = this.tableData[1].transferredComments;
           }
           this.isAuditRecords = true;
@@ -751,10 +752,7 @@ export default {
           let test = window.open(this.certificatesImg);
           setTimeout(() => {
             test.document.title =
-              this.information.productName +
-              " " +
-              this.information.productVersion +
-              ".pdf";
+              this.forms.productName + " " + this.forms.productVersion + ".pdf";
           }, 100);
         });
     },
@@ -870,7 +868,6 @@ export default {
       this.$refs.form.validate((valid) => {
         if (valid && flag) {
           let params = {
-            softwareId: this.softwareId,
             hashratePlatformList: this.information.hashratePlatformList,
             id: this.information.id,
             osName: this.information.osName,
@@ -963,7 +960,9 @@ export default {
         .then((res) => {
           this.allOs = res.data.result;
           this.allOs.forEach((item) => {
-            this.osVersion = item.osVersion;
+            if (item.osName == this.information.osName) {
+              this.osVersions = item.osVersion;
+            }
           });
         })
         .catch((err) => {
@@ -974,7 +973,7 @@ export default {
       if (this.form.handlerResult == "3") {
         let params = {
           handlerResult: this.form.handlerResult,
-          softwareId: this.forem.softwareId,
+          softwareId: this.form.softwareId,
           transferredComments: "转审",
           transferredUser: this.form.transferredUser,
         };
@@ -1030,7 +1029,7 @@ export default {
   justify-content: center;
   margin-top: 10px;
 }
-.canlels2 {
+.cancels2 {
   margin-top: 40px;
 }
 .signImage {
@@ -1056,6 +1055,7 @@ export default {
   .model {
     display: flex;
     justify-content: flex-start;
+    align-items: flex-start;
     .certificates {
       color: #002fa7;
       margin-left: 8px;
@@ -1087,6 +1087,7 @@ export default {
     justify-content: flex-start;
     align-items: center;
     width: 410px;
+    text-align: center;
     line-height: 48px;
     margin-top: 40px;
     .cancels {

@@ -87,15 +87,15 @@
       style="display: flex; justify-content: center; margin-top: 20px"
       v-if="isAuditRecords"
     >
-      <el-agination
+      <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
         :page-sizes="[10, 20, 50, 100]"
         :page-size="pageSize"
-        layout="sizes,prev,pager,next,jumper"
+        layout="total,sizes,prev,pager,next,jumper"
         :total="total"
-      ></el-agination>
+      ></el-pagination>
     </div>
     <div
       class="modelTitle"
@@ -142,7 +142,7 @@
         >
           <div class="cancels" style="margin: 0 20px 0 0">上传</div>
           <span slot="tip" class="el-upload__tip"
-            >上传的文件格式限制：pdf、xls、xlsx、doc、docx、zip，单个文件大小不超过20M，最多上传5个文档。</span
+            >上传的文件格式限制：pdf、xls、xlsx、doc、docx、zip，单个文件大小不超过50M，最多上传5个文档。</span
           >
         </el-upload>
         <div
@@ -159,7 +159,7 @@
           <i
             class="el-icon-close"
             @click="goDelete(item.fileId)"
-            style="curror: pointer; margin-left: 15px"
+            style="cursor: pointer; margin-left: 15px"
           ></i>
         </div>
       </el-form-item>
@@ -185,7 +185,7 @@
     <div v-if="processProgress === '证书签发'">
       <span
         class="fileName cursor"
-        v-for="(iem, index) in fileTextName"
+        v-for="(item, index) in fileTextName"
         :key="index"
         @click="goDown(item.fileId)"
         >{{ item.fileName }}</span
@@ -267,21 +267,15 @@
           </div>
         </el-upload>
         <div
-          v-for="(iem, index) in signList"
+          v-for="(item, index) in signList"
           :key="index"
           class="fileList"
           v-show="signList.length > 0"
         >
-          <span
-            @click="goDown(item.fileId)"
-            style="currsor: pointer; color: #002fa7"
-            >{{ item.fileName }}</span
-          >
-          <i
-            class="el-icon-close"
-            @click="goDelete(item.fileId)"
-            style="curror: pointer; margin-left: 15px"
-          ></i>
+          <span @click="goDown(item.fileId)" class="cursor">{{
+            item.fileName
+          }}</span>
+          <i class="el-icon-close cursor" @click="goDelete(item.fileId)"></i>
         </div>
       </el-form-item>
       <div class="model cursor" style="margin-bottom: 40px" @click="getPreview">
@@ -365,7 +359,7 @@
     >
       <div
         class="submit cursor"
-        @click="sybmitCe(formc.radio, formc.input)"
+        @click="submitCe(formc.radio, formc.input)"
         v-if="$store.state.useName.username === handlerName"
       >
         确认
@@ -381,7 +375,7 @@
     >
       <div
         class="submit cursor"
-        @click="sybmitCe(1, '通过')"
+        @click="submitCe(1, '通过')"
         v-if="$store.state.useName.username === handlerName"
       >
         提交
@@ -502,7 +496,7 @@ export default {
     };
     this.testDatasign = {
       softwareId: this.id,
-      fileTypeCode: 1,
+      fileTypeCode: 2,
       fileType: "sign",
     };
   },
@@ -510,7 +504,7 @@ export default {
     headers() {
       const result = {
         "x-xsrf-token": this.getCookie("XSRF-TOKEN"),
-        Authorizetion: localStorage.getItem("user"),
+        Authorization: localStorage.getItem("user"),
       };
       return result;
     },
@@ -633,7 +627,7 @@ export default {
         });
     },
     getRecordsList() {
-      this.tableLoading = false;
+      this.tableLoading = true;
       this.axios
         .get("/software/auditRecordsList", {
           params: {
@@ -649,10 +643,10 @@ export default {
             this.reviewComments = res.data.result.records
               ? res.data.result.records[1].transferredComments
               : "";
-            this.isAuditRecords = true;
-            this.tableLoading = false;
-            this.total = res.data.result.total;
           }
+          this.isAuditRecords = true;
+          this.tableLoading = false;
+          this.total = res.data.result.total;
         })
         .catch((err) => {
           this.$message.error(err?.response?.data?.message);
@@ -903,29 +897,26 @@ export default {
 </style>
 <style lang="less">
 .processProgressDetails {
-    .el-form-item{
-        width: 400px;
-        margin-bottom: 16px;
+  .el-form-item {
+    width: 400px;
+    margin-bottom: 16px;
+  }
+  .test-report .el-form-item__content {
+    display: flex;
+    flex-direction: column;
+  }
+  .certificateInterests {
+    width: 450px !important;
+  }
+  .upload {
+    width: 100%;
+  }
+  .el-textarea {
+    width: 400px;
+    .el-textarea__inner {
+      height: 126px;
+      border-radius: 0px;
     }
-    .test-report .el-form-item__content{
-        display: flex;
-        flex-direction: column;
-    }
-    .certificateInterests{
-        width: 450px !important;
-
-    }
-    .upload{
-        width: 100%;
-
-    }
-    .el-textarea{
-        width: 400px;
-        .el-textarea__inner{
-            height: 126px;
-            border-radius: 0px;
-
-        }
-    }
+  }
 }
 </style>

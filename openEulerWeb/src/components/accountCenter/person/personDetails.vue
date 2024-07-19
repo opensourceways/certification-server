@@ -127,12 +127,12 @@
               placeholder="请选择"
               @change="provinceChange"
             >
-              <el-options
+              <el-option
                 v-for="item in provinceOptions"
                 :key="item"
                 :label="item"
                 :value="item"
-              ></el-options>
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item
@@ -147,12 +147,12 @@
                 form.province != '澳门特别行政区'
               "
             >
-              <el-options
+              <el-option
                 v-for="item in cityOptions"
                 :key="item"
                 :label="item"
                 :value="item"
-              ></el-options>
+              ></el-option>
             </el-select>
           </el-form-item>
         </div>
@@ -217,7 +217,7 @@ export default {
             this.roles = "noUser";
           }
           this.$store.commit("changeStatus", this.useInfor);
-          this.userRole = res.data.result.roleName.join(" ");
+          this.userRole = res.data.result.roleNames.join(" ");
         })
         .catch((err) => {
           this.$message.error(err?.response?.data?.message);
@@ -227,7 +227,7 @@ export default {
       this.informationNew = true;
       this.form = JSON.parse(JSON.stringify(this.useInfor || {}));
     },
-    canleFn() {
+    cancleFn() {
       this.informationNew = false;
       this.form = {};
     },
@@ -237,7 +237,7 @@ export default {
       });
     },
     provinceChange(data) {
-      this.form.data.city = "";
+      this.form.city = "";
       this.axios
         .get("/user/getCityByProvince", {
           params: {
@@ -286,7 +286,7 @@ export default {
       font-size: 14px;
       color: #555;
     }
-    .buttton {
+    .button {
       width: 144px;
       height: 48px;
       background: #000;
@@ -319,7 +319,7 @@ export default {
         }
       }
       .management {
-        color: #0002fa;
+        color: #002fa7;
         cursor: pointer;
       }
     }
@@ -328,11 +328,11 @@ export default {
 </style>
 <style lang="less">
 .personDetails {
-  .el-inpput {
+  .el-input {
     width: 400px;
     height: 36px;
     line-height: 36px;
-    .el-input_inner {
+    .el-input__inner {
       height: 36px;
       line-height: 36px;
       border-radius: 0px;
@@ -343,11 +343,11 @@ export default {
       width: 192px;
       height: 36px;
       line-height: 36px;
-    }
-    .el-input_inner {
-      height: 36px;
-      line-height: 36px;
-      border-radius: 0px;
+      .el-input__inner {
+        height: 36px;
+        line-height: 36px;
+        border-radius: 0px;
+      }
     }
   }
   .operation {
