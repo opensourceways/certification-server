@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.NodeMapper">
 
     <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Node">
@@ -16,11 +16,11 @@
 
     <insert id="insertNode" parameterType="com.huawei.it.euler.model.entity.Node">
         insert into node_t (software_id, node_name, handler, status, handler_time, transferred_comments, update_time, handler_result)
-        values (#{softwareId}, #{nodeName}, #{handler}, #{status}, #{handlerTime}, #{transferredComments}, #{updateTime}, #{handlerResult})
+        values (#{softwareId}, #{nodeName}, #{handler}, #{status}, #{handlerTime}, #{transferredComments}, #{updateTime}, #{handlerResult});
     </insert>
 
     <select id="findLatestNodeById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-        select id, software_id, node_name, handler, status, handler_time, transferred_comments, update_time
+        select id, software_id, node_name, handler, status, handler_time,handler_result, transferred_comments, update_time
         from node_t
         where software_id = #{softwareId}
         and handler_result = 0

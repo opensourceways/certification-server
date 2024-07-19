@@ -70,6 +70,7 @@ public class CsrfFilter extends OncePerRequestFilter {
                 && !tokenOld.contains(xsrfToken)) {
             FilterUtils.writeErrorResp(response, "The X-XSRF-TOKEN request header is verification fails",
                     JsonResponse.FORBIDDEN_STATUS);
+            return;
         }
         chain.doFilter(request, response);
     }

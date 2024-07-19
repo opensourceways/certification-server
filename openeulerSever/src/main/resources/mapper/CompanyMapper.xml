@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.CompanyMapper">
     <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Company">
         <result column="user_id" property="userId"/>
@@ -72,7 +72,7 @@
         select c.company_name, c.logo, c.logo_name, c.license, c.license_name, c.status, u.telephone, u.mail, u.username,
                c.company_mail, c.user_uuid
         from company_t c
-        left join user u on c.user_uuid = u.uuid
+        left join user_t u on c.user_uuid = u.uuid
         where 1=1
         <if test="companyName != null">
             and instr(company_name, #{companyName})

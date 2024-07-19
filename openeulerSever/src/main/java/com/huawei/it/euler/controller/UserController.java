@@ -20,6 +20,7 @@ import com.huawei.it.euler.util.LogUtils;
 import com.huawei.it.euler.util.StringPropertyUtils;
 import com.huawei.it.euler.util.UserUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +66,7 @@ public class UserController {
      * @return JsonResponse
      */
     @GetMapping("/users/user")
-    @PreAuthorize("hasAnyRole('china_region')")
+    @PreAuthorize("hasRole('china_region')")
     public JsonResponse<EulerUserVo> findUserByUserUuid(
             @RequestParam("uuid") @NotBlank(message = "用户uuid不能为空") String uuid) {
         EulerUser user = userService.findByUuid(uuid);
@@ -143,7 +144,7 @@ public class UserController {
     @PostMapping("/user/modifyUserInfo")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> modifyUserInfo(@RequestBody @Validated EulerUserVo userVo, HttpServletRequest request) {
+    public JsonResponse<String> modifyUserInfo(@RequestBody @Valid EulerUserVo userVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
         if (!Objects.equals(userVo.getUuid(), uuid)) {
@@ -156,7 +157,7 @@ public class UserController {
         String mail = eulerUser.getMail();
         mail = StringPropertyUtils.reduceEmailSensitivity(
                 encryptUtils.isEncrypted(mail) ? encryptUtils.aesDecrypt(mail) : mail);
-        if (StringUtils.isNoneBlank(mail) && !mail.equals(userVo.getMail())) {
+        if (StringUtils.isNotBlank(mail) && !mail.equals(userVo.getMail())) {
             return JsonResponse.failedResult("不允许修改注册账号");
         }
         // 校验省市区
@@ -285,6 +286,6 @@ public class UserController {
         String cookieUuid = UserUtils.getCookieUuid(request);
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
         logUtils.insertAuditLog(request, uuid, "compatibility agreement", "cancel", "cancel compatibility agreement");
-        return userService.signAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
+        return userService.cancelAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
     }
 }
