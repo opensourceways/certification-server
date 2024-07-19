@@ -15,7 +15,7 @@
           drag
           :action="logoAction"
           :file-list="fileList"
-          :show-filee-list="false"
+          :show-file-list="false"
           :http-request="customRequestLogo"
           :before-upload="beforeUpload"
         >
@@ -66,7 +66,7 @@
           :before-upload="beforeUpload1"
         >
           <img
-            src="require('../../../assets/images/licensure.png')"
+            :src="require('../../../assets/images/licensure.png')"
             alt=""
             style="margin-top: 30px"
           />
@@ -257,7 +257,7 @@ export default {
       formData.append("file", options.file);
       this.axios
         .post(this.logoAction, formData, {
-          headers: this.headers,
+          headers: this.headers(),
         })
         .then((response) => {
           this.handleSuccessLogo(response.data);
@@ -268,7 +268,7 @@ export default {
       formData.append("file", options.file);
       this.axios
         .post(this.textAction, formData, {
-          headers: this.headers,
+          headers: this.headers(),
         })
         .then((response) => {
           this.handleSuccess(response.data);
@@ -306,10 +306,10 @@ export default {
       }
       const isLt2M = file.size / 1024 / 1024 < 10;
       if (
-        file.type !== "imagge/jpeg" &&
-        file.type !== "imagge/jpg" &&
-        file.type !== "imagge/bmp" &&
-        file.type !== "imagge/png"
+        file.type !== "image/jpeg" &&
+        file.type !== "image/jpg" &&
+        file.type !== "image/bmp" &&
+        file.type !== "image/png"
       ) {
         this.$message.error("请上传正确的文件格式");
         return false;

@@ -20,7 +20,7 @@
               :key="index"
               :class="item.active ? 'active' : ''"
             >
-              <p @click="goClick(item)" class="cursor">{{ item.name }}</p>
+              <p @click="goClilk(item)" class="cursor">{{ item.name }}</p>
             </li>
           </ul>
         </div>
@@ -36,7 +36,7 @@
       <div
         class="open-more cursor"
         @click="open = false"
-        v-if="open && (textTitle === '产品类型' || textTitle === '测试机构')"
+        v-else-if="open && (textTitle === '产品类型' || textTitle === '测试机构')"
       >
         <span>收起</span>
         <img :src="require('@/assets/images/topArrowhead.png')" alt="" />
@@ -64,7 +64,7 @@ export default {
     };
   },
   methods: {
-    goClickAll() {
+    goClilkAll() {
       if (this.all) {
         this.arr = [];
       } else {
@@ -76,7 +76,7 @@ export default {
       }
       this.goParameters();
     },
-    goClick(item) {
+    goClilk(item) {
       if (item.active) {
         for (var i = 0; i < this.arr.length; i++) {
             if(this.arr[i]===item.name){

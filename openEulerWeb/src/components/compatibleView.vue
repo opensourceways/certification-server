@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <div class="title">兼容性数据管理</div>
+    <div class="title">兼容数据管理</div>
     <div class="box">
       <div
         class="upload-box"
@@ -15,7 +15,7 @@
       <div style="display: flex">
         <div style="width: 160px; height: 48px" class="search-status">
           <el-select
-            @change="handelSearch()"
+            @change="handleSearch()"
             v-model="status"
             multiple
             collapse-tags
@@ -32,7 +32,7 @@
         </div>
         <div style="margin-left: 13px" class="product-name">
           <el-input
-            @change="handelSearch()"
+            @change="handleSearch()"
             v-model="productName"
             placeholder="请输入产品名称搜索内容"
             prefix-icon="el-icon-search"
@@ -70,17 +70,17 @@
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column
-        prop="severPlatform"
+        prop="serverPlatform"
         label="硬件算力平台"
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column
-        prop="severSupplier"
+        prop="serverSupplier"
         label="硬件厂商"
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column
-        prop="severModel"
+        prop="serverModel"
         label="硬件型号"
         show-overflow-tooltip
       ></el-table-column>
@@ -105,7 +105,7 @@
           </div>
           <div
             class="processStatus"
-            v-if="scoped.row.status && scoped.row.status != '已通过'"
+            v-else-if="scoped.row.status && scoped.row.status != '已通过'"
           >
             待审核
           </div>
@@ -123,15 +123,15 @@
       </el-table-column>
     </el-table>
     <div class="pagination">
-      <el-agination
+      <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
         :page-sizes="[10, 20, 50, 100]"
         :page-size="pageSize"
-        layout="sizes,prev,pager,next,jumper"
+        layout="total,sizes,prev,pager,next,jumper"
         :total="total"
-      ></el-agination>
+      ></el-pagination>
     </div>
     <el-dialog
       title="上传兼容性数据"
@@ -148,13 +148,13 @@
         </div>
         <div class="upload-box1">
           <el-upload
-            :header="headers()"
+            :headers="headers()"
             :before-upload="handleBeforeUpload"
-            class="uppload-demo"
+            class="upload-demo"
             :show-file-list="false"
             drag
             :action="axios.defaults.baseURL + '/compatibleData/uploadTemplate'"
-            on-success="handleSuccess"
+            :on-success="hangdleSuccess"
           >
             <i style="color: #8d98aa" class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或</div>
@@ -167,12 +167,12 @@
       <div v-else>
         <div style="padding: 24px 24px 0 24px">
           <el-upload
-            :header="headers()"
+            :headers="headers()"
             :before-upload="handleBeforeUpload"
-            class="uppload-demo"
+            class="upload-demo"
             :show-file-list="false"
             :action="axios.defaults.baseURL + '/compatibleData/uploadTemplate'"
-            on-success="handleSuccess"
+            on-success="hangdleSuccess"
           >
             <div class="choose-file1">选择文件</div>
           </el-upload>
@@ -213,7 +213,7 @@
               ></router-link
             >
           </div>
-          <div class="butttons">
+          <div class="buttons">
             <div class="button1" v-if="checked" @click="handleUpload">确定</div>
             <div
               class="button1"
@@ -234,7 +234,7 @@
       width="544px"
     >
       <div>
-        <div style="padding: 24px 24px 0 2px">
+        <div style="padding: 24px 24px 0 24px">
           <div class="desc">
             <img src="../assets/images/success.png" alt="" /><span
               style="margin-left: 10px"
@@ -292,7 +292,7 @@ export default {
       statusOptions: ["审核中", "已通过", "已驳回"],
       isactive: "true",
       title: "测评申请",
-      textTitle: "状态",
+      textTitle: "测评状态",
       textTitle1: "测试机构",
       textTitle2: "产品类型",
       textTitle3: "申请人",
@@ -318,8 +318,8 @@ export default {
 
     setTimeout(() => {
       if (
-        this.$store.state.useName.roleName &&
-        this.$store.state.useName.roleName.includes("OSV伙伴")
+        this.$store.state.useName.roleNames &&
+        this.$store.state.useName.roleNames.includes("OSV伙伴")
       ) {
         this.getTableList();
       }
@@ -451,7 +451,7 @@ export default {
         return false;
       }
     },
-    handleSuccess(res) {
+    hangdleSuccess(res) {
       if (res.code === 200) {
         this.fileList = [res.result];
       }
@@ -503,6 +503,7 @@ export default {
         });
     },
     handleSizeChange(val) {
+      this.currentPage = 1
       this.pageSize = val;
       this.getTableList();
     },
@@ -522,7 +523,7 @@ export default {
 };
 </script>
 <style lang="less" scoped>
-.uploadDesc{
+.uploadDesc {
   width: 450px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -537,15 +538,17 @@ export default {
 }
 .buttons {
   display: flex;
-  margin-top: 32px;
+  justify-content: center;
+  margin-top: 58px;
   .button1 {
-    width: 144px;
-    height: 48px;
+    width: 80px;
+    height: 32px;
     background: #000;
     font-size: 16px;
     color: #fff;
     text-align: center;
-    line-height: 48px;
+    line-height: 32px;
+    color: #000;
     cursor: pointer;
   }
   .button2 {
@@ -589,8 +592,8 @@ export default {
   border-right: 1px solid #dfe5ef;
 }
 .choose-file {
-  width: 66x;
-  height: 2px;
+  width: 66px;
+  height: 24px;
   background: #000;
   color: #fff;
   line-height: 24px;
@@ -598,8 +601,8 @@ export default {
   margin: 0 auto;
 }
 .choose-file1 {
-  width: 66x;
-  height: 2px;
+  width: 66px;
+  height: 24px;
   background: #000;
   color: #fff;
   line-height: 24px;
@@ -616,6 +619,7 @@ export default {
   height: 240px;
 }
 ::v-deep .el-dialog__header {
+  box-shadow: 0px -1px 0px 0px #dfe5ef inset;
   font-size: 16px;
   color: #000;
   padding: 16px 0 16px 24px;
@@ -663,7 +667,7 @@ export default {
 }
 .title {
   font-size: 36px;
-  font-weight: 300;
+  font-weight: 400;
   text-align: center;
   margin-top: 48px;
 }
@@ -694,7 +698,7 @@ export default {
   flex-direction: column;
   align-items: center;
   .content {
-    width: 146px;
+    width: 1416px;
     .myCertified {
       height: 136px;
       text-align: center;
@@ -704,6 +708,7 @@ export default {
       }
     }
     .processStatus {
+      width: 72px;
       height: 24px;
       background: #52a3ff;
       border-radius: 2px;
@@ -711,6 +716,7 @@ export default {
       text-align: center;
     }
     .processStatusSuccess {
+      width: 72px;
       height: 24px;
       background: #24ab36;
       border-radius: 2px;
@@ -718,6 +724,7 @@ export default {
       text-align: center;
     }
     .processStatusFail {
+      width: 72px;
       height: 24px;
       background: #e32020;
       border-radius: 2px;

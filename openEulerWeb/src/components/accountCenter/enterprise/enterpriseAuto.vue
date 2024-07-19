@@ -37,7 +37,7 @@ export default {
         color: #ffffff;
         margin-top: 46px;
         display: flex;
-        justify-content: space-between;
+        justify-content: space-around;
         align-items: center;
         cursor: pointer;
         .Arrowhead{

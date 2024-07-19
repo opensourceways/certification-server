@@ -15,13 +15,13 @@
         测评申请
       </div>
       <div @click="isactive = 'false'" :class="{ active: isactive == 'false' }">
-        兼容性数据管理
+        兼容数据管理
       </div>
     </div>
     <div class="content" v-show="isactive == 'true'">
       <TitleInput
         :title="title"
-        placeholder="placeholder"
+        :placeholder="placeholder"
         @inputChange="inputChange"
       ></TitleInput>
       <ScreenCondition
@@ -96,7 +96,7 @@
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-          prop="aplicant"
+          prop="applicant"
           label="申请人"
           show-overflow-tooltip
         ></el-table-column>
@@ -122,8 +122,8 @@
             </div>
             <div
               class="processStatus"
-              v-if="
-                scoped.row.status && scoped.row.status.slice(-3) != '已完成'
+              v-else-if="
+                scoped.row.status && scoped.row.status!= '已完成'
               "
             >
               {{ scoped.row.status }}
@@ -142,7 +142,7 @@
         </el-table-column>
       </el-table>
       <div class="pagination">
-        <el-agination
+        <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="currentPage"
@@ -150,7 +150,7 @@
           :page-size="pageSize"
           layout="sizes,prev,pager,next,jumper"
           :total="total"
-        ></el-agination>
+        ></el-pagination>
       </div>
     </div>
     <CompatibleView v-show="isactive == false"></CompatibleView>
@@ -327,7 +327,7 @@ export default {
   flex-direction: column;
   align-items: center;
   .content {
-    width: 146px;
+    width: 1416px;
     .myCertified {
       height: 136px;
       text-align: center;

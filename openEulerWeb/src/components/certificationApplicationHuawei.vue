@@ -15,13 +15,13 @@
         测评审核
       </div>
       <div @click="isactive = 'false'" :class="{ active: isactive == 'false' }">
-        兼容性数据审核
+        兼容数据审核
       </div>
     </div>
     <div class="content" v-show="isactive == 'true'">
       <TitleInput
         :title="title"
-        placeholder="placeholder"
+        :placeholder="placeholder"
         @inputChange="inputChange"
       ></TitleInput>
       <ScreenCondition
@@ -117,9 +117,7 @@
             </div>
             <div
               class="processStatus"
-              v-if="
-                scoped.row.status && scoped.row.status.slice(-3) != '已完成'
-              "
+              v-else-if="scoped.row.status && scoped.row.status != '已完成'"
             >
               {{ scoped.row.status }}
             </div>
@@ -137,7 +135,7 @@
         </el-table-column>
       </el-table>
       <div class="pagination">
-        <el-agination
+        <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="currentPage"
@@ -145,7 +143,7 @@
           :page-size="pageSize"
           layout="sizes,prev,pager,next,jumper"
           :total="total"
-        ></el-agination>
+        ></el-pagination>
       </div>
     </div>
     <CompatibleHuawei v-show="isactive == false"></CompatibleHuawei>
@@ -179,7 +177,7 @@ export default {
       textList1: [],
       textList2: [],
       textList3: [],
-      placeholder: "请输入产品名称搜索内容",
+      placeholder: "请输入测评名称/企业名称搜索内容",
       currentPage: 1,
       pageSize: 10,
       total: 0,
@@ -198,6 +196,14 @@ export default {
     }
   },
   methods: {
+    goDetails(row) {
+      this.$router.push({
+        path: "/certificationDetailsHuawei",
+        query: {
+          softwareId: row.id,
+        },
+      });
+    },
     initializingProcessFn() {
       this.authenticationStatus = JSON.parse(
         JSON.stringify(authenticationStatus)
@@ -253,18 +259,19 @@ export default {
         productName: this.inputValue,
         productType: this.productType,
         status: this.testOrgan,
+        selectMyApplication: [],
         testOrganization: this.reviewStatus,
       };
-      this.axios.post("/software/reviewSoftwareList", params).then((response) => {
-        if (response.data.code === 200) {
-          this.tableData = response.data.result.list;
-          this.total = response.data.result.total;
-        } else if (response.data.code != 401) {
-          this.$message.error(response.data.result.message);
-        } else {
-          return;
-        }
-      });
+      this.axios
+        .post("/software/reviewSoftwareList", params)
+        .then((response) => {
+          if (response.data.code === 200) {
+            this.tableData = response.data.result.list;
+            this.total = response.data.result.total;
+          } else {
+            this.$message.error(response.data.message);
+          }
+        });
     },
     handleSizeChange(val) {
       this.pageSize = val;
@@ -273,14 +280,6 @@ export default {
     handleCurrentChange(val) {
       this.currentPage = val;
       this.getTableList();
-    },
-    goDetails(row) {
-      this.$router.push({
-        path: "/certificationDetailsHuawei",
-        query: {
-          softwareId: row.id,
-        },
-      });
     },
   },
 };
@@ -308,12 +307,12 @@ export default {
     border-bottom: 2px solid #002fa7;
   }
 }
-.certificationApplication {
+.certificationApplicationHuawei {
   display: flex;
   flex-direction: column;
   align-items: center;
   .content {
-    width: 146px;
+    width: 1416px;
     .myCertified {
       height: 136px;
       text-align: center;
@@ -356,7 +355,7 @@ export default {
 }
 </style>
 <style lang="less">
-.certificationApplication {
+.certificationApplicationHuawei {
   .el-table th.el-table__cell {
     background: #e5e8f0;
     color: #000;

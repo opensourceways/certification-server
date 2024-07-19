@@ -65,17 +65,17 @@
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column
-        prop="severPlatform"
+        prop="serverPlatform"
         label="硬件算力平台"
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column
-        prop="severSupplier"
+        prop="serverSupplier"
         label="硬件厂商"
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column
-        prop="severModel"
+        prop="serverModel"
         label="硬件型号"
         show-overflow-tooltip
       ></el-table-column>
@@ -118,7 +118,7 @@
       </el-table-column>
     </el-table>
     <div class="pagination">
-      <el-agination
+      <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
@@ -126,7 +126,7 @@
         :page-size="pageSize"
         layout="sizes,prev,pager,next,jumper"
         :total="total"
-      ></el-agination>
+      ></el-pagination>
     </div>
     <el-dialog
       title="批量审核"
@@ -185,7 +185,7 @@ import ScreenCondition from "@/components/screenCondition.vue";
 import {
   status,
   testOrganization,
-  parentIndustryType
+  parentIndustryType,
 } from "@/assets/js/publicData.js";
 export default {
   components: {
@@ -224,6 +224,7 @@ export default {
       textList1: [],
       textList2: [],
       textList3: [],
+      applicant: [{ name: "我的申请", active: false }],
       placeholder: "请输入产品名称搜索内容",
       currentPage: 1,
       pageSize: 10,
@@ -231,10 +232,11 @@ export default {
       inputValue: "",
       reviewStatus: [],
       productName: "",
+      selectMyApplication: [],
       testOrgan: [],
       tableData: [],
       statusStr: [],
-      productType: [],
+      productTypes: [],
       selections: [],
     };
   },
@@ -243,8 +245,8 @@ export default {
 
     setTimeout(() => {
       if (
-        this.$store.state.useName.roleName &&
-        this.$store.state.useName.roleName.includes("欧拉社区旗舰店")
+        this.$store.state.useName.roleNames &&
+        this.$store.state.useName.roleNames.includes("欧拉社区旗舰店")
       ) {
         this.getTableList();
       }
@@ -289,9 +291,7 @@ export default {
       this.selections = val;
     },
     initializingProcessFn() {
-      this.authenticationStatus = JSON.parse(
-        JSON.stringify(status)
-      );
+      this.authenticationStatus = JSON.parse(JSON.stringify(status));
       this.testOrganization = JSON.parse(JSON.stringify(testOrganization));
       this.industryType = JSON.parse(JSON.stringify(parentIndustryType));
       for (let i = 0; i < this.authenticationStatus.length; i++) {
@@ -339,7 +339,7 @@ export default {
     },
     handleChange3(value) {
       this.currentPage = 1;
-      this.productType = value;
+      this.productTypes = value;
       this.getTableList();
     },
     getTableList() {
@@ -347,7 +347,7 @@ export default {
         curPage: this.currentPage,
         pageSize: this.pageSize,
         productName: this.productName,
-        productType: this.productType,
+        productTypes: this.productTypes,
         statusStr: this.statusStr,
       };
       this.axios
@@ -399,7 +399,7 @@ export default {
   text-align: center;
   line-height: 48px;
   margin: 24px 0;
-  opacity: 1.4;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 .processStatus {
@@ -426,8 +426,13 @@ export default {
   color: #fff;
   text-align: center;
 }
-.edits {
-  color: #002fa7;
+::v-deep .el-textarea .el-input__count {
+  line-height: 12px;
+  background: none;
+}
+::v-deep .el-textarea__inner {
+  border-radius: 0;
+  height: 126px;
 }
 ::v-deep .el-radio__inner::after {
   width: 9px;
@@ -435,11 +440,11 @@ export default {
   background-color: #000;
 }
 ::v-deep .el-radio__input.is-checked .el-radio__inner {
-  color: #000;
-}
-::v-deep .el-radio__input.is-checked + .el-radio__label {
   border-color: #000;
   background: none;
+}
+::v-deep .el-radio__input.is-checked + .el-radio__label {
+  color: #000;
 }
 .selecteds {
   display: flex;
@@ -512,8 +517,8 @@ export default {
   border-right: 1px solid #dfe5ef;
 }
 .choose-file {
-  width: 66x;
-  height: 2px;
+  width: 66px;
+  height: 24px;
   background: #000;
   color: #fff;
   line-height: 24px;
@@ -521,8 +526,8 @@ export default {
   margin: 0 auto;
 }
 .choose-file1 {
-  width: 66x;
-  height: 2px;
+  width: 66px;
+  height: 24px;
   background: #000;
   color: #fff;
   line-height: 24px;

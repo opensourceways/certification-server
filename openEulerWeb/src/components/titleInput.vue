@@ -34,6 +34,17 @@ export default {
   },
 };
 </script>
+<style lang="less" scoped>
+.titleInput{
+  margin-bottom:40px ;
+  .title{
+    height: 136px;
+    font-size: 36px;
+    line-height: 136px;
+    text-align: center;
+  }
+}
+</style>
 <style lang="less">
 .titleInput{
     .el-input{
