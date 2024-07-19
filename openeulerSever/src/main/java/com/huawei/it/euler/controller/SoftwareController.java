@@ -78,16 +78,16 @@ public class SoftwareController {
     /**
      * 旗舰店证书确认
      *
-     * @param softwareVo softwareVo
+     * @param software softwareVo
      * @param request request
      * @return JsonResponse
      */
     @PostMapping("/software/update")
     @PreAuthorize("hasAnyRole('flag_store')")
     public JsonResponse<String> update(
-            @RequestBody @Validated SoftwareVo softwareVo, HttpServletRequest request) throws IOException {
+            @RequestBody @Validated SoftwareVo software, HttpServletRequest request) throws IOException {
         String cookieUuid = UserUtils.getCookieUuid(request);
-        return softwareService.updateSoftware(softwareVo, cookieUuid, request);
+        return softwareService.updateSoftware(software, cookieUuid, request);
     }
 
     /**
@@ -98,9 +98,9 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/register")
-    @PreAuthorize("hasAnyRole('user')")
+    @PreAuthorize("hasRole('user')")
     public JsonResponse<String> softwareRegister(
-            @RequestBody @Validated Software software, HttpServletRequest request) throws IOException, InputException {
+            @RequestBody @Valid Software software, HttpServletRequest request) throws IOException, InputException {
         String cookieUuid = UserUtils.getCookieUuid(request);
         softwareService.insertSoftware(software, cookieUuid, request);
         return JsonResponse.success();
@@ -116,7 +116,7 @@ public class SoftwareController {
     @PostMapping("/software/processReview")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
     public JsonResponse<String> processReview(
-            @RequestBody @Validated ProcessVo processVo, HttpServletRequest request) throws IOException {
+            @RequestBody @Validated ProcessVo processVo, HttpServletRequest request) throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         return softwareService.processReview(processVo, cookieUuid, request);
     }
@@ -171,7 +171,7 @@ public class SoftwareController {
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
     public JsonResponse<Map<String, Object>> getSoftwareList(
-            @RequestBody @Validated SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
+            @RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
         List<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, cookieUuid);
         softwareList.forEach(softwareListVo -> {
@@ -201,7 +201,7 @@ public class SoftwareController {
     @PostMapping("/software/reviewSoftwareList")
     @PreAuthorize("hasAnyRole('china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
     public JsonResponse<Map<String, Object>> getReviewSoftwareList(
-            @RequestBody @Validated SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
+            @RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
         List<SoftwareListVo> reviewSoftwareList = softwareService.getReviewSoftwareList(selectSoftwareVo, cookieUuid);
         reviewSoftwareList.forEach(softwareListVo -> {
@@ -254,7 +254,7 @@ public class SoftwareController {
     @PreAuthorize("hasAnyRole('user', 'sig_group', 'euler_ic', 'flag_store')")
     public JsonResponse<CertificateInfoVo> certificateInfo(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) {
-        return JsonResponse.success(softwareService.certificateInfo(softwareId, request));
+        return new JsonResponse<>(softwareService.certificateInfo(softwareId, request));
     }
 
     /**
@@ -273,7 +273,7 @@ public class SoftwareController {
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
             @RequestParam("file") MultipartFile file,
             @RequestParam("fileTypeCode") @NotNull(message = "文件类型编码不能为空") Integer fileTypeCode,
-            @RequestParam("fileType") @NotNull(message = "文件具体类型不能为空") String fileType,
+            @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType,
             HttpServletRequest request) throws TestReportExceedMaxAmountException, InputException {
         return softwareService.upload(file, softwareId, fileTypeCode, fileType, request);
     }
@@ -290,7 +290,7 @@ public class SoftwareController {
     @PreAuthorize("hasAnyRole('user', 'sig_group', 'euler_ic', 'flag_store')")
     public JsonResponse<List<AttachmentsVo>> getAttachmentsNames(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
-            @RequestParam("fileType") @NotNull(message = "文件具体类型不能为空") String fileType,
+            @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType,
             HttpServletRequest request) {
         return JsonResponse.success(softwareService.getAttachmentsNames(softwareId, fileType, request));
     }
@@ -348,7 +348,7 @@ public class SoftwareController {
     @PostMapping("/software/previewCertificateConfirmInfo")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin', 'OSV_user')")
     public void previewCertificateConfirmInfo(@Valid @RequestBody CertificateConfirmVo certificateConfirmVo,
-                                       HttpServletResponse response) throws InputException, IOException {
+                                       HttpServletResponse response) throws Exception {
         softwareService.previewCertificateConfirmInfo(certificateConfirmVo, response);
     }
 

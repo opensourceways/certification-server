@@ -8,10 +8,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootApplication
 @EnableTransactionManagement
 @EnableWebMvc
-public class OpeneulerApplication {
+public class OpenEulerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OpeneulerApplication.class, args);
+        SpringApplication.run(OpenEulerApplication.class, args);
     }
 
 }

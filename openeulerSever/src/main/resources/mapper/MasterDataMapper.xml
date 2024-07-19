@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.MasterDataMapper">
 
     <select id="selectAllOs" resultType="com.huawei.it.euler.model.entity.Os">
@@ -8,13 +8,13 @@
     </select>
 
     <select id="selectAllProduct" resultType="com.huawei.it.euler.model.entity.Product">
-        select product_type productType, product_children_tpe productChildrenType
+        select product_type productType, product_children_type productChildrenType
         from product_T
     </select>
 
     <select id="selectAllComputingPlatform" resultType="com.huawei.it.euler.model.entity.ComputingPlatform">
         select platform_name platformName, server_provider serverProvider, server_type serverType
-        from coputing_platform_T
+        from computing_platform_t
     </select>
 
     <select id="selectAllInnovationCenter" resultType="java.lang.String">

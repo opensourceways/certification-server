@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.CompatibleDataMapper">
     <resultMap id="dataInfoMap" type="com.huawei.it.euler.model.entity.CompatibleDataInfo">
         <result column="data_id" property="dataId"/>
@@ -64,9 +64,9 @@
     </select>
 
     <insert id="insertDataApproval" parameterType="java.util.List">
-        insert into compatible_data_approval_t (data_id, product_time, handler_result, status) values
+        insert into compatible_data_approval_t (data_id, product_name, handler_result, status) values
         <foreach collection="list" item="item" index = "index" separator=",">
-            (#{item.dataId, jdbcType=BIGINT}, #{item.productTime, jdbcType=VARCHAR}, 0, #{item.status, jdbcType=VARCHAR})
+            (#{item.dataId, jdbcType=BIGINT}, #{item.productName, jdbcType=VARCHAR}, 0, #{item.status, jdbcType=VARCHAR})
         </foreach>
     </insert>
 

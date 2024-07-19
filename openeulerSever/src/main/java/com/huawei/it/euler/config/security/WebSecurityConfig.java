@@ -31,7 +31,7 @@ public class WebSecurityConfig {
     @Value("${url.whitelist}")
     private String urlWhitelist;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
     @Autowired
