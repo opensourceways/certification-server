@@ -48,7 +48,7 @@
       <el-dialog
         title="提示"
         :visible.sync="centerDialogVisible"
-        widht="550px"
+        width="550px"
         center
         top="40vh"
       >
@@ -90,7 +90,7 @@ export default {
   },
   methods: {
     goHere() {
-      window.open("https://www.openeuler.org/zh/community/contributton");
+      window.open("https://www.openeuler.org/zh/community/contribution");
     },
     goCertificationDetails() {
       window.open("https://gitee.com/openeuler/technical-certification");
@@ -147,7 +147,7 @@ export default {
       top: 78px;
       left: 0;
       .cnNameTitle {
-        font-size: 16px;
+        font-size: 54px;
         float: left;
       }
       .cnNameContent {

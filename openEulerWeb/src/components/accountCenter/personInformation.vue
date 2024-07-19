@@ -64,7 +64,7 @@ export default {
         .get("/user/getUserInfo")
         .then((res) => {
           this.useInfor = res.data.result;
-          if(res.data.result.roles.indexOf('user'!='-1')){
+          if(res.data.result.roles.indexOf('user')!='-1'){
             this.roles='user'
           }
         })
@@ -86,8 +86,11 @@ export default {
     width: 336px;
     background: #fff;
     .avatar{
-      width: 336px;
-      background: #fff;
+      height: 238px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       .account{
         color: #555;
         font-size: 14px;
