@@ -89,7 +89,7 @@
     </sql>
 
     <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-        select <include refid="baseFields"></include>
+        select <include refid="baseFields"/>
         from software_t where id = #{id}
     </select>
 
@@ -109,7 +109,7 @@
 
     <insert id="insertSoftware" parameterType="com.huawei.it.euler.model.entity.Software"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
-        insert into software_t(<include refid="insertFields"></include>) values (#{companyId}, #{companyName}, #{productName},
+        insert into software_t(<include refid="insertFields"/>) values (#{companyId}, #{companyName}, #{productName},
         #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
         #{productType}, #{testOrganization}, #{status}, #{updateTime}, #{applicationTime}, #{userTelephone}, #{reviewer}, #{userUuid})
     </insert>
@@ -255,6 +255,9 @@
         from attachments_t where fileid = #{fileId}
     </select>
 
+    <delete id="deleteAttachments" parameterType="java.lang.String">
+        delete from attachments_t where fileid = #{fileId}
+    </delete>
     <update id="recommit" parameterType="com.huawei.it.euler.model.entity.Software">
         update software_t
         set product_name = #{productName},
@@ -263,7 +266,7 @@
             os_version = #{osVersion},
             product_function_desc = #{productFunctionDesc},
             usage_scenes_desc = #{usageScenesDesc},
-            hashrate_platform = #{jsonHashratePlatform},
+            hashrate_platform = #{jsonHashRatePlatform},
             update_time = #{updateTime},
             product_type = #{productType},
             test_organization = #{testOrganization}
