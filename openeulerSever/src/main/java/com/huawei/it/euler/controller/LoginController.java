@@ -5,6 +5,7 @@
 package com.huawei.it.euler.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.common.JsonResponse;
@@ -104,7 +105,7 @@ public class LoginController {
         String state = SessionManagement.genSessionIdToHex();
         String loginUrl = authCodeUrl + "?response_type=code" + "&scope=base.profile" + "&state="
                 + state + "&client_id=" + clientId + "&redirect_uri=" + redirectUrl;
-        return JsonResponse.success(loginUrl);
+        return new JsonResponse<>(loginUrl);
     }
 
     @GetMapping("/temporary/login")
@@ -116,7 +117,6 @@ public class LoginController {
         if (user != null) {
             writeCookie(response, user.getUuid());
             logUtils.insertAuditLog(request, user.getUuid(), "login", "login in", "user login in");
-            response.sendRedirect(frontCallbackUrl);
             return JsonResponse.success("ok");
         }
         return JsonResponse.success("fail");
@@ -154,7 +154,7 @@ public class LoginController {
      * @param response response
      */
     @GetMapping("/logoutCallback")
-    public void logout(HttpServletResponse response) throws IOException {
+    public void logoutCallback(HttpServletResponse response) throws IOException {
         response.sendRedirect(frontUrl);
     }
 
@@ -235,7 +235,7 @@ public class LoginController {
         HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(map);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(accessTokenUrl, httpEntity, String.class);
         String body = responseEntity.getBody();
-        return JSONObject.parseObject(body);
+        return JSON.parseObject(body);
     }
 
     private void writeCookie(HttpServletResponse response, String uuid) {

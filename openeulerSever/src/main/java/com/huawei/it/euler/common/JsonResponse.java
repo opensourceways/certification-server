@@ -66,6 +66,18 @@ public class JsonResponse<T> {
 
     private T result;
 
+
+    public JsonResponse(Integer code,String message,Boolean status,T result) {
+        this.code = code;
+        this.message = message;
+        this.result = result;
+        this.status = status;
+    }
+
+    public JsonResponse(T result) {
+        this(SUCCESS_STATUS, SUCCESS_MESSAGE, true, result);
+    }
+
     public JsonResponse(Integer code, String message) {
         this.code = code;
         this.message = message;

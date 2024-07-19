@@ -55,7 +55,7 @@ public class CompatibleDataController {
      */
     @GetMapping("/download")
     @PreAuthorize("hasAnyRole('OSV_user')")
-    public void downloadLogo(HttpServletResponse response) throws IOException {
+    public void downloadDataTemplate(HttpServletResponse response) throws IOException {
         compatibleDataService.downloadDataTemplate(response);
     }
 
@@ -68,7 +68,7 @@ public class CompatibleDataController {
      */
     @PostMapping("/uploadTemplate")
     @PreAuthorize("hasAnyRole('OSV_user')")
-    public JsonResponse<ExcelInfoVo> uploadTemplate(@RequestParam("file") @NotBlank(message = "模板文件不能为空")
+    public JsonResponse<ExcelInfoVo> uploadTemplate(@RequestParam("file") @NotNull(message = "模板文件不能为空")
         MultipartFile file, HttpServletRequest request) throws InputException {
         return compatibleDataService.uploadTemplate(file, request);
     }

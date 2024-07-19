@@ -296,7 +296,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.huawei.it.euler.OpeneulerApplication</mainClass>
+                    <mainClass>com.huawei.it.euler.OpenEulerApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
