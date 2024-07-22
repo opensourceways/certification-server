@@ -99,7 +99,7 @@
                   @change="(val) => manufacturerChange(val, index)"
               >
                 <el-option
-                    v-for="item in manufactureOptions"
+                    v-for="item in manufacturerOptions"
                     :key="item.serverProvider"
                     :label="item.serverProvider"
                     :value="item.serverProvider"
@@ -244,7 +244,7 @@ export default {
       productOptions: [],
       innovationOptions: [],
       platformOptions: [],
-      manufactureOptions: [],
+      manufacturerOptions: [],
       modeloptions: [],
       uuid: "",
     };
@@ -265,12 +265,18 @@ export default {
     handleChangeSign(val) {
       if (val) {
         this.axios
-            .put("/user/signTechnicalAgreement")
-            .then(() => {
-            })
-            .catch((err) => {
-              this.$message.error(err?.response?.data?.message);
-            });
+          .put("/user/signTechnicalAgreement")
+          .then(() => {})
+          .catch((err) => {
+            this.$message.error(err?.response?.data?.message);
+          });
+      } else {
+        this.axios
+          .put("/user/cancelTechnicalAgreement")
+          .then(() => {})
+          .catch((err) => {
+            this.$message.error(err?.response?.data?.message);
+          });
       }
     },
     goBack() {
@@ -291,7 +297,7 @@ export default {
     },
     getUsename() {
       this.axios
-          .get("/user/getUserInfo")
+          .get("/user/getUserInfo", {})
           .then((res) => {
             let userName = res.data.result;
             this.$store.commit("changeStatus", userName);
@@ -402,7 +408,7 @@ export default {
         }
       });
     },
-    submitFn(forName) {
+    submitFn(formName) {
       let flag = true;
       this.ruleForm.hashratePlatformList.forEach((item) => {
         if (item.serverTypes.length === 0) {
@@ -420,7 +426,7 @@ export default {
           }
         });
       });
-      this.$refs[forName].validate((valid) => {
+      this.$refs[formName].validate((valid) => {
         if (valid && flag) {
           let params = this.ruleForm;
           params.productType = params.productType.join("/");
@@ -484,10 +490,16 @@ export default {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 410px;
-      text-align: center;
-      line-height: 48px;
-      margin-top: 40px;
+      padding: 48px 0 96px 0;
+      .operation {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 410px;
+        text-align: center;
+        line-height: 48px;
+        margin-top: 40px;
+      }
 
       .cancels {
         width: 144px;
@@ -526,7 +538,7 @@ export default {
   }
 
   .el-textarea {
-    width: 126px;
+    width: 400px;
 
     .el-textarea__inner {
       height: 126px;

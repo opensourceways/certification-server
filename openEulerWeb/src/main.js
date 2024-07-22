@@ -8,7 +8,7 @@ import '@/assets/css/common.less';
 import axios from "axios";
 
 Vue.prototype.axios = axios;
-axios.defaults.baseURL = '/qw/oem/com.huawei.cabg.oem:OpenEuler/certification';
+axios.defaults.baseURL = '/gw/oem/com.huawei.cabg.oem:OpenEuler/certification';
 
 axios.interceptors.request.use(async (config) => {
     //为请求头添加Authorization字段为服务端返回的token
@@ -59,7 +59,7 @@ axios.interceptors.response.use(
     }
 )
 
-axios.defaults.headers.common['X-Requested-with'] = 'XMLHttpRequest';
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.xsrfCookieName = 'MyCustomXsrfCookieName';
 axios.defaults.xsrfHeaderName = 'MyCustomXsrfHeaderName';
 

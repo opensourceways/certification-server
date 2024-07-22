@@ -33,7 +33,7 @@ import CertificationApplicationHuawei from "@/components/certificationApplicatio
 
 export default {
   name: "HomeView",
-  comments: {
+  components: {
     PictureMain,
     UncertifiedApplication,
     CertificationApplication,

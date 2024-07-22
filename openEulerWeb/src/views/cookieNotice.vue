@@ -8,7 +8,7 @@
       <div class="notice-content">
         <div class="tip-content">
           <p class="tip-title">openEuler兼容性平台重视您的隐私</p>
-          <span class="tip-text">我们在本网站上使用Cookie,包括第三方Cookie，以便网站正常运行和提升浏览体验。单击”接受全部“即表示您同意这些目的；单击”拒绝全部“即表示您拒绝非必要的Cookie;单击”管理Cookie“以选择接受或拒绝某些Cookie。需要了解更多信息或随时更改您的 Cookie 首选项，请参阅我们的</span>
+          <span class="tip-text">我们在本网站上使用Cookie，包括第三方Cookie，以便网站正常运行和提升浏览体验。单击“接受全部”即表示您同意这些目的；单击“拒绝全部”即表示您拒绝非必要的Cookie；单击“管理Cookie”以选择接受或拒绝某些Cookie。需要了解更多信息或随时更改您的 Cookie 首选项，请参阅我们的</span>
           <span class="link" @click="goCookie">《openEuler兼容性平台Cookie政策》</span>。
         </div>
         <div class="right-btn">
@@ -40,7 +40,7 @@
             <span class="item-text">始终启用</span>
           </div>
           <P class="item-desc">
-            这些Cookie是网站正常工作所必需的，不能我们的系统中关闭。他们通常仅是为了响应您的服务请求而设置的，例如登录或填写表单。您可以将浏览器设置为阻止Cookie来拒绝这些Cookie，但网站的某些部分将无法正常工作。这些Cookie不存储任何个人身份信息。</P>
+            这些Cookie是网站正常工作所必需的，不能在我们的系统中关闭。它们通常仅是为了响应您的服务请求而设置的，例如登录或填写表单。您可以将浏览器设置为阻止Cookie来拒绝这些Cookie，但网站的某些部分将无法正常工作。这些Cookie不存储任何个人身份信息。</P>
         </div>
         <div>
           <div class="item-box item-two">
@@ -49,7 +49,7 @@
               <div class="switch-handler"></div>
             </div>
           </div>
-          <p class="item-desc">我们将根据您的同意使用和处理这些非必要的Cookie。这些Cookie允许我们获得摘要统计数据，例如，统计访问量和访问来源，便于我们改进我们的网站。</p>
+          <p class="item-desc">我们将根据您的同意使用和处理这些非必要Cookie。这些Cookie允许我们获得摘要统计数据，例如，统计访问量和访问者来源，便于我们改进我们的网站。</p>
         </div>
         <div class="dialog-btn">
           <div class="item-btn" @click="setupCookie(isChecked)">保存设置</div>
@@ -255,6 +255,10 @@ export default {
     margin: 0 auto;
 
     .tip-content {
+      max-width: 818px;
+      font-size: 14px;
+      color: #555;
+      line-height: 22px;
       .link {
         color: #022ea7;
 
@@ -342,7 +346,7 @@ export default {
         margin-left: 24px;
       }
 
-      .switch-warp {
+      .switch-wrap {
         background-color: #e0e2e6;
         border-radius: 16px;
         width: 40px;
@@ -612,7 +616,7 @@ export default {
       .dialog-btn {
         margin-top: 12px;
 
-        item-btn {
+        .item-btn {
           border: none;
           border-radius: 0;
           padding: 8px 0;
@@ -654,7 +658,7 @@ export default {
     padding: 12px 0;
 
     .notice-content {
-      width: calc(100% - 114px);
+      width: calc(100% - 144px);
     }
   }
 }
