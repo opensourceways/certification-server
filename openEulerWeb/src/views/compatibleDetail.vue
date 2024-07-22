@@ -93,7 +93,7 @@
 <script>
 export default {
   name: "compatibleDetail",
-  comments: {},
+  components: {},
   data() {
     return {
       topForm: {},

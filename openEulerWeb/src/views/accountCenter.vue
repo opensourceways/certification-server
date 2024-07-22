@@ -7,22 +7,19 @@
         <span style="font-weight: bold">账号中心</span>
       </div>
       <div class="main">
-        <PersonalInformation></PersonalInformation>
+        <PersonInformation></PersonInformation>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import PersonalInformation from '@/components/accountCenter/personInformation.vue'
+import PersonInformation from '@/components/accountCenter/personInformation.vue'
 
 
 export default {
   name: "accountCenter",
-  components: {PersonalInformation},
-  comments: {
-    PersonalInformation,
-  },
+  components: {PersonInformation},
   data() {
     return {}
   },

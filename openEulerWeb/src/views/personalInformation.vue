@@ -35,7 +35,7 @@
       <p class="text">收集目的：为了生成“产品”openEuler兼容性报告和证书</p>
       <p class="text">个人信息类型：您主动提交的数据</p>
       <p class="text">收集的方式：用户输入</p>
-      <p class="text">个人信息字段：企业徽标、“产品”名称、“产品”版本、操作系统类型、操作系统版本号、测试所用芯片的型号、测试所用的服务器型号、<strong>项目负责人姓名和签名</strong></p>
+      <p class="text">个人信息字段：企业徽标、“产品”名称、“产品”版本、操作系统类型、操作系统版本号、测试所用芯片的型号、测试所用的服务器型号、<strong>项目负责人姓名和签名</strong>；</p>
     </div>
   </div>
 </template>
@@ -80,7 +80,7 @@ export default {}
 .main {
   width: 880px;
   margin: 40px auto;
-  font-family: FZLTHJW FZLTHJW-Regular;
+  font-family: FZLTHJW, FZLTHJW-Regular;
   padding-bottom: 96px;
   text-align: justify;
 

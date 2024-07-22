@@ -2,7 +2,7 @@
   <div class="adminApproval">
     <PictureMain
         :enName="enName"
-        :cnMameTitle="cnNameTitle"
+        :cnNameTitle="cnNameTitle"
         :processName="processName"
     ></PictureMain>
     <div class="tabs">
@@ -24,8 +24,7 @@ import ApprovalConfiguration from "@/components/approvalConfiguration.vue"
 
 export default {
   name: "adminApproval",
-  components: {ApprovalConfiguration},
-  comments: {
+  components: {
     PictureMain,
     ApprovalConfiguration,
   },

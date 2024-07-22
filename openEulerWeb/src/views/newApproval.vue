@@ -84,7 +84,7 @@
 <script>
 export default {
   name: "newApproval",
-  comments: {},
+  components: {},
   data() {
     return {
       form: {},
@@ -119,11 +119,14 @@ export default {
 
   .content {
     width: 1416px;
-    line-height: 96px;
-    font-size: 12px;
-
-    i {
-      margin: 0 4px;
+    .title {
+      height: 96px;
+      line-height: 96px;
+      font-size: 12px;
+  
+      i {
+        margin: 0 4px;
+      }
     }
 
     .contentTitle {

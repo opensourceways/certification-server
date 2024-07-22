@@ -71,7 +71,7 @@ export default {};
 .main {
   width: 880px;
   margin: 40px auto;
-  font-family: FZLTHJW FZLTHJW-Regular;
+  font-family: FZLTHJW, FZLTHJW-Regular;
   padding-bottom: 96px;
   text-align: justify;
 

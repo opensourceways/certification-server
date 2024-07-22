@@ -12,7 +12,7 @@
       <p class="text-first">openEuler网站指由openEuler社区运营的网站，域名为<span class="blue">https://openeuler.org</span>。
         以下规则适用于所有访问openEuler网站的用户或浏览者，openEuler社区保留根据国家法律法规及市场行情等变化修改这些规则的权利。访问openEuler网站的权利由openEuler社区根据下列条款授予。如果您不同意下列任何条款、请停止使用本网址。如果您使用<span
             class="blue">https://openeuler.org</span>服务，您的使用行为将被视为对本声明全部内容的认可。对于违反这些规则的行为，openEuler社区有权采取法律和公平的补救措施。</p>
-      <p class="text">不承诺责任声明</p>
+      <p class="title">不承诺责任声明</p>
       <p class="text-first">openEuler网站所载的材料和信息，包括但不限于文本、图片、数据、观点、建议、网页或链接，openEuler社区力图在网站上提供准确的材料和信息，
         但openEuler社区并不保证这些材料和内容的准确、完整、充分和可靠性，并且明确声明不对这些材料和内容的错误或遗漏承担责任，
         也不对这些材料和内容作出任何明示或默示的、包括但不限于有关所有权担保、没有侵犯第三方权利、质量和没有计算机病毒的保证。</p>
@@ -80,7 +80,7 @@ export default {
 .main {
   width: 880px;
   margin: 40px auto;
-  font-family: FZLTHJW FZLTHJW-Regular;
+  font-family: FZLTHJW, FZLTHJW-Regular;
   padding-bottom: 96px;
   text-align: justify;
 

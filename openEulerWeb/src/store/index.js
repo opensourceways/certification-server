@@ -13,7 +13,7 @@ export default new Vuex.Store({
     getters: {},
     mutations: {
         changeStatus: (state, newUse) => {
-            state.userName = JSON.parse(JSON.stringify(newUse));
+            state.useName = JSON.parse(JSON.stringify(newUse));
         }
     },
     actions: {},
