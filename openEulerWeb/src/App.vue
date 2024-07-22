@@ -30,7 +30,7 @@
             <span class="text">Cookie协议</span>
           </router-link>
         </div>
-        <div class="copyright">版权所有 @ 2022 openEuler 保留一切权利</div>
+        <div class="copyright">版权所有 © 2022 openEuler 保留一切权利</div>
       </div>
     </div>
     <cookieNotice></cookieNotice>
@@ -57,7 +57,7 @@ export default {
   },
   mounted() {
     this.loading = false
-    this.axios.get('/user/getUsrInfo').finally(() => {
+    this.axios.get('/user/getUserInfo').finally(() => {
       this.loading = true
     })
   },
@@ -92,9 +92,9 @@ export default {
       this.axios
           .get('/user/getUserInfo', {})
           .then((res) => {
-            if (res.data.result.roles.indexOf('china_region') != -1) {
+            if (res.data.result.roles.indexOf('china_region') != '-1') {
               this.$router.push('/enterpriseAudit')
-            } else if (res.data.result.roles.indexOf('admin') != -1) {
+            } else if (res.data.result.roles.indexOf('admin') != '-1') {
               this.$router.push('/adminApproval')
             } else {
               this.$router.push('/')
@@ -133,7 +133,7 @@ export default {
         position: relative;
         font-weight: 400;
 
-        .usname {
+        .usename {
           line-height: 80px;
           color: #002fa7;
           cursor: pointer;
