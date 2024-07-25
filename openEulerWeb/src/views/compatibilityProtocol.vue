@@ -7,11 +7,11 @@
     <div class="main">
       <p class="title">一、重要提示</p>
       <p class="text">
-        1.openEuler兼容性协议（以下简称”本协议“）是开放原子开源基金会（以下简称”测评方“）与申请openEuler兼容性测评的企业（以下简称”申请方“）之间就openEuler兼容性测试测评事宜缔结的具有法律效力的契约。”申请方“点击”我已阅读并同意遵守《openEuler兼容性协议》“，即视为”申请方“同意接受”本协议“条款的约束。如不同意”本协议“，请”申请方“不要点击”我已阅读并同意遵守《openEuler兼容性协议》“，也不得以任何方式使用”测评方“的兼容性标识。
+        1.openEuler兼容性协议（以下简称“本协议”）是开放原子开源基金会（以下简称“测评方”）与申请openEuler兼容性测评的企业（以下简称“申请方”）之间就openEuler兼容性测试测评事宜缔结的具有法律效力的契约。“申请方”点击“我已阅读并同意遵守《openEuler兼容性协议》”，即视为“申请方”同意接受“本协议”条款的约束。如不同意“本协议”，请“申请方”不要点击“我已阅读并同意遵守《openEuler兼容性协议》”，也不得以任何方式使用“测评方”的兼容性标识。
       </p>
       <p class="text">
         2.
-        "申请方"在申请openEuler兼容性测评前，请务必审慎阅读、充分理解”本协议“各条款，确认接受”本协议“的全部内容，并按照”openEuler兼容性测试指导“操作。
+        “申请方”在申请openEuler兼容性测评前，请务必审慎阅读、充分理解“本协议”各条款，确认接受“本协议”的全部内容，并按照“openEuler兼容性测试指导”操作。
       </p>
       <p class="text">
         3.
@@ -46,7 +46,7 @@
         7.
         “openEuler兼容产品”：是指符合“openEuler产品兼容性规范”且通过“openEuler兼容性测评”的“产品”。
       </p>
-      <p class="">8. “用户”：是指使用“产品”的任何个人。</p>
+      <p class="text">8. “用户”：是指使用“产品”的任何个人。</p>
       <p class="title">三、兼容性测试及测评</p>
       <p class="text">
         1.
@@ -251,7 +251,7 @@ export default {
 .main {
   width: 880px;
   margin: 40px auto;
-  font-family: FZLTHJW FZLTHJW-Regular;
+  font-family: FZLTHJW, FZLTHJW-Regular;
   padding-bottom: 96px;
   text-align: justify;
 

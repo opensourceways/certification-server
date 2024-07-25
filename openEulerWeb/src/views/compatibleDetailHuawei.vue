@@ -187,7 +187,7 @@
 <script>
 export default {
   name: "compatibleDetail",
-  comments: {},
+  components: {},
   data() {
     return {
       topForm: {},
@@ -199,7 +199,7 @@ export default {
       },
       rules: {
         resource: [
-          {required: true, message: "请选着审核结果", trigger: "change"},
+          {required: true, message: "请选择审核结果", trigger: "change"},
         ],
         desc: [{required: true, message: "请填写审核意见"}],
       },

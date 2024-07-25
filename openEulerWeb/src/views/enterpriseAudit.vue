@@ -121,7 +121,7 @@ import ScreenCondition from "@/components/screenCondition.vue"
 
 export default {
   name: "enterpriseAudit",
-  comments: {
+  components: {
     PictureMain,
     TitleInput,
     ScreenCondition,
@@ -168,11 +168,11 @@ export default {
           });
     },
     handleChange(value) {
-      this.inputValue = value;
+      this.reviewStatus = value;
       this.getInforMation();
     },
     inputChange(value) {
-      this.reviewStatus = value;
+      this.inputValue = value;
       this.getInforMation();
     },
     getInforMation() {

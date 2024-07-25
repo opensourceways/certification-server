@@ -8,6 +8,7 @@
         <i class="el-icon-arrow-right"></i>
         <span style="font-weight: bold">{{ contentTitle }}</span>
       </div>
+      <div class="contentTitle">{{ contentTitle }}</div>
       <div class="main">
         <el-form
           ref="form"
@@ -23,14 +24,14 @@
               <img :src="code" alt style="width: 228px; height: 158px" />
             </el-form-item>
             <el-form-item label="企业LOGO">
-              <img :src="code" alt style="width: 228px; height: 104px" />
+              <img :src="logo" alt style="width: 228px; height: 104px" />
             </el-form-item>
           </div>
           <div class="model">
             <el-form-item label="企业名称">
               <span>{{ form.companyName }}</span>
             </el-form-item>
-            <el-form-item label="统一社区信用代码/组织机构代码" class="unify">
+            <el-form-item label="统一社会信用代码/组织机构代码" class="unify">
               <span>{{ form.creditCode }}</span>
             </el-form-item>
           </div>
@@ -130,7 +131,7 @@
 <script>
 export default {
   name: "enterpriseAuditDetails",
-  comments: {},
+  components: {},
   data() {
     return {
       form: {
@@ -188,7 +189,7 @@ export default {
         .get("/user/getUserInfo", {})
         .then((res) => {
           if (res.data.code === 200) {
-            this.$store.commit("changeStatus", this.data.result);
+            this.$store.commit("changeStatus", res.data.result);
           }
         })
         .catch((err) => {
@@ -395,6 +396,11 @@ export default {
     margin-top: 40px;
 
     .cancels {
+      width: 144px;
+      height: 46px;
+      border: 1px solid #000;
+    }
+    .submit {
       width: 144px;
       height: 48px;
       background: #000000;

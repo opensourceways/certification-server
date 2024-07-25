@@ -30,7 +30,7 @@ import ProcessProgressDetailsHuawei from '@/components/processProgressDetailsHua
 
 export default {
   name: "certificationDetailsHuawei",
-  comments: {
+  components: {
     ProcessProgress,
     ProcessProgressDetailsHuawei,
   },
@@ -82,7 +82,7 @@ export default {
           .get('/user/getUserInfo', {})
           .then((res) => {
             if (res.data.code === 200) {
-              this.$store.commit('changeStatus', this.data.result)
+              this.$store.commit('changeStatus', res.data.result)
             }
           })
           .catch((err) => {
