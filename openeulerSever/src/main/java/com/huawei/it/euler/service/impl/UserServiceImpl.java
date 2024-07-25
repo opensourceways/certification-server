@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
         protocol.setProtocolType(protocolType)
                 .setProtocolName(ProtocolEnum.getProtocolNameByType(protocolType))
                 .setStatus(1)
-                .setCreateBy(userUuid)
+                .setCreatedBy(userUuid)
                 .setCreatedTime(date)
                 .setUpdatedBy(userUuid)
                 .setUpdatedTime(date);

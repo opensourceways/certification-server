@@ -179,6 +179,8 @@ public class CompanyServiceImpl implements CompanyService {
         } else {
             companyMapper.insertCompany(company);
         }
+        log.info("successfully insert a new company, company name: {}, insert time: {}",
+                company.getCompanyName(), company.getUpdateTime());
         return JsonResponse.success();
     }
 
@@ -192,6 +194,8 @@ public class CompanyServiceImpl implements CompanyService {
         HttpEntity httpEntity = new HttpEntity(httpHeaders);
         ResponseEntity<String> responseEntity =
                 restTemplate.exchange(verifyCompanyInfoUrl, HttpMethod.GET, httpEntity, String.class, map);
+        log.info("License Identity Status Code: {}",
+                CleanXSSUtils.replaceCRLF(String.valueOf(responseEntity.getStatusCodeValue())));
         if (responseEntity.getStatusCodeValue() != 200) {
             return false;
         }
@@ -199,6 +203,7 @@ public class CompanyServiceImpl implements CompanyService {
         JSONObject jsonObject = JSONObject.parseObject(body);
         JSONArray listResult = jsonObject.getJSONArray("listResult");
         if (listResult.isEmpty()) {
+            log.info("company name not match: {}", CleanXSSUtils.replaceCRLF(companyName));
             return false;
         }
         for (int i = 0; i < listResult.size(); i++) {
@@ -296,6 +301,7 @@ public class CompanyServiceImpl implements CompanyService {
         dbCompany.setStatus(newStatus);
         dbCompany.setApprovalComment(companyAuditVo.getComment());
         companyMapper.updateCompany(dbCompany);
+        log.info("A company application completed approval, company name: {}", dbCompany.getCompanyName());
         // 审核结果发送给申请用户
         sendEmailNotification(companyAuditVo);
         return JsonResponse.success();
@@ -415,7 +421,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     private String getHedsIamToken() {
-        JwtTokenClient jwtTokenClient = new JwtTokenClient(tokenUrl, hedsAppid, iamSecret,enterprise ,hedsAppid);
+        JwtTokenClient jwtTokenClient = new JwtTokenClient(tokenUrl, hedsAppid, iamSecret, enterprise, hedsAppid);
         return jwtTokenClient.getJwtToken();
     }
 

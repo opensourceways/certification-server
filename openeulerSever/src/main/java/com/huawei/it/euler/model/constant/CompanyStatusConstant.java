@@ -13,7 +13,7 @@ public class CompanyStatusConstant {
     /**
      * 用户提交的企业信息正在审核中
      */
-    public static final Integer Company_APPROVE = 0;
+    public static final Integer COMPANY_APPROVE = 0;
 
     /**
      * 用户提交的企业信息已通过审核
