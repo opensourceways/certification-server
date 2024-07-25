@@ -71,12 +71,14 @@ public class ApprovalPathServiceImpl implements ApprovalPathService {
                         approvalPathVo.setCertFirstTrail(getHandlerName(approvalPathNode));
                         break;
                     case 8:
-                        approvalPathVo.setCertTeexamination(getHandlerName(approvalPathNode));
+                        approvalPathVo.setCertReexamination(getHandlerName(approvalPathNode));
                         break;
                     default:
                         break;
                 }
             }
+            approvalPathVo.setUpdateTime(approvalPath.getUpdateTime());
+            approvalPathVos.add(approvalPathVo);
         }
         approvalPathVoIPage.setRecords(approvalPathVos);
         return approvalPathVoIPage;

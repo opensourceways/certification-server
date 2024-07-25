@@ -26,7 +26,7 @@ public class ApprovalPathVo {
 
     private String certFirstTrail;
 
-    private String certTeexamination;
+    private String certReexamination;
 
     @JsonFormat(pattern = "yyyy/MM/dd")
     private Date updateTime;

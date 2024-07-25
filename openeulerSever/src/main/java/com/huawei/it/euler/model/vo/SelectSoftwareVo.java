@@ -33,7 +33,7 @@ public class SelectSoftwareVo {
     /**
      * 测试机构
      */
-    private List<@Length(max = 50, message = "测试机构最大不超过{max}个字符") String> testOrganization;
+    private List<@Length(max = 50, message = "测评机构最大不超过{max}个字符") String> testOrganization;
 
     /**
      * 产品类型
@@ -43,7 +43,7 @@ public class SelectSoftwareVo {
     /**
      * 判断是否选择我的申请
      */
-    private List<@Length(max = 10, message = "测评状态错误") String> selectMyApplication;
+    private List<@Length(max = 5, message = "筛选申请人错误") String> selectMyApplication;
 
     /**
      * 当前页
