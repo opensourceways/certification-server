@@ -75,8 +75,6 @@ public interface UserService extends UserDetailsService {
      */
     EulerUser findByUuid(String uuid);
 
-    EulerUser findByUserNameAndTelPhone(String userName, String telephone);
-
     /**
      * 注销用户信息
      *

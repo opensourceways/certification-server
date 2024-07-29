@@ -66,7 +66,6 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     private int checkReferer(HttpServletRequest httpRequest, String shortUri) {
-        LOGGER.info("checkReferer start");
         String referer = httpRequest.getHeader("Referer");
         // get请求和白名单不校验referer
         boolean isVerifyReferer = "GET".equals(httpRequest.getMethod());
@@ -90,13 +89,11 @@ public class SecurityFilter extends OncePerRequestFilter {
             LOGGER.info("The Referer request header is not found or the verification fails: {}", shortUri);
             return HttpStatus.INTERNAL_SERVER_ERROR.value();
         }
-        LOGGER.info("checkReferer end");
         return HttpStatus.OK.value();
     }
 
     private int checkOrigin(HttpServletRequest httpRequest, String shortUri) {
         // CORS校验
-        LOGGER.info("checkOrigin start");
         String origin = httpRequest.getHeader("Origin");
         // get请求和白名单不校验origin
         boolean isVerifyOrigin = "GET".equals(httpRequest.getMethod());
@@ -109,7 +106,6 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
         }
         if (isVerifyOrigin) {
-            LOGGER.info("checkOrigin end");
             return HttpStatus.OK.value();
         }
         if (!StringUtils.isEmpty(origin)) {
@@ -122,7 +118,6 @@ public class SecurityFilter extends OncePerRequestFilter {
             LOGGER.info("The Origin is not found or the verification fails: {}", shortUri);
             return HttpStatus.INTERNAL_SERVER_ERROR.value();
         }
-        LOGGER.info("checkOrigin end");
         return HttpStatus.OK.value();
     }
 }

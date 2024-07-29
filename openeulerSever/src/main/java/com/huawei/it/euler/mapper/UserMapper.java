@@ -18,7 +18,7 @@ import java.util.List;
  * @since 2024/06/29
  */
 @Repository
-public interface UserMapper extends BaseMapper<EulerUser> {
+public interface UserMapper {
     EulerUser findByUuid(String uuid);
 
     List<EulerUser> findByUserId(@Param("idList") List<Integer> idList);

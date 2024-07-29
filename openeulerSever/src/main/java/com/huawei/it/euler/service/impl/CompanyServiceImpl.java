@@ -312,6 +312,8 @@ public class CompanyServiceImpl implements CompanyService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(X_HW_ID, hedsAppid);
         httpHeaders.set(X_HW_APPKEY, xHwAppKey);
+        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
+        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
         HashMap<String, Object> map = new HashMap<>();
         map.put("app_id", hedsAppid);
         EulerUser user = userMapper.findByUuid(company.getUserUuid());
@@ -359,6 +361,8 @@ public class CompanyServiceImpl implements CompanyService {
     private String getLicenseTextInfo(MultipartFile file) throws IOException {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Authorization", getHedsIamToken());
+        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
+        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
         HashMap<String, Object> params = new HashMap<>();
         params.put("scene", "NatureOCR");
         String imageToBase64 = imageToBase64(file);
@@ -389,6 +393,8 @@ public class CompanyServiceImpl implements CompanyService {
     private LicenseInfoVo getLicenseInfo(String licenseTextInfo) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Authorization", getHedsIamToken());
+        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
+        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
         HashMap<String, Object> params = new HashMap<>();
         params.put("project_name", projectName);
         List<String> sceneList = new ArrayList<>();

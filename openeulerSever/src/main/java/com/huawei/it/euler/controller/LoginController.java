@@ -25,7 +25,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,31 +54,31 @@ public class LoginController {
     @Value("${oauth.cookie.path}")
     private String cookiePath;
 
-    @Value("${idaas.clientId}")
+    @Value("${eulerlogin.clientId}")
     private String clientId;
 
-    @Value("${idaas.authCodeUrl}")
+    @Value("${eulerlogin.authCodeUrl}")
     private String authCodeUrl;
 
-    @Value("${idaas.accessTokenUrl}")
+    @Value("${eulerlogin.accessTokenUrl}")
     private String accessTokenUrl;
 
-    @Value("${idaas.userInfoUrl}")
+    @Value("${eulerlogin.userInfoUrl}")
     private String userInfoUrl;
 
-    @Value("${idaas.redirectUrl}")
+    @Value("${eulerlogin.redirectUrl}")
     private String redirectUrl;
 
-    @Value("${idaas.clientSecret}")
+    @Value("${eulerlogin.clientSecret}")
     private String clientSecret;
 
-    @Value("${idaas.frontCallbackUrl}")
+    @Value("${eulerlogin.frontCallbackUrl}")
     private String frontCallbackUrl;
 
-    @Value("${idaas.logoutUrl}")
+    @Value("${eulerlogin.logoutUrl}")
     private String logoutUrl;
 
-    @Value("${idaas.frontUrl}")
+    @Value("${eulerlogin.frontUrl}")
     private String frontUrl;
 
     @Autowired
@@ -103,32 +107,9 @@ public class LoginController {
     @GetMapping("/login")
     public JsonResponse<String> login() throws GeneralSecurityException {
         String state = SessionManagement.genSessionIdToHex();
-        String loginUrl = authCodeUrl + "?response_type=code" + "&scope=base.profile" + "&state="
+        String loginUrl = authCodeUrl + "?response_type=code" + "&scope=openid profile email phone address offline_access" + "&state="
                 + state + "&client_id=" + clientId + "&redirect_uri=" + redirectUrl;
         return new JsonResponse<>(loginUrl);
-    }
-
-    @GetMapping("/temporary/login")
-    public JsonResponse<String> temporaryLogin(@RequestParam(name = "userName")String userName,
-                                               @RequestParam(name = "telephone")String telephone,
-                                               HttpServletRequest request,
-                                               HttpServletResponse response) throws IOException {
-        EulerUser user = userService.findByUserNameAndTelPhone(userName, telephone);
-        if (user != null) {
-            writeCookie(response, user.getUuid());
-            logUtils.insertAuditLog(request, user.getUuid(), "login", "login in", "user login in");
-            return JsonResponse.success("ok");
-        }
-        return JsonResponse.success("fail");
-    }
-
-    @GetMapping("/temporary/logout")
-    public void temporaryLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        log.info("user logout");
-        cleanCookie(request, response);
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        logUtils.insertAuditLog(request, cookieUuid, "login", "login out", "user login out");
-        response.sendRedirect(frontUrl);
     }
 
     /**
@@ -145,7 +126,8 @@ public class LoginController {
         String cookieUuid = UserUtils.getCookieUuid(request);
         String userUuid = encryptUtils.aesDecrypt(cookieUuid);
         logUtils.insertAuditLog(request, userUuid, "login", "login out", "user login out");
-        return JsonResponse.success(logoutUrl);
+        String logOut = logoutUrl + "?client_id=" + clientId + "&redirect_uri=" + frontUrl;
+        return JsonResponse.success(logOut);
     }
 
     /**
@@ -169,12 +151,12 @@ public class LoginController {
         String code = request.getParameter("code");
         JSONObject jsonObject = getAccessToken(code);
         JSONObject userInfoJson = getUserInfo(jsonObject.getString("access_token"));
-        String uuid = userInfoJson.getString("uuid");
+        String uuid = userInfoJson.getString("sub");
         updateUserDb(userInfoJson, uuid);
         writeCookie(response, uuid);
         logUtils.insertAuditLog(request, uuid, "login", "login in", "user login in");
-        String token = jwtUtils.generateToken(uuid);
-        response.sendRedirect(frontCallbackUrl + "?token=" + token);
+//        String token = jwtUtils.generateToken(uuid);
+        response.sendRedirect(frontCallbackUrl);
     }
 
     private void updateUserDb(JSONObject userInfoJson, String uuid) {
@@ -183,17 +165,14 @@ public class LoginController {
         if (existUser == null) {
             EulerUser user = new EulerUser();
             user.setUuid(uuid);
-            String telephone = userInfoJson.getString("telephoneNumber");
-            if (!StringUtils.isEmpty(telephone)) {
-                telephone = telephone.substring(4);
-            }
-            String name = userInfoJson.getString("cn");
+            String telephone = userInfoJson.getString("phone_number");
+            String name = userInfoJson.getString("username");
             user.setUsername(name.replaceAll(" ", ""));
             user.setTelephone(encryptUtils.aesEncrypt(telephone));
             user.setMail(encryptUtils.aesEncrypt(email));
             userService.insertUser(user);
         } else {
-            String telephone = userInfoJson.getString("telephoneNumber");
+            String telephone = userInfoJson.getString("phone_number");
             if (!StringUtils.isEmpty(telephone)) {
                 if (telephone.startsWith("0086")) {
                     telephone = telephone.substring(4).trim();
@@ -215,25 +194,34 @@ public class LoginController {
     }
 
     private JSONObject getAccessToken(String code) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("code", code);
-        map.put("grant_type", "authorization_code");
-        map.put("client_id", clientId);
-        map.put("client_secret", clientSecret);
-        map.put("redirect_uri", redirectUrl);
-        HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(map);
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("code", code);
+        formData.add("grant_type", "authorization_code");
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+        formData.add("redirect_uri", redirectUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(formData, headers);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(accessTokenUrl, httpEntity, String.class);
         String body = responseEntity.getBody();
         return JSONObject.parseObject(body);
     }
 
     private JSONObject getUserInfo(String accessToken) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("access_token", accessToken);
-        map.put("client_id", clientId);
-        map.put("scope", "base.profile");
-        HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(map);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(accessTokenUrl, httpEntity, String.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        // 如果需要，还可以设置其他头，比如 Content-Type
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
+                userInfoUrl,
+                org.springframework.http.HttpMethod.GET,
+                entity,
+                String.class
+        );
         String body = responseEntity.getBody();
         return JSON.parseObject(body);
     }

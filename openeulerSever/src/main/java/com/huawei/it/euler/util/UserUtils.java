@@ -26,13 +26,17 @@ public class UserUtils {
     public static String getCookieUuid(HttpServletRequest request) {
        Map<String, String> cookieMap = new HashMap<>();
        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            cookieMap.put(cookie.getName(), cookie.getValue());
-        }
-        String uuid = null;
-        if (!CollectionUtils.isEmpty(cookieMap)) {
-            uuid = cookieMap.get("uuid");
-        }
-        return uuid;
+       if (cookies != null) {
+           for (Cookie cookie : cookies) {
+               cookieMap.put(cookie.getName(), cookie.getValue());
+           }
+           String uuid = null;
+           if (!CollectionUtils.isEmpty(cookieMap)) {
+               uuid = cookieMap.get("uuid");
+           }
+           return uuid;
+       }
+
+        return null;
     }
 }
