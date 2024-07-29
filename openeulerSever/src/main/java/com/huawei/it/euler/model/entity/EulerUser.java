@@ -18,10 +18,8 @@ import java.util.Objects;
  * @since 2024/06/29
  */
 @Data
-@TableName("user_t")
 public class EulerUser {
     @JsonIgnore
-    @TableField(exist = false)
     private Integer id;
 
     private String username;
@@ -29,11 +27,9 @@ public class EulerUser {
     private String password;
 
     @JsonIgnore
-    @TableField(exist = false)
     private String encodePassword;
 
     @JsonIgnore
-    @TableField(exist = false)
     private String role;
 
     private String telephone;
@@ -44,7 +40,6 @@ public class EulerUser {
 
     private String city;
 
-    @TableField(exist = false)
     private String code;
 
     private String uuid;
