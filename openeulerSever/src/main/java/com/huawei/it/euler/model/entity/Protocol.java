@@ -39,7 +39,7 @@ public class Protocol {
     /**
      * 创建人
      */
-    private String createBy;
+    private String createdBy;
 
     /**
      * 创建时间
