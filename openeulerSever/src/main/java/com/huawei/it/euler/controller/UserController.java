@@ -199,7 +199,7 @@ public class UserController {
      * @param request request
      * @return JsonResponse
      */
-    @PostMapping("/user/signPrivacyAgreement")
+    @PutMapping("/user/signPrivacyAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
     public JsonResponse<String> signPrivacyAgreement(HttpServletRequest request) {
