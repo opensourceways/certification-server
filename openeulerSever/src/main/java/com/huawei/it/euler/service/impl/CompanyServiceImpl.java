@@ -78,6 +78,9 @@ public class CompanyServiceImpl implements CompanyService {
     private static final String X_HW_APPKEY = "X-HW-APPKEY";
 
     @Value("${sns.appId}")
+    private String snsAppid;
+
+    @Value("${heds.appId}")
     private String hedsAppid;
 
     @Value("${sns.templateId}")
@@ -312,10 +315,8 @@ public class CompanyServiceImpl implements CompanyService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(X_HW_ID, hedsAppid);
         httpHeaders.set(X_HW_APPKEY, xHwAppKey);
-        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
-        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
         HashMap<String, Object> map = new HashMap<>();
-        map.put("app_id", hedsAppid);
+        map.put("app_id", snsAppid);
         EulerUser user = userMapper.findByUuid(company.getUserUuid());
         map.put("mobiles", user.getTelephone());
         map.put("template_id", templateId);
@@ -349,8 +350,8 @@ public class CompanyServiceImpl implements CompanyService {
             throws InputException, IOException {
         FileModel fileModel = fileUtils.uploadFile(file, null, 2, "license", request);
         softwareMapper.insertAttachment(fileModel);
-        String licenseInfo = getLicenseTextInfo(file);
-        LicenseInfoVo licenseInfoVo = getLicenseInfo(licenseInfo);
+//        String licenseInfo = getLicenseTextInfo(file);
+        LicenseInfoVo licenseInfoVo = getLicenseInfo(null);
         fileModel.setFilePath(null);
         Map<String, Object> map = new HashMap<>();
         map.put("fileInfo", fileModel);
@@ -391,38 +392,38 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     private LicenseInfoVo getLicenseInfo(String licenseTextInfo) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Authorization", getHedsIamToken());
-        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
-        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("project_name", projectName);
-        List<String> sceneList = new ArrayList<>();
-        sceneList.add(scene);
-        params.put("scene", sceneList);
-        params.put("service", "text");
-        params.put("tenant_name", hedsAppid);
-        params.put("text", licenseTextInfo);
-        HttpEntity httpEntity = new HttpEntity(params, httpHeaders);
-        ResponseEntity<String> responseEntity =
-                restTemplate.postForEntity(irsUrl, httpEntity, String.class);
-        String body = responseEntity.getBody();
-        JSONObject bodyJson = JSONObject.parseObject(body);
-        String message = bodyJson.getString("message");
-        if (!"parase success".equals(message)) {
-            log.error("Failed to extract information, error message: {}", CleanXSSUtils.replaceCRLF(message));
-            return getEmptyLicenseInfoVo();
-        }
-        JSONObject resultJson = bodyJson.getJSONObject("result");
-        JSONArray licenseInfoArray = resultJson.getJSONArray("LicenseIdentify");
+//        HttpHeaders httpHeaders = new HttpHeaders();
+//        httpHeaders.set("Authorization", getHedsIamToken());
+//        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
+//        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
+//        HashMap<String, Object> params = new HashMap<>();
+//        params.put("project_name", projectName);
+//        List<String> sceneList = new ArrayList<>();
+//        sceneList.add(scene);
+//        params.put("scene", sceneList);
+//        params.put("service", "text");
+//        params.put("tenant_name", hedsAppid);
+//        params.put("text", licenseTextInfo);
+//        HttpEntity httpEntity = new HttpEntity(params, httpHeaders);
+//        ResponseEntity<String> responseEntity =
+//                restTemplate.postForEntity(irsUrl, httpEntity, String.class);
+//        String body = responseEntity.getBody();
+//        JSONObject bodyJson = JSONObject.parseObject(body);
+//        String message = bodyJson.getString("message");
+//        if (!"parase success".equals(message)) {
+//            log.error("Failed to extract information, error message: {}", CleanXSSUtils.replaceCRLF(message));
+//            return getEmptyLicenseInfoVo();
+//        }
+//        JSONObject resultJson = bodyJson.getJSONObject("result");
+//        JSONArray licenseInfoArray = resultJson.getJSONArray("LicenseIdentify");
         LicenseInfoVo licenseInfoVo = new LicenseInfoVo();
-        for (int i = 0; i < licenseInfoArray.size(); i++) {
-            JSONObject licenseInfo = licenseInfoArray.getJSONObject(i);
-            String taskNameEn = licenseInfo.getString("task_name_en");
-            JSONArray texts = licenseInfo.getJSONArray("text");
-            String text = texts.isEmpty() ? StringUtils.EMPTY : texts.getString(0);
-            setLicenseInfoVo(licenseInfoVo, taskNameEn, text);
-        }
+//        for (int i = 0; i < licenseInfoArray.size(); i++) {
+//            JSONObject licenseInfo = licenseInfoArray.getJSONObject(i);
+//            String taskNameEn = licenseInfo.getString("task_name_en");
+//            JSONArray texts = licenseInfo.getJSONArray("text");
+//            String text = texts.isEmpty() ? StringUtils.EMPTY : texts.getString(0);
+//            setLicenseInfoVo(licenseInfoVo, taskNameEn, text);
+//        }
         return licenseInfoVo;
     }
 
