@@ -215,7 +215,7 @@ public class UserController {
      * @param request request
      * @return JsonResponse
      */
-    @PutMapping("/user/cancelPrivacyAgreement")
+    @PostMapping("/user/cancelPrivacyAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
     public JsonResponse<String> cancelPrivacyAgreement(HttpServletRequest request) {
@@ -231,7 +231,7 @@ public class UserController {
      * @param request request
      * @return JsonResponse
      */
-    @PutMapping("/user/signTechnicalAgreement")
+    @PostMapping("/user/signTechnicalAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
     public JsonResponse<String> signTechnicalAgreement(HttpServletRequest request) {
@@ -263,7 +263,7 @@ public class UserController {
      * @param request request
      * @return JsonResponse
      */
-    @PutMapping("/user/signCompatibilityAgreement")
+    @PostMapping("/user/signCompatibilityAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
     public JsonResponse<String> signCompatibilityAgreement(HttpServletRequest request) {
