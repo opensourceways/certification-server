@@ -28,7 +28,7 @@ import java.util.Objects;
  * @since 2024/06/29
  */
 @Slf4j
-@Component
+//@Component
 public class SecurityFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityFilter.class);
 

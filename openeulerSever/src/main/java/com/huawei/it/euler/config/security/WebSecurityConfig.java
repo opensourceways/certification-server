@@ -54,8 +54,8 @@ public class WebSecurityConfig {
     @Autowired
     private ProtocolFilter protocolFilter;
 
-    @Autowired
-    private SecurityFilter securityFilter;
+//    @Autowired
+//    private SecurityFilter securityFilter;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -83,7 +83,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exceptions ->
                         exceptions.accessDeniedHandler(eulerAccessDeniedHandler)
                         .authenticationEntryPoint(eulerAuthenticationEntryPoint))
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(protocolFilter, UsernamePasswordAuthenticationFilter.class);
