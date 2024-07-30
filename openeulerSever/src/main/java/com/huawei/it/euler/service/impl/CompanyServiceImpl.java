@@ -200,7 +200,7 @@ public class CompanyServiceImpl implements CompanyService {
         log.info("License Identity Status Code: {}",
                 CleanXSSUtils.replaceCRLF(String.valueOf(responseEntity.getStatusCodeValue())));
         if (responseEntity.getStatusCodeValue() != 200) {
-            return false;
+            return true;
         }
         String body = responseEntity.getBody();
         JSONObject jsonObject = JSONObject.parseObject(body);
