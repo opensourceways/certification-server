@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -154,14 +156,15 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
-        try (InputStream inputStream = CompatibleDataServiceImpl.class.getResourceAsStream(DATA_TEMPLATE)) {
+        ClassPathResource resource = new ClassPathResource(DATA_TEMPLATE);
+        try (InputStream inputStream = resource.getInputStream()) {
             response.reset();
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
             response.addHeader("Access-Control-Allow-Headers", "Content-Type");
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition",
-                    "attachment;filename=" + URLEncoder.encode("兼容性数据导入模板.xlsx", "UTF-8"));
+                    "attachment;filename=" + URLEncoder.encode("兼容性数据导入模板.xlsx", StandardCharsets.UTF_8));
             byte[] b = new byte[1024];
             int len;
             while ((len = inputStream.read(b)) > 0) {
