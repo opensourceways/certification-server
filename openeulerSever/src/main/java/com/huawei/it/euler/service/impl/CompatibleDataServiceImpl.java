@@ -24,6 +24,7 @@ import com.huawei.it.euler.util.*;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -32,8 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -45,6 +48,7 @@ import java.util.stream.Collectors;
  * @since 2024/07/04
  */
 @Service
+@Slf4j
 public class CompatibleDataServiceImpl implements CompatibleDataService {
     /**
      * 兼容性数据导入：默认公司名称
@@ -158,6 +162,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
         ClassPathResource resource = new ClassPathResource(DATA_TEMPLATE);
         try (InputStream inputStream = resource.getInputStream()) {
+            DataInputStream isr = new DataInputStream(inputStream);
             response.reset();
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -167,7 +172,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
                     "attachment;filename=" + URLEncoder.encode("兼容性数据导入模板.xlsx", StandardCharsets.UTF_8));
             byte[] b = new byte[1024];
             int len;
-            while ((len = inputStream.read(b)) > 0) {
+            while ((len = isr.read(b)) > 0) {
                 response.getOutputStream().write(b, 0, len);
             }
             response.getOutputStream().flush();
