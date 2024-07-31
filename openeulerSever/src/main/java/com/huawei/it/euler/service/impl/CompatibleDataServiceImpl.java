@@ -54,7 +54,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     /**
      * 兼容性数据导入模板相对路径
      */
-    private static final String DATA_TEMPLATE = "/static/兼容性数据导入模板.xlsx";
+    private static final String DATA_TEMPLATE = "/static/test.xlsx";
 
     private static final HashMap<String, List<String>> SYSTEM_NAME_VERSION = new HashMap() {{
        put("KylinSec", Arrays.asList("3.4-5A", "3.5.1"));
