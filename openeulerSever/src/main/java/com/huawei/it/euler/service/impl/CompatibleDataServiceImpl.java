@@ -58,7 +58,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     /**
      * 兼容性数据导入模板相对路径
      */
-    private static final String DATA_TEMPLATE = "/static/test.xlsx";
+    private static final String DATA_TEMPLATE = "/static/兼容性数据导入模板.xlsx";
 
     private static final HashMap<String, List<String>> SYSTEM_NAME_VERSION = new HashMap() {{
        put("KylinSec", Arrays.asList("3.4-5A", "3.5.1"));
@@ -160,9 +160,13 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
-        ClassPathResource resource = new ClassPathResource(DATA_TEMPLATE);
-        try (InputStream inputStream = resource.getInputStream()) {
-            DataInputStream isr = new DataInputStream(inputStream);
+        // 使用ClassLoader来读取资源文件
+        ClassLoader classLoader = getClass().getClassLoader();
+        try (InputStream inputStream = classLoader.getResourceAsStream(DATA_TEMPLATE)) {
+            if (inputStream == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
+                return;
+            }
             response.reset();
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -170,10 +174,10 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition",
                     "attachment;filename=" + URLEncoder.encode("兼容性数据导入模板.xlsx", StandardCharsets.UTF_8));
-            byte[] b = new byte[1024];
+            byte[] buffer = new byte[1024];
             int len;
-            while ((len = isr.read(b)) > 0) {
-                response.getOutputStream().write(b, 0, len);
+            while ((len = inputStream.read(buffer)) > 0) {
+                response.getOutputStream().write(buffer, 0, len);
             }
             response.getOutputStream().flush();
         }
