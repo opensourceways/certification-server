@@ -24,21 +24,18 @@ import com.huawei.it.euler.util.*;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,7 +45,6 @@ import java.util.stream.Collectors;
  * @since 2024/07/04
  */
 @Service
-@Slf4j
 public class CompatibleDataServiceImpl implements CompatibleDataService {
     /**
      * 兼容性数据导入：默认公司名称
@@ -160,24 +156,21 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
-        // 使用ClassLoader来读取资源文件
-        ClassLoader classLoader = getClass().getClassLoader();
-        try (InputStream inputStream = classLoader.getResourceAsStream(DATA_TEMPLATE)) {
-            if (inputStream == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
-                return;
-            }
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        org.springframework.core.io.Resource[] resources = resolver.getResources(DATA_TEMPLATE);
+        org.springframework.core.io.Resource resource = resources[0];
+        try (InputStream inputStream = resource.getInputStream()) {
             response.reset();
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
             response.addHeader("Access-Control-Allow-Headers", "Content-Type");
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition",
-                    "attachment;filename=" + URLEncoder.encode("兼容性数据导入模板.xlsx", StandardCharsets.UTF_8));
-            byte[] buffer = new byte[1024];
+                    "attachment;filename=" + URLEncoder.encode("兼容性数据导入模板.xlsx", "UTF-8"));
+            byte[] b = new byte[1024];
             int len;
-            while ((len = inputStream.read(buffer)) > 0) {
-                response.getOutputStream().write(buffer, 0, len);
+            while ((len = inputStream.read(b)) > 0) {
+                response.getOutputStream().write(b, 0, len);
             }
             response.getOutputStream().flush();
         }
