@@ -65,11 +65,11 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     private static final HashMap<String, HashMap<String, List<String>>> SERVER = new HashMap() {{
         put("Kunpeng916", new HashMap<String, List<String>>() {{
-            put("华为", Arrays.asList("Taishan 100", "Taishan200", "2288"));
+            put("华为", Arrays.asList("Taishan 100", "Taishan 200", "2288"));
             put("其他", Collections.singletonList("其他"));
         }});
         put("Kunpeng920", new HashMap<String, List<String>>() {{
-            put("华为", Arrays.asList("Taishan 100", "Taishan200", "2288"));
+            put("华为", Arrays.asList("Taishan 100", "Taishan 200", "2288"));
             put("清华同方", Arrays.asList("超强K620", "超强Z520-M1"));
             put("宝德", Arrays.asList("自强PR210K", "自强PR212K"));
             put("百信", Arrays.asList("恒山TS02E-F30", "恒山TS02F-F30"));
@@ -110,7 +110,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
             put("其他", Collections.singletonList("其他"));
         }});
         put("Intel", new HashMap<String, List<String>>() {{
-            put("华为", Arrays.asList("Taishan 100", "Taishan200", "2288"));
+            put("华为", Arrays.asList("Taishan 100", "Taishan 200", "2288"));
             put("超聚变", Collections.singletonList("5288 V3"));
             put("其他", Collections.singletonList("其他"));
         }});

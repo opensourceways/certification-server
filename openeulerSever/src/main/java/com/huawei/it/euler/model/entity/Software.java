@@ -88,6 +88,5 @@ public class Software {
     @JsonIgnore
     private String userUuid;
 
-    @JsonIgnore
     private List<String> platforms;
 }

@@ -84,9 +84,7 @@ public class JsonResponse<T> {
     }
 
     public JsonResponse(Integer code, String message, T result) {
-        this.code = code;
-        this.message = message;
-        this.result = result;
+        this(code,message, true, result);
     }
 
     /**

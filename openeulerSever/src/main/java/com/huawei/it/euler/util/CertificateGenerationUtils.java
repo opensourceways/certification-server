@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import wiki.xsx.core.pdf.doc.XEasyPdfDefaultFontStyle;
 import wiki.xsx.core.pdf.doc.XEasyPdfDocument;
 import wiki.xsx.core.pdf.doc.XEasyPdfPage;
 import wiki.xsx.core.pdf.doc.XEasyPdfPositionStyle;
@@ -26,6 +27,7 @@ import wiki.xsx.core.pdf.util.XEasyPdfImageUtil;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -46,9 +48,9 @@ import java.util.UUID;
 public class CertificateGenerationUtils {
     private static final String BKGPDF = "/static/euler_page_front.pdf";
 
-    private static final String DOC = "/doc/msyh.ttc,0";
+    private static final String DOC = "/docs/msyh.ttc,0";
 
-    private static final String DOCBD = "/doc/msyhbd.ttc,0";
+    private static final String DOCBD = "/docs/msyhbd.ttc,0";
 
     private static final String OPEN_EULER = "openEuler";
 
@@ -86,7 +88,7 @@ public class CertificateGenerationUtils {
             XEasyPdfPage page1 = document.getPageList().get(1);
             this.generateFront(page, generateCertificate, false, code);
             this.generateSecond(page1, generateCertificate, code);
-            document.setFontPath(DOC).save(path);
+            document.setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).save(path);
         }
         String fileId = UUID.randomUUID().toString();
         try (InputStream inputStream = Files.newInputStream(Paths.get(path))) {
@@ -143,7 +145,7 @@ public class CertificateGenerationUtils {
                 XEasyPdfPage page1 = document.getPageList().get(1);
                 this.generateFront(page, generateCertificate, false, code);
                 this.generateSecond(page1, generateCertificate, code);
-                document.setFontPath(DOC).save(path);
+                document.setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).save(path);
         }
         try (InputStream inputStream = Files.newInputStream(Paths.get(path))) {
             writeResponse(response, inputStream);
@@ -394,43 +396,43 @@ public class CertificateGenerationUtils {
     private void generateSecond(XEasyPdfPage page, GenerateCertificate generateCertificate, String code) {
         secondPageFirstLine(page, generateCertificate);
         page.addComponent(XEasyPdfHandler.Text.build("根据认证结果，现双方根据以下条款授权对方使用本技术兼容性证明，且甲方授权乙方使用甲")
-                .setMarginLeft(50F).setMarginTop(30F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("方的认证徽标").setMarginLeft(50F).setFontPath(DOCBD),
+                .setMarginLeft(50F).setMarginTop(30F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
+                XEasyPdfHandler.Text.build("方的认证徽标").setMarginLeft(50F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("一、甲方授权乙方使用该证明，且甲方授权乙方使用其认证徽标，")
-                        .setMarginLeft(50F).setMarginTop(10F).setFontPath(DOCBD),
+                        .setMarginLeft(50F).setMarginTop(10F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("本证明及认证徽标使用许可为非独占、不可转让的普通许可，")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
+                        .setMarginLeft(74F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("具体授权内容如下：")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
+                        .setMarginLeft(74F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("1. 授权使用条件：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
+                        .setMarginTop(10F).setMarginLeft(90F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).enableChildComponent(),
                 XEasyPdfHandler.Text.build("仅用于证明甲方与乙方就证书所列产品完成基于" + OPEN_EULER + "开源操作系统")
                         .setMarginTop(-17F).setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("的兼容性测试").setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("2. 授权使用范围：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
+                        .setMarginTop(10F).setMarginLeft(90F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).enableChildComponent(),
                 XEasyPdfHandler.Text.build("在甲方许可方位内使用该证明及认证徽标。").setMarginTop(-17F).setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("3. 授权使用时间：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
+                        .setMarginTop(10F).setMarginLeft(90F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).enableChildComponent(),
                 XEasyPdfHandler.Text.build("自证书颁发之日起36个月。").setMarginTop(-17F).setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("4. 授权使用方式：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
+                        .setMarginTop(10F).setMarginLeft(90F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).enableChildComponent(),
                 XEasyPdfHandler.Text.build("本证明及认证徽标只能用于说明甲方与乙方产品兼容的目的，双方")
                         .setMarginTop(-17F).setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("不得滥用该证明用于其他任何目的。乙方必须严格按照甲方提供的").setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("认证徽标图样使用，不得擅自对图样作任何修改。").setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("二、未经对方书面同意，双方均不得超出具体授权内容使用本证明及认证徽章。双方授权的使")
-                        .setMarginLeft(50F).setMarginTop(10F).setFontPath(DOCBD),
+                        .setMarginLeft(50F).setMarginTop(10F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("用许可，不构成双方任何已有权利的转移。")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
+                        .setMarginLeft(74F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("三、除第一条明确授权外，本证明不包括任何其他授权或许可，也不应被解释为在甲方和乙方")
-                        .setMarginLeft(50F).setMarginTop(20F).setFontPath(DOCBD),
+                        .setMarginLeft(50F).setMarginTop(20F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("间创设或者形成任何其他关系；任何一方若违反本认证书的任何约定，对方有权随时单方")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
+                        .setMarginLeft(74F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("撤回本证明的所有授权。")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
+                        .setMarginLeft(74F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("四、授权认证徽标图样")
-                        .setMarginLeft(50F).setMarginTop(20F).setFontPath(DOCBD),
+                        .setMarginLeft(50F).setMarginTop(20F).setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                 XEasyPdfHandler.Text.build("本证书自甲方发布之日起生效")
                         .setHorizontalStyle(XEasyPdfPositionStyle.RIGHT).setMarginRight(50F).setMarginTop(90F),
                 XEasyPdfHandler.Text.build("证书编号：" + code)
@@ -455,16 +457,16 @@ public class CertificateGenerationUtils {
                     XEasyPdfHandler.Text.build(str.substring(0, 42))
                             .setMarginLeft(50F)
                             .setMarginTop(180F)
-                            .setFontPath(DOCBD),
+                            .setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD),
                     XEasyPdfHandler.Text.build(str.substring(42, length))
                             .setMarginLeft(50F)
-                            .setFontPath(DOCBD));
+                            .setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD));
         } else {
             page.addComponent(
                     XEasyPdfHandler.Text.build(str)
                             .setMarginLeft(50F)
                             .setMarginTop(180F)
-                            .setFontPath(DOCBD));
+                            .setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD));
         }
     }
 
@@ -480,5 +482,12 @@ public class CertificateGenerationUtils {
             }
         }
         return dir.delete();
+    }
+
+    public static void main(String[] args) {
+        InputStream fontStream = CertificateGenerationUtils.class.getClassLoader().getResourceAsStream("docs/msyh.ttc");
+        if (fontStream == null){
+            System.out.println();
+        }
     }
 }
