@@ -26,10 +26,13 @@ import wiki.xsx.core.pdf.handler.XEasyPdfHandler;
 import wiki.xsx.core.pdf.util.XEasyPdfImageUtil;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -59,9 +62,6 @@ public class CertificateGenerationUtils {
      */
     private static final Integer MAXIMUM_LENGTH = 60;
 
-    @Value("${certificates.pdfSavePath}")
-    private String pdfSavePath;
-
     @Resource
     private SoftwareMapper softwareMapper;
 
@@ -81,20 +81,18 @@ public class CertificateGenerationUtils {
     public void generateCertificate(GenerateCertificate generateCertificate) throws IOException{
         String code = "E" + new SimpleDateFormat("yyyyMM").format(new Date()) + "E" + String.valueOf(
                 generateCertificate.getId() + 100000).substring(1);
-        String path = pdfSavePath + code + ".pdf";
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (InputStream inputStream = CertificateGenerationUtils.class.getResourceAsStream(BKGPDF);
-            XEasyPdfDocument document = getDocument(inputStream, generateCertificate, path)) {
+            XEasyPdfDocument document = getDocument(inputStream, generateCertificate)) {
             XEasyPdfPage page = document.getPageList().get(0);
             XEasyPdfPage page1 = document.getPageList().get(1);
             this.generateFront(page, generateCertificate, false, code);
             this.generateSecond(page1, generateCertificate, code);
-            document.setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).save(path);
+            document.setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).save(outputStream);
         }
         String fileId = UUID.randomUUID().toString();
-        try (InputStream inputStream = Files.newInputStream(Paths.get(path))) {
-            s3Utils.uploadFile(inputStream, fileId);
-        } finally {
-            deleteDir(path);
+        try (ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray())) {
+            s3Utils.uploadFile(input, fileId);
         }
         String fileName = code + ".pdf";
         FileModel model = new FileModel();
@@ -106,9 +104,9 @@ public class CertificateGenerationUtils {
         softwareMapper.insertAttachment(model);
     }
 
-    private XEasyPdfDocument getDocument(InputStream inputStream, GenerateCertificate generateCertificate,
-                                         String path) throws IOException {
+    private XEasyPdfDocument getDocument(InputStream inputStream, GenerateCertificate generateCertificate) throws IOException {
         XEasyPdfDocument document;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         if (!StringUtils.isNotEmpty(getSignedFileId(generateCertificate))) {
             document = XEasyPdfHandler.Document.load(inputStream);
         } else {
@@ -117,8 +115,9 @@ public class CertificateGenerationUtils {
                     .replacer()
                     .replaceImage(XEasyPdfImageUtil.read(s3Utils.downloadFile(getSignedFileId(generateCertificate))),
                             Arrays.asList(1, 2), 0)
-                    .finish(path);
-            document = XEasyPdfHandler.Document.load(path);
+                    .finish(outputStream);
+            ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray());
+            document = XEasyPdfHandler.Document.load(input);
         }
         return document;
     }
@@ -130,31 +129,28 @@ public class CertificateGenerationUtils {
      * @param response 响应
      */
     public void previewCertificate(GenerateCertificate generateCertificate, HttpServletResponse response)
-            throws InputException, IOException {
+            throws IOException {
         GenerateCertificate certificate = new GenerateCertificate();
         BeanUtils.copyProperties(generateCertificate, certificate);
         certificate.setProductName(generateCertificate.getProductName().trim());
         certificate.setProductVersion(generateCertificate.getProductVersion().trim());
-        String dirPath = UUID.randomUUID().toString();
-        String fileName = certificate.getCompanyName() + certificate.getId();
-        String path = pdfSavePath + dirPath + "/" + fileName + ".pdf";
         String code = "E20xxxxxxxxxx";
-        try (InputStream inputStream = CertificateGenerationUtils.class.getResourceAsStream(BKGPDF);
-            XEasyPdfDocument document = getDocument(inputStream, generateCertificate, path)) {
-                XEasyPdfPage page = document.getPageList().get(0);
-                XEasyPdfPage page1 = document.getPageList().get(1);
-                this.generateFront(page, generateCertificate, false, code);
-                this.generateSecond(page1, generateCertificate, code);
-                document.setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).save(path);
-        }
-        try (InputStream inputStream = Files.newInputStream(Paths.get(path))) {
-            writeResponse(response, inputStream);
-        } finally {
-            deleteDir(pdfSavePath + dirPath);
+        try (InputStream inputStream = CertificateGenerationUtils.class.getResourceAsStream(BKGPDF)) {
+            XEasyPdfDocument document = getDocument(inputStream, generateCertificate);
+            XEasyPdfPage page = document.getPageList().get(0);
+            XEasyPdfPage page1 = document.getPageList().get(1);
+            this.generateFront(page, generateCertificate, false, code);
+            this.generateSecond(page1, generateCertificate, code);
+            // Set response headers
+            writeResponse(response);
+            // Write PDF directly to response
+            try (OutputStream os = response.getOutputStream()) {
+                document.setDefaultFontStyle(XEasyPdfDefaultFontStyle.BOLD).save(os);
+            }
         }
     }
 
-    private void writeResponse(HttpServletResponse response, InputStream inStream) throws IOException {
+    private void writeResponse(HttpServletResponse response) {
         response.reset();
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -163,12 +159,6 @@ public class CertificateGenerationUtils {
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
         response.setContentType("application/pdf;charset=utf-8");
-        byte[] b = new byte[1024];
-        int len;
-        while ((len = inStream.read(b)) > 0) {
-            response.getOutputStream().write(b, 0, len);
-        }
-        response.getOutputStream().flush();
     }
 
     /**
