@@ -321,7 +321,6 @@ public class SoftwareController {
     @PreAuthorize("hasAnyRole('user')")
     public JsonResponse<String> deleteAttachments(
             @RequestParam("fileId") @NotBlank(message = "附件id不能为空") String fileId, HttpServletRequest request) {
-        log.info("删除附件:{}", fileId);
         softwareService.deleteAttachments(fileId, request);
         return JsonResponse.success();
     }
