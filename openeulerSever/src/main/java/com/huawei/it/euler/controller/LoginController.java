@@ -10,6 +10,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.common.JwtUtils;
+import com.huawei.it.euler.config.CacheConfig;
+import com.huawei.it.euler.config.CookieConfig;
+import com.huawei.it.euler.config.usercenter.TokenConfig;
 import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.vo.EulerUserVo;
 import com.huawei.it.euler.service.UserService;
@@ -41,6 +44,7 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * LoginController
@@ -51,8 +55,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/auth")
 public class LoginController {
-    @Value("${oauth.cookie.path}")
-    private String cookiePath;
+
 
     @Value("${eulerlogin.clientId}")
     private String clientId;
@@ -60,17 +63,8 @@ public class LoginController {
     @Value("${eulerlogin.authCodeUrl}")
     private String authCodeUrl;
 
-    @Value("${eulerlogin.accessTokenUrl}")
-    private String accessTokenUrl;
-
-    @Value("${eulerlogin.userInfoUrl}")
-    private String userInfoUrl;
-
     @Value("${eulerlogin.redirectUrl}")
     private String redirectUrl;
-
-    @Value("${eulerlogin.clientSecret}")
-    private String clientSecret;
 
     @Value("${eulerlogin.frontCallbackUrl}")
     private String frontCallbackUrl;
@@ -82,19 +76,16 @@ public class LoginController {
     private String frontUrl;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private TokenConfig tokenConfig;
 
     @Autowired
     private EncryptUtils encryptUtils;
 
     @Autowired
-    private Cache<String, Object> caffeineCache;
+    private CookieConfig cookieConfig;
 
     @Autowired
     private LogUtils logUtils;
@@ -115,19 +106,39 @@ public class LoginController {
     /**
      * idaas sso自定义登录
      *
-     * @param request request
+     * @param request  request
      * @param response response
      * @return JsonResponse
      */
     @GetMapping("/logout")
     public JsonResponse<String> logout(HttpServletRequest request, HttpServletResponse response) {
         log.info("user logout");
-        cleanCookie(request, response);
+        cookieConfig.cleanCookie(request, response);
         String cookieUuid = UserUtils.getCookieUuid(request);
         String userUuid = encryptUtils.aesDecrypt(cookieUuid);
         logUtils.insertAuditLog(request, userUuid, "login", "login out", "user login out");
         String logOut = logoutUrl + "?client_id=" + clientId + "&redirect_uri=" + frontUrl;
         return JsonResponse.success(logOut);
+    }
+
+    /**
+     * user center will call that when other application logout to clear current application session
+     *
+     * @param request  request
+     * @param response responses
+     * @return JsonResponse
+     */
+    @GetMapping("/logoutForCenter")
+    public JsonResponse<String> logoutForCenter(HttpServletRequest request, HttpServletResponse response) {
+        log.info("user center logout");
+        String jwt = request.getParameter("data");
+        String uuid = tokenConfig.verifyJwt(jwt);
+        if (StringUtils.isEmpty(uuid)){
+            return JsonResponse.failed("jwt parse error!");
+        }
+        String userUuid = encryptUtils.aesDecrypt(uuid);
+        logUtils.insertAuditLog(request, userUuid, "login", "login out", "user center login out");
+        return JsonResponse.success();
     }
 
     /**
@@ -143,19 +154,19 @@ public class LoginController {
     /**
      * idaas sso登录回调
      *
-     * @param request request
+     * @param request  request
      * @param response response
      */
     @GetMapping("/callback")
     public void callBack(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String code = request.getParameter("code");
-        JSONObject jsonObject = getAccessToken(code);
-        JSONObject userInfoJson = getUserInfo(jsonObject.getString("access_token"));
+        JSONObject jsonObject = tokenConfig.getAccessToken(code);
+        JSONObject userInfoJson = tokenConfig.getUserInfo(jsonObject.getString("access_token"));
         String uuid = userInfoJson.getString("sub");
         updateUserDb(userInfoJson, uuid);
-        writeCookie(response, uuid);
+        cookieConfig.writeCookie(response, uuid);
+        tokenConfig.refreshToken(request);
         logUtils.insertAuditLog(request, uuid, "login", "login in", "user login in");
-//        String token = jwtUtils.generateToken(uuid);
         response.sendRedirect(frontCallbackUrl);
     }
 
@@ -190,75 +201,6 @@ public class LoginController {
             EulerUserVo userVo = new EulerUserVo();
             userVo.getVo(existUser);
             userService.updateUser(userVo);
-        }
-    }
-
-    private JSONObject getAccessToken(String code) {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("code", code);
-        formData.add("grant_type", "authorization_code");
-        formData.add("client_id", clientId);
-        formData.add("client_secret", clientSecret);
-        formData.add("redirect_uri", redirectUrl);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(formData, headers);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(accessTokenUrl, httpEntity, String.class);
-        String body = responseEntity.getBody();
-        return JSONObject.parseObject(body);
-    }
-
-    private JSONObject getUserInfo(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-        // 如果需要，还可以设置其他头，比如 Content-Type
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(null, headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                userInfoUrl,
-                org.springframework.http.HttpMethod.GET,
-                entity,
-                String.class
-        );
-        String body = responseEntity.getBody();
-        return JSON.parseObject(body);
-    }
-
-    private void writeCookie(HttpServletResponse response, String uuid) {
-        String enUuid = encryptUtils.aesEncrypt(uuid);
-        addCookie(response, "uuid", enUuid);
-        addCookie(response, "openeuler", "in");
-        // 加入缓存
-        caffeineCache.put(enUuid, uuid);
-    }
-
-    private void addCookie(HttpServletResponse response, String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setSecure(true);
-        cookie.setHttpOnly(true);
-        cookie.setPath(cookiePath);
-        response.addCookie(cookie);
-    }
-
-    private void cleanCookie(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null || cookies.length == 0) {
-            return;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie == null) {
-                continue;
-            }
-            cookie = new Cookie(cookie.getName(), cookie.getValue());
-            cookie.setPath(cookiePath);
-            cookie.setMaxAge(0);
-            response.addCookie(cookie);
-            if (Objects.equals(cookie.getName(), "uuid")) {
-                // 删除缓存
-                caffeineCache.invalidate(cookie.getValue());
-            }
         }
     }
 }
