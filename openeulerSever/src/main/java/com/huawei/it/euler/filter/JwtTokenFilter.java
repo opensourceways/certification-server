@@ -4,7 +4,10 @@
 
 package com.huawei.it.euler.filter;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.huawei.it.euler.config.CookieConfig;
+import com.huawei.it.euler.config.usercenter.TokenConfig;
 import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.util.EncryptUtils;
@@ -22,16 +25,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Jwt拦截器
@@ -53,6 +64,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Resource
     private Cache<String, Object> caffeineCache;
+
+    @Autowired
+    private CookieConfig cookieConfig;
+
+    @Autowired
+    private TokenConfig tokenConfig;
 
 
     @Override
@@ -87,13 +104,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         request.setAttribute("isAllowed", false);
         request.setAttribute("skipProtocolFilter", false);
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        // 没有则没有登录，有则续期
+        // 没有则代表未登录或者登录过期或者被用户中心主动退出，有则续期
         Object obj = caffeineCache.getIfPresent(cookieUuid);
         if (Objects.isNull(obj)) {
+            cookieConfig.cleanCookie(request,response);
             chain.doFilter(request, response);
             return;
         } else {
             caffeineCache.put(cookieUuid, uuid);
+            tokenConfig.refreshToken(request);
         }
         // 获取用户权限等信息
         EulerUser user = userService.findByUuid(uuid);
