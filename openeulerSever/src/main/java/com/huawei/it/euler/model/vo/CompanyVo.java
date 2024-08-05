@@ -25,16 +25,15 @@ public class CompanyVo {
     /**
      * 日期校验正则 yyyy-mm-dd
      */
-    public static final String DATE_VALIDATE_REGEX = "^$|^(?:(?!0000)[0-9]{4}\\-(?:(?:0[13578]|1[02])" +
-            "(?:\\-0[1-9]|\\-[12][0-9]|\\-3[01])|(?:0[469]|11)(?:\\-0[1-9]|\\-[12][0-9]|\\-30)" +
-            "|02(?:\\-0[1-9]|\\-1[0-9]|\\-2[0-8]))|(?:(((\\d{2})(0[48]|[2468][048]|[13579][26])|(([02468][048])" +
-            "|([13579][26]))00))\\-02\\-29))$\n";
+    public static final String DATE_VALIDATE_REGEX =
+        "^(?:(?!0000)[0-9]{4}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-8])|(?:0[13-9]|1[0-2])"
+            + "-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)-02-29)$";
 
     /**
      * 邮箱校验正则，不支持中文
      */
     public static final String EMAIL_VALIDATE_REGEX =
-            "^[A-Za-z0-9_\\-.!#$%&'*+\\-/=?^_`{|}~]+@[A-Za-z0-9_\\-.]+\\.[A-Za-z]{2,8}$";
+        "^[A-Za-z0-9_\\-.!#$%&'*+\\-/=?^_`{|}~]+@[A-Za-z0-9_\\-.]+\\.[A-Za-z]{2,8}$";
 
     /**
      * id
@@ -121,14 +120,14 @@ public class CompanyVo {
      * 企业注册日期
      */
     @Nullable
-//    @Pattern(regexp = DATE_VALIDATE_REGEX, message = "注册日期格式错误", groups = companyAuthentication.class)
+     @Pattern(regexp = DATE_VALIDATE_REGEX, message = "注册日期格式错误", groups = companyAuthentication.class)
     private String registrationDate;
 
     /**
      * 企业营业执照过期日期
      */
     @Nullable
-//    @Pattern(regexp = DATE_VALIDATE_REGEX, message = "企业营业执照过期日期格式错误", groups = companyAuthentication.class)
+     @Pattern(regexp = DATE_VALIDATE_REGEX, message = "企业营业执照过期日期格式错误", groups = companyAuthentication.class)
     private String expirationDate;
 
     /**
