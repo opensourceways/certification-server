@@ -375,9 +375,6 @@ public class CompanyServiceImpl implements CompanyService {
         }
         LicenseInfoVo licenseInfoVo = new LicenseInfoVo();
         setLicenseInfoVo(licenseInfoVo, licenseTextInfo);
-        if (!companyVerifyClient.checkCompanyInfo( licenseInfoVo.getCompanyName(),licenseInfoVo.getCreditCode(),licenseInfoVo.getLegalPerson())) {
-            return getEmptyLicenseInfoVo();
-        }
         return licenseInfoVo;
     }
 
