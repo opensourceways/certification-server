@@ -121,14 +121,14 @@ public class CompanyVo {
      * 企业注册日期
      */
     @Nullable
-    @Pattern(regexp = DATE_VALIDATE_REGEX, message = "注册日期格式错误", groups = companyAuthentication.class)
+//    @Pattern(regexp = DATE_VALIDATE_REGEX, message = "注册日期格式错误", groups = companyAuthentication.class)
     private String registrationDate;
 
     /**
      * 企业营业执照过期日期
      */
     @Nullable
-    @Pattern(regexp = DATE_VALIDATE_REGEX, message = "企业营业执照过期日期格式错误", groups = companyAuthentication.class)
+//    @Pattern(regexp = DATE_VALIDATE_REGEX, message = "企业营业执照过期日期格式错误", groups = companyAuthentication.class)
     private String expirationDate;
 
     /**

@@ -65,7 +65,7 @@ public class CompanyVerifyClient {
 
     @Recover
     public Boolean recover(UrlRetryException e, String input) {
-        log.error("Retry failed: {}", e.getMessage());
+        log.error("Retry failed: {}", input);
         return false;
     }
 }
