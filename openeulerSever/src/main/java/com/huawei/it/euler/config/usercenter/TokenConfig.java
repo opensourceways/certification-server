@@ -144,7 +144,7 @@ public class TokenConfig {
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
             ResponseEntity<JSONObject> responseEntity = restTemplate.getForEntity(refreshTokenUrl, JSONObject.class, httpEntity);
             JSONObject refreshData = responseEntity.getBody();
-            int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("token_expire");
+            int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
             // half of tokenIntervalMin times passed then refresh the token
             long newTokenRefreshTime = tokenIntervalMin / 2 * 1000L + System.currentTimeMillis();
             String finalUuid = uuid;
