@@ -9,8 +9,6 @@ import static com.huawei.it.euler.service.impl.SoftwareServiceImpl.PARTNER_ROLE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -371,16 +369,16 @@ public class CompanyServiceImpl implements CompanyService {
        licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
 
         // 解析结束日期字符串
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
-        if (licenseTermParts.length > 1) {
-            String endDateString = licenseTermParts[1].trim();
-            LocalDate endDate = LocalDate.parse(endDateString, formatter);
-            licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
-        }
-        LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
-        licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
+//        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//        String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
+//        if (licenseTermParts.length > 1) {
+//            String endDateString = licenseTermParts[1].trim();
+//            LocalDate endDate = LocalDate.parse(endDateString, formatter);
+//            licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
+//        }
+//        LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
+//        licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
     }
 
     private String imageToBase64(MultipartFile file) throws IOException {
