@@ -245,9 +245,21 @@
         where software_id = #{softwareId} and file_type = 'sign'
     </update>
 
+    <update id="updateFlag" parameterType="com.huawei.it.euler.model.entity.FileModel">
+        update attachments_t
+        set flag = #{flag}
+        where fileid = #{fileId}
+    </update>
+
+
     <select id="getAttachmentsNames" parameterType="java.util.Map" resultMap="AttachmentsVoMap">
         select filename, fileid
         from attachments_t where software_id = #{softwareId} and file_type = #{fileType}
+    </select>
+
+    <select id="getEmptyAttachmentsNames" resultMap="AttachmentsMap">
+        select file_path, filename, software_id, uuid, file_type, flag ,fileid
+        from attachments_t where flag = '0' limit 1
     </select>
 
     <select id="downloadAttachments" parameterType="java.lang.String" resultMap="AttachmentsMap">

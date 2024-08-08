@@ -4,24 +4,23 @@
 
 package com.huawei.it.euler.third;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.huawei.it.euler.mapper.SoftwareMapper;
+import com.huawei.it.euler.model.entity.Attachments;
+import com.huawei.it.euler.model.entity.FileModel;
 import com.huawei.it.euler.util.S3Utils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,66 +34,105 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class S3Client {
 
-    private static final String BASE_URL = "https://openeuler.shanhaitujian.cn/certification/software/downloadAttachments";
+    private static final String BASE_URL =
+        "https://openeuler.shanhaitujian.cn/certification/software/downloadAttachments";
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private SoftwareMapper softwareMapper;
 
     @Autowired
     private S3Utils s3Utils;
 
     @Scheduled(fixedRate = 60000) // 60000 milliseconds = 1 minute
     public void callApiAndDownloadFile() {
+        FileModel file = new FileModel();
         try {
-            // 假设id是一个动态生成的值，这里我们用一个示例值
-            String id = "744437d4-5f27-4213-9c43-dd1225cffb9b";
+            if (!getFileId(file)) {
+                log.info("没有需要下载的文件");
+                return;
+            }
 
-            URI uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
-                    .queryParam("fileId", id)
-                    .build()
-                    .toUri();
+            URI uri = UriComponentsBuilder.fromHttpUrl(BASE_URL).queryParam("fileId", file.getFileId()).build().toUri();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("authorization","eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJleHAiOjE3MjMxMTM2MzksInV1aWQiOiIxMTEzMDIxMjMwMDI2MTk1NiIsImlhdCI6MTcyMzEwNjQzOX0.0_q1l3_AKHKaKCPGjFkvFDZQI8R0bOwfGN3j25MVOZ55RtA6_s_AlQKdRKdhowUCV7aFNfEuXXCEzY6K-96cMg");
+            headers.set("authorization",
+                    "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJleHAiOjE3MjMxMTM2MzksInV1aWQiOiIxMTEzMDIxMjMwMDI2MTk1NiIsImlhdCI6MTcyMzEwNjQzOX0.0_q1l3_AKHKaKCPGjFkvFDZQI8R0bOwfGN3j25MVOZ55RtA6_s_AlQKdRKdhowUCV7aFNfEuXXCEzY6K-96cMg");
+            headers.setAccept(java.util.Collections.singletonList(MediaType.APPLICATION_OCTET_STREAM));
             HttpEntity<Object> entity = new HttpEntity<>(null, headers);
-            ResponseEntity<Resource> response = restTemplate.exchange(
+
+            ResponseEntity<byte[]> response = restTemplate.exchange(
                     uri,
                     HttpMethod.GET,
                     entity,
-                    Resource.class
+                    byte[].class
             );
 
-            if (response.getBody() != null) {
-                String filename = getFilenameFromResponse(response);
-                try (InputStream inputStream = response.getBody().getInputStream()) {
-//                    s3Utils.uploadFile(inputStream, filename);
-                    System.out.println("File uploaded: " + filename);
+            // 打印响应头，用于调试
+            System.out.println("Response headers:");
+            response.getHeaders().forEach((key, value) -> {
+                System.out.println(key + ": " + value);
+            });
+
+            // 检查 Content-Length
+            List<String> contentLengthHeaders = response.getHeaders().get(HttpHeaders.CONTENT_LENGTH);
+            if (contentLengthHeaders != null && !contentLengthHeaders.isEmpty()) {
+                long contentLength = Long.parseLong(contentLengthHeaders.get(0));
+                if (contentLength == 0) {
+                    log.warn("API返回的Content-Length为0，无文件内容");
+                    file.setFlag(3);  // 假设3表示没有收到文件
+                    softwareMapper.updateFlag(file);
+                    return;
+                }
+            }
+
+            if (response.getBody() != null && response.getBody().length > 0) {
+                String filename = getFilenameFromResponse(response.getHeaders());
+                try (InputStream inputStream = new ByteArrayInputStream(response.getBody())) {
+                    file.setFlag(1);
+                    s3Utils.uploadFile(inputStream, file.getFileId());
+                    log.info("File uploaded: {}， Size: {} bytes", filename, response.getBody().length);
                 }
             } else {
-                System.out.println("No file received from API.");
+                file.setFlag(3);
+                log.warn("No file content received from API.");
             }
+            softwareMapper.updateFlag(file);
         } catch (Exception e) {
-            System.err.println("Error calling API or downloading file: " + e.getMessage());
+            file.setFlag(2);
+            softwareMapper.updateFlag(file);
+            log.error("Error calling API or downloading file: " + e.getMessage(), e);
         }
     }
 
-    private String getFilenameFromResponse(ResponseEntity<Resource> response) {
-        String contentDisposition = response.getHeaders().getFirst("Content-Disposition");
-        String filename = "downloaded_file_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+    private String getFilenameFromResponse(HttpHeaders headers) {
+        String contentDisposition = headers.getFirst(HttpHeaders.CONTENT_DISPOSITION);
+        String filename = "downloaded_file";
 
         if (contentDisposition != null && contentDisposition.contains("filename=")) {
             filename = contentDisposition.split("filename=")[1].replaceAll("\"", "");
-            // URL解码文件名
-            filename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
-            // 替换不安全的文件名字符
+            try {
+                filename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Error decoding filename: " + e.getMessage());
+            }
             filename = filename.replaceAll("[\\\\/:*?\"<>|]", "_");
         }
 
         return filename;
     }
 
-    private String getFileId(Resource resource) {
-        return resource.getFilename();
+    private Boolean getFileId(FileModel file) {
+        Attachments attachments = softwareMapper.getEmptyAttachmentsNames();
+        String fileId = attachments.getFileId();
+        if (fileId != null) {
+            file.setFileId(fileId);
+            file.setFileName(attachments.getFileName());
+            return true;
+        }
+        return false;
     }
 
 }
-

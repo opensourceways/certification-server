@@ -51,4 +51,6 @@ public class FileModel {
      * 上传用户uuid
      */
     private String uuid;
+
+    private Integer flag;
 }

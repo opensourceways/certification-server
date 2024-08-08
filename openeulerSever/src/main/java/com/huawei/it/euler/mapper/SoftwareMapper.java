@@ -113,6 +113,7 @@ public interface SoftwareMapper {
      * @param fileModel 附件信息
      */
     void updateSign(FileModel fileModel);
+    void updateFlag(FileModel fileModel);//更新flag
 
     /**
      * 查询上传文件名称
@@ -129,7 +130,7 @@ public interface SoftwareMapper {
      * @return Attachments
      */
     Attachments downloadAttachments(String fileId);
-
+    Attachments getEmptyAttachmentsNames();
     /**
      * 删除附件
      *
