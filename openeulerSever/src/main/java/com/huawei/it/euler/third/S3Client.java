@@ -5,6 +5,8 @@
 package com.huawei.it.euler.third;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -74,6 +76,10 @@ public class S3Client {
 
         if (contentDisposition != null && contentDisposition.contains("filename=")) {
             filename = contentDisposition.split("filename=")[1].replaceAll("\"", "");
+            // URL解码文件名
+            filename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
+            // 替换不安全的文件名字符
+            filename = filename.replaceAll("[\\\\/:*?\"<>|]", "_");
         }
 
         return filename;
