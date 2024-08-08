@@ -166,6 +166,7 @@ public class CompanyServiceImpl implements CompanyService {
         company.setStatus(0);
         Company existCompany = companyMapper.findCompanyByUserUuid(userUuid);
         company.setCompanyMail(encryptUtils.aesEncrypt(company.getCompanyMail()));
+        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(), currentTime,existCompany);
         if (existCompany != null) {
             Integer status = existCompany.getStatus();
             if (status == 0) {
