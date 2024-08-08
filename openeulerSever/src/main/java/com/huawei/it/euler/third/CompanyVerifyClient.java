@@ -50,13 +50,14 @@ public class CompanyVerifyClient {
         HttpEntity httpEntity = new HttpEntity(params, httpHeaders);
         ResponseEntity<String> responseEntity =
             restTemplate.postForEntity(verifyCompanyInfoUrl, httpEntity, String.class);
+        String body = responseEntity.getBody();
+        log.info("response body: {}", body);
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             if (responseEntity.getStatusCode() == HttpStatus.BAD_GATEWAY) {
                 throw new UrlRetryException("Backend timeout");
             }
             return false;
         }
-        String body = responseEntity.getBody();
         JSONObject bodyJson = JSONObject.parseObject(body);
         bodyJson = JSONObject.parseObject(bodyJson.getString("data"));
         String message = bodyJson.getString("result");
