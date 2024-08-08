@@ -94,7 +94,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Value("${sns.appId}")
     private String snsAppid;
 
-    @Value("${heds.appId}")
+    @Value("${sns.appId}")
     private String hedsAppid;
 
     @Value("${sns.templateId}")
@@ -106,24 +106,6 @@ public class CompanyServiceImpl implements CompanyService {
     @Value("${sns.xHwAppKey}")
     private String xHwAppKey;
 
-    @Value("${verifyCompany.appKey}")
-    private String verifyCompanyAppCode;
-
-    @Value("${verifyCompany.url}")
-    private String verifyCompanyInfoUrl;
-
-    @Value("${iam.tokenUrl}")
-    private String tokenUrl;
-
-    @Value("${iam.secret}")
-    private String iamSecret;
-
-    @Value("${iam.enterprise}")
-    private String enterprise;
-
-    @Value("${irs.ocrUrl}")
-    private String ocrUrl;
-
     @Value("${ocr.ak}")
     private String ocrAK;
 
@@ -132,16 +114,6 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Value("${ocr.projectId}")
     private String ocrProjectId;
-
-
-    @Value("${irs.irsUrl}")
-    private String irsUrl;
-
-    @Value("${irs.projectName}")
-    private String projectName;
-
-    @Value("${irs.scene}")
-    private String scene;
 
     @Autowired
     private CompanyMapper companyMapper;
