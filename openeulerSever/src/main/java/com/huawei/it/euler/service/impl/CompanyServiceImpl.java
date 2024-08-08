@@ -374,9 +374,10 @@ public class CompanyServiceImpl implements CompanyService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String endDateString = licenseTextInfo.getResult().getBusinessTerm().split("至")[1];
-        LocalDate endDate = LocalDate.parse(endDateString, formatter);
-        licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
-
+        if (StringUtils.isNotBlank(endDateString)) {
+            LocalDate endDate = LocalDate.parse(endDateString, formatter);
+            licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
+        }
         LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
         licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
     }
