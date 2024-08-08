@@ -48,6 +48,8 @@ public class CompanyVerifyClient {
         params.put("creditno", creditNo);
         params.put("legalperson", legalPerson);
         HttpEntity httpEntity = new HttpEntity(params, httpHeaders);
+        log.info("===request params: {}", params);
+        log.info("===request body: {}", httpEntity.getBody());
         ResponseEntity<String> responseEntity =
             restTemplate.postForEntity(verifyCompanyInfoUrl, httpEntity, String.class);
         String body = responseEntity.getBody();

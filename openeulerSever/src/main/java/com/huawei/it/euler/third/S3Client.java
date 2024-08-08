@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.third;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.huawei.it.euler.util.S3Utils;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,6 +40,8 @@ public class S3Client {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private S3Utils s3Utils;
 
     @Scheduled(fixedRate = 60000) // 60000 milliseconds = 1 minute
     public void callApiAndDownloadFile() {
@@ -60,8 +65,10 @@ public class S3Client {
 
             if (response.getBody() != null) {
                 String filename = getFilenameFromResponse(response);
-               log.info("filename: {}",filename);
-                System.out.println("File downloaded: " + filename);
+                try (InputStream inputStream = response.getBody().getInputStream()) {
+//                    s3Utils.uploadFile(inputStream, filename);
+                    System.out.println("File uploaded: " + filename);
+                }
             } else {
                 System.out.println("No file received from API.");
             }
@@ -84,5 +91,10 @@ public class S3Client {
 
         return filename;
     }
+
+    private String getFileId(Resource resource) {
+        return resource.getFilename();
+    }
+
 }
 
