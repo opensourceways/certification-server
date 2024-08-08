@@ -14,6 +14,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Component
 public class TokenConfig {
 
@@ -131,20 +133,21 @@ public class TokenConfig {
         String enUuid = encryptUtils.aesEncrypt(uuid);
         String refreshTimeKey = "tokenRefreshTime-" + enUuid;
         Object refreshTimeValue = caffeineCache.getIfPresent(refreshTimeKey);
-        if (Objects.isNull(refreshTimeValue)) {
-            return;
-        }
+        // First refresh token after login, at this time refreshTimeKe is not set, so set it to 0l
+        refreshTimeValue = Objects.isNull(refreshTimeValue) ? 0l : refreshTimeValue;
         long tokenRefreshTime = (long) refreshTimeValue;
         long currentTimeMillis = System.currentTimeMillis();
         if (currentTimeMillis > tokenRefreshTime) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.set("token", token);
-
+            log.debug("refresh cookie token :{}", token);
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
             ResponseEntity<JSONObject> responseEntity = restTemplate.getForEntity(refreshTokenUrl, JSONObject.class, httpEntity);
             JSONObject refreshData = responseEntity.getBody();
-            int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("token_expire");
+            log.debug("refresh api code :{}", responseEntity.getStatusCode());
+            log.debug("refresh api data :{}", refreshData.toJSONString());
+            int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
             // half of tokenIntervalMin times passed then refresh the token
             long newTokenRefreshTime = tokenIntervalMin / 2 * 1000L + System.currentTimeMillis();
             String finalUuid = uuid;

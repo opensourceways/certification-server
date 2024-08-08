@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.service.impl;
 
+import com.huawei.it.euler.config.CacheConfig;
 import com.huawei.it.euler.mapper.MasterDataMapper;
 import com.huawei.it.euler.model.entity.ComputingPlatform;
 import com.huawei.it.euler.model.entity.Os;
@@ -11,6 +12,7 @@ import com.huawei.it.euler.model.entity.Product;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.MasterDataService;
 import jakarta.annotation.Resource;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +68,11 @@ public class MasterDataServiceImpl implements MasterDataService {
     @Override
     public List<String> findAllInnovationCenter() {
         return masterDataMapper.selectAllInnovationCenter();
+    }
+
+    @Override
+    public List<String> findAllCPUVendor() {
+        return masterDataMapper.selectAllCPUVendor();
     }
 
     @Override

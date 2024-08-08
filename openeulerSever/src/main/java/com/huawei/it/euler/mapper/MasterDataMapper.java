@@ -28,6 +28,8 @@ public interface MasterDataMapper {
 
     List<String> selectAllInnovationCenter();
 
+    List<String> selectAllCPUVendor();
+
     Integer findOsByNameAndVersion(
             @Param("name") String name, @Param("version") String version);
 
@@ -36,6 +38,8 @@ public interface MasterDataMapper {
 
     Integer findProduct(
             @Param("productType") String productType, @Param("productChildrenType") String productChildrenType);
+
+    Integer findCPUVendorByName(@Param("name") String name);
 
     void insertAuditLog(AuditLog auditLog);
 }

@@ -34,7 +34,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllOs")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<OsVo>> findAllOs() {
         return JsonResponse.success(masterDataService.findAllOs());
     }
@@ -45,7 +45,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllComputingPlatform")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<HashRatePlatformVo>> findAllComputingPlatform() {
         return JsonResponse.success(masterDataService.findAllComputingPlatform());
     }
@@ -56,7 +56,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllProduct")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<ProductVo>> findAllProduct() {
         return JsonResponse.success(masterDataService.findAllProduct());
     }
@@ -67,8 +67,19 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllInnovationCenter")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<String>> findAllInnovationCenter() {
         return JsonResponse.success(masterDataService.findAllInnovationCenter());
+    }
+
+    /**
+     * 查询CPU硬件厂商
+     *
+     * @return JsonResponse
+     */
+    @GetMapping("/software/findAllCPUVendor")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
+    public JsonResponse<List<String>> findAllCPUVendor() {
+        return JsonResponse.success(masterDataService.findAllCPUVendor());
     }
 }

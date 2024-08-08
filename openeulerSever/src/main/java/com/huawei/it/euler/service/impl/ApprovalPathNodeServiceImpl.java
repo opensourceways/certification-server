@@ -4,8 +4,10 @@
 
 package com.huawei.it.euler.service.impl;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.huawei.it.euler.mapper.ApprovalPathNodeMapper;
 import com.huawei.it.euler.mapper.InnovationCenterMapper;
+import com.huawei.it.euler.mapper.MasterDataMapper;
 import com.huawei.it.euler.model.entity.ApprovalPathNode;
 import com.huawei.it.euler.model.entity.InnovationCenter;
 import com.huawei.it.euler.service.ApprovalPathNodeService;
@@ -49,5 +51,15 @@ public class ApprovalPathNodeServiceImpl implements ApprovalPathNodeService {
             approvalPathNodes = approvalPathNodeMapper.findDefaultNode();
         }
         return approvalPathNodes;
+    }
+
+    @Override
+    public ApprovalPathNode findANodeByAsIdAndSoftwareStatus(Integer asId, Integer status) {
+        return approvalPathNodeMapper.findNodeByAsIdAndStatus(asId, status);
+    }
+
+    @Override
+    public List<ApprovalPathNode> findNodeByAsId(Integer icId) {
+        return approvalPathNodeMapper.findNodeByAsId(icId);
     }
 }

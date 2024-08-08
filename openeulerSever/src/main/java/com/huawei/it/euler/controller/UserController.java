@@ -90,7 +90,7 @@ public class UserController {
      * @return JsonResponse
      */
     @GetMapping("/user/getUserInfo")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<UserInfoVo> getUserInfo(HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
@@ -142,7 +142,7 @@ public class UserController {
      * @return JsonResponse
      */
     @PostMapping("/user/modifyUserInfo")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     @Transactional
     public JsonResponse<String> modifyUserInfo(@RequestBody @Valid EulerUserVo userVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -188,7 +188,7 @@ public class UserController {
      * @return JsonResponse
      */
     @DeleteMapping("/user/deregisterUser")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<String> deregisterUser(HttpServletRequest request) {
         return userService.deregisterUser(request);
     }

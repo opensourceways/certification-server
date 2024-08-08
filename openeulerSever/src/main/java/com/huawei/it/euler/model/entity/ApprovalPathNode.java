@@ -17,6 +17,8 @@ import java.util.Date;
 public class ApprovalPathNode {
     private Integer id;
 
+    private Integer asId;
+
     private Integer icId;
 
     private Integer roleId;

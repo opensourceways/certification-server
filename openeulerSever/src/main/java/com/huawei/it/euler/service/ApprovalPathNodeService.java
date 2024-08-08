@@ -24,10 +24,26 @@ public interface ApprovalPathNodeService {
     ApprovalPathNode findANodeByIcIdAndSoftwareStatus(Integer icId, Integer status);
 
     /**
+     * Find approval node by approval scenario id and software status.
+     * @param asId approval scenario id
+     * @param status software status
+     * @return approval node
+     */
+    ApprovalPathNode findANodeByAsIdAndSoftwareStatus(Integer asId, Integer status);
+
+    /**
      * 根据创新中心id查询节点
      *
      * @param icId 创新中心id
      * @return 列表
      */
     List<ApprovalPathNode> findNodeByIcId(Integer icId);
+
+    /**
+     * Find approval node by approval scenario id.
+     * @param icId
+     * @return
+     */
+    List<ApprovalPathNode> findNodeByAsId(Integer icId);
+
 }

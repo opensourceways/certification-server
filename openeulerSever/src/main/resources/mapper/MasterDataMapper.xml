@@ -9,7 +9,7 @@
 
     <select id="selectAllProduct" resultType="com.huawei.it.euler.model.entity.Product">
         select product_type productType, product_children_type productChildrenType
-        from product_T
+        from product_t
     </select>
 
     <select id="selectAllComputingPlatform" resultType="com.huawei.it.euler.model.entity.ComputingPlatform">
@@ -21,6 +21,11 @@
         select ict.name
         from innovation_center_t ict
         order by ict.type asc
+    </select>
+
+    <select id="selectAllCPUVendor" resultType="java.lang.String">
+        select name
+        from cpu_vendor_t
     </select>
 
     <select id="findOsByNameAndVersion" resultType="java.lang.Integer">
@@ -39,6 +44,12 @@
         select count(1)
         from product_t
         where product_type = #{productType} and product_children_type = #{productChildrenType}
+    </select>
+
+    <select id="findCPUVendorByName" resultType="java.lang.Integer">
+        select id
+        from cpu_vendor_t
+        where name = #{name}
     </select>
 
     <insert id="insertAuditLog">

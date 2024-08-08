@@ -11,16 +11,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.config.extension.EmailConfig;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.mapper.*;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.entity.*;
+import com.huawei.it.euler.model.enumeration.IntelTestEnum;
 import com.huawei.it.euler.model.enumeration.ProtocolEnum;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.ApprovalPathNodeService;
+import com.huawei.it.euler.service.ApprovalScenarioService;
 import com.huawei.it.euler.service.CompanyService;
 import com.huawei.it.euler.service.SoftwareService;
 import com.huawei.it.euler.util.*;
@@ -78,9 +81,6 @@ public class SoftwareServiceImpl implements SoftwareService {
     private ApprovalPathNodeService approvalPathNodeService;
 
     @Autowired
-    private InnovationCenterMapper innovationCenterMapper;
-
-    @Autowired
     private RoleMapper roleMapper;
 
     @Autowired
@@ -100,6 +100,12 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private LogUtils logUtils;
+
+    @Autowired
+    private ApprovalScenarioService approvalScenarioService;
+
+    @Autowired
+    private EmailConfig emailConfig;
 
     static {
         NODE_NAME_MAP.put(1, "测评申请");
@@ -150,6 +156,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         String jsonHashRatePlatform = JSON.toJSON(hashratePlatformList).toString();
         // 校验OS、算力平台参数
         checkCertificateInfo(software.getOsName(), software.getOsVersion(), jsonHashRatePlatform);
+        checkIntelParam(softwareDb.getCpuVendor(), softwareDb.getTestOrganization(), jsonHashRatePlatform);
         software.setJsonHashRatePlatform(jsonHashRatePlatform);
         // 调用流程审批接口，如果流程错误则不更新证书信息
         ProcessVo processVo = new ProcessVo();
@@ -195,6 +202,27 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
+    /**
+     * check intel test scenario param
+     *
+     * @param cpuVendor        硬件厂商
+     * @param innovationCenter 测评中心
+     * @param hashratePlatform 算例平台
+     */
+    private void checkIntelParam(String cpuVendor, String innovationCenter, String hashratePlatform) {
+        if (!StringUtils.isEmpty(cpuVendor) && IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {
+            if (!IntelTestEnum.INNVOTATION_CENTER.getName().equals(innovationCenter)) {
+                throw new ParamException("测试机构参数错误");
+            }
+            List<ComputingPlatformVo> platforms = JSONObject.parseArray(hashratePlatform, ComputingPlatformVo.class);
+            for (ComputingPlatformVo platform : platforms) {
+                if (!IntelTestEnum.HASHRATEPLATFORM.getName().equals(platform.getPlatformName())) {
+                    throw new ParamException("算力平台参数错误");
+                }
+            }
+        }
+    }
+
     @Override
     public void insertSoftware(Software software, String cookieUuid, HttpServletRequest request)
             throws InputException, IOException {
@@ -231,6 +259,9 @@ public class SoftwareServiceImpl implements SoftwareService {
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
         checkParam(software);
+        // 获取测评流程
+        List<ApprovalPathNode> approvalPath = approvalScenarioService.findApprovalPath(software.getTestOrganization(), software.getCpuVendor());
+        software.setAsId(approvalPath.get(0).getAsId());
         Integer id = software.getId();
         // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
         if (id == null || id == 0) {
@@ -250,9 +281,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         setCurNode(userUuid, id);
         // 设置节点表下一个节点状态 2-方案审核
         Node nextNode = new Node();
-        setNextNode(software, nextNode);
+        setNextNode(software, nextNode, approvalPath);
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "");
+        // 发送邮件通知
+        sendEmail(software);
     }
 
     private void setCurNode(String userUuid, Integer softwareId) {
@@ -271,14 +304,13 @@ public class SoftwareServiceImpl implements SoftwareService {
         nodeMapper.insertNode(curNode);
     }
 
-    private void setNextNode(Software software, Node nextNode) {
+    private void setNextNode(Software software, Node nextNode, List<ApprovalPathNode> approvalPath) {
         nextNode.setNodeName(NODE_NAME_MAP.get(2));
         nextNode.setStatus(2);
         // 设置处理结果：0-待处理 1-通过 2-驳回 3-转审
         nextNode.setHandlerResult(0);
         // 查询处理人
-        Integer testId = innovationCenterMapper.findByName(software.getTestOrganization()).getId();
-        ApprovalPathNode approvalPathNode = approvalPathNodeService.findANodeByIcIdAndSoftwareStatus(testId, 2);
+        ApprovalPathNode approvalPathNode = approvalPath.get(0);
         nextNode.setHandler(approvalPathNode.getUserUuid());
         nextNode.setSoftwareId(software.getId());
         nextNode.setUpdateTime(new Date());
@@ -287,6 +319,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private void checkParam(Software software) {
         checkCertificateInfo(software.getOsName(), software.getOsVersion(), software.getJsonHashRatePlatform());
+        checkIntelParam(software.getCpuVendor(), software.getTestOrganization(), software.getJsonHashRatePlatform());
         String productTypeStr = software.getProductType();
         String[] productTypes = productTypeStr.split("/");
         if (productTypes.length != 2) {
@@ -314,7 +347,13 @@ public class SoftwareServiceImpl implements SoftwareService {
         updateLatestNode(handlerResult, latestNode, vo.getTransferredComments(), date);
         // 设置下一个节点信息
         Node nextNode = new Node();
-        Map<String, Object> map = getNextNodeNameForNumber(handlerResult, software.getStatus());
+        Map<String, Object> map;
+        if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
+            map = getNextNodeNameForNumberAtIntel(handlerResult, software.getStatus());
+        } else {
+            map = getNextNodeNameForNumber(handlerResult, software.getStatus());
+        }
+
         int nextNodeNameForNumber = Integer.parseInt(map.get("nextNodeNameForNumber").toString());
         String authenticationStatus = map.get("authenticationStatus").toString();
         // 判断是否是末节点
@@ -354,9 +393,8 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failedResult("非法的请求");
             }
             // 查询处理人
-            Integer testId = innovationCenterMapper.findByName(software.getTestOrganization()).getId();
             ApprovalPathNode approvalPathNode =
-                    approvalPathNodeService.findANodeByIcIdAndSoftwareStatus(testId, nextNodeNameForNumber);
+                    approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
             nextNode.setNodeName(nodeName);
             nextNode.setSoftwareId(software.getId());
             Date date = new Date();
@@ -372,8 +410,10 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private String getHandler(int nextNodeNameForNumber, ProcessVo vo, ApprovalPathNode approvalPathNode, String uuid) {
         String handler;
-        if (nextNodeNameForNumber == 1 || nextNodeNameForNumber == 3 || nextNodeNameForNumber == 7) {
+        if (nextNodeNameForNumber == 1 || nextNodeNameForNumber == 7) {
             handler = uuid;
+        } else if (nextNodeNameForNumber == 3) {
+            handler = approvalPathNode == null ? uuid : approvalPathNode.getUserUuid();
         } else {
             // 转审
             if (vo.getHandlerResult() == 3) {
@@ -395,6 +435,29 @@ public class SoftwareServiceImpl implements SoftwareService {
                 break;
             case 2:
                 nextNodeNameForNumber = status - 1;
+                authenticationStatus = NODE_NAME_MAP.get(status) + "已驳回";
+                break;
+            case 3:
+                nextNodeNameForNumber = status;
+                break;
+            default:
+                break;
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("nextNodeNameForNumber", nextNodeNameForNumber);
+        map.put("authenticationStatus", authenticationStatus);
+        return map;
+    }
+
+    private Map<String, Object> getNextNodeNameForNumberAtIntel(Integer handlerResult, Integer status) {
+        Integer nextNodeNameForNumber = 0;
+        String authenticationStatus = "";
+        switch (handlerResult) {
+            case 1:
+                nextNodeNameForNumber = status == 3 ? 5 : status + 1;
+                break;
+            case 2:
+                nextNodeNameForNumber = status == 5 ? 3 : status - 1;
                 authenticationStatus = NODE_NAME_MAP.get(status) + "已驳回";
                 break;
             case 3:
@@ -436,6 +499,17 @@ public class SoftwareServiceImpl implements SoftwareService {
             List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
             if (CollectionUtil.isEmpty(attachmentsVos)) {
                 return JsonResponse.failed("未上传测试报告");
+            }
+        }
+        if (softwareInDb.getStatus() == 7) {
+            if (handlerResult == 1) {
+                Map<String, Object> param = Maps.newHashMap();
+                param.put("softwareId", softwareInDb.getId());
+                param.put("fileType", "sign");
+                List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
+                if (CollectionUtil.isEmpty(attachmentsVos)) {
+                    return JsonResponse.failed("未上传签名");
+                }
             }
         }
         BeanUtils.copyProperties(softwareInDb, software);
@@ -480,9 +554,8 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public List<SimpleUserVo> transferredUserList(Integer softwareId, String cookieUuid) {
         Software software = softwareMapper.findById(softwareId);
-        Integer testId = innovationCenterMapper.findByName(software.getTestOrganization()).getId();
         ApprovalPathNode approvalPathNode =
-                approvalPathNodeService.findANodeByIcIdAndSoftwareStatus(testId, software.getStatus());
+                approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), software.getStatus());
         if (ObjectUtils.isEmpty(approvalPathNode)) {
             return new ArrayList<>();
         }
@@ -533,12 +606,16 @@ public class SoftwareServiceImpl implements SoftwareService {
         currentSoftwareList.forEach(item -> {
             if (userUuid.equals(item.getReviewerUuid())) {
                 String status = item.getStatus();
+                String cpuVendor = item.getCpuVendor();
                 switch (status) {
                     case "证书确认":
                         item.setOperation("确认");
                         break;
                     case "测试阶段":
-                        item.setOperation("上传报告");
+                        if (!IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {
+                            item.setOperation("上传报告");
+                            break;
+                        }
                         break;
                     case "已完成":
                         item.setOperation("查看证书");
@@ -569,8 +646,15 @@ public class SoftwareServiceImpl implements SoftwareService {
         });
         reviewSoftwareList.forEach(item -> {
             String status = item.getStatus();
+            String cpuVendor = item.getCpuVendor();
             if (userUuid.equals(item.getReviewerUuid())) {
                 switch (status) {
+                    case "测试阶段":
+                        if (IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {
+                            item.setOperation("上传报告");
+                            break;
+                        }
+                        break;
                     case "证书初审":
                         item.setOperation("证书初审");
                         break;
@@ -633,12 +717,9 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public List<AuditRecordsVo> getNodeList(Integer softwareId) {
         Software software = softwareMapper.findById(softwareId);
-        InnovationCenter innovationCenter = innovationCenterMapper.findByName(software.getTestOrganization());
-        if (innovationCenter == null) {
-            innovationCenter = innovationCenterMapper.findDefault();
-        }
         // 查询默认节点配置
-        List<ApprovalPathNode> defaultNodes = approvalPathNodeService.findNodeByIcId(innovationCenter.getId());
+        List<ApprovalPathNode> defaultNodes = approvalPathNodeService.findNodeByAsId(software.getAsId());
+
         // 查询审核节点
         List<AuditRecordsVo> auditRecordsList = getAuditRecordsList(softwareId);
         // 对审核节点按照节点名称分组
@@ -660,7 +741,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                     auditRecordsVo.setNodeName(item.getApprovalNodeName());
                     auditRecordsVo.setStatus(item.getSoftwareStatus());
                     return auditRecordsVo;
-        }).collect(Collectors.toList());
+                }).collect(Collectors.toList());
         // 组合数据
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
@@ -669,7 +750,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             if (user != null && StringUtils.isNoneBlank(user.getUsername())) {
                 item.setHandlerName(user.getUsername());
             } else {
-                item.setHandlerTime(item.getHandler());
+                item.setHandlerName(item.getHandler());
             }
         });
         return filterLatestNodes.stream()
@@ -721,30 +802,16 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private Integer getMaxNodeStatus(List<AuditRecordsVo> latestNodes) {
-        AuditRecordsVo lastReviewedNode = latestNodes.stream()
-                .max(Comparator.comparing(AuditRecordsVo::getStatus))
-                .get();
-        Integer maxStatus = lastReviewedNode.getStatus();
-        List<AuditRecordsVo> notPassNodes = latestNodes.stream()
-                .filter(item -> item.getHandlerResult().equals("已驳回"))
-                .sorted(Comparator.comparing(AuditRecordsVo::getStatus))
-                .collect(Collectors.toList());
-        if (CollectionUtil.isNotEmpty(notPassNodes)) {
-            AuditRecordsVo auditRecordsVo = notPassNodes.get(0);
-            if (auditRecordsVo.getStatus().equals(2)) {
-                maxStatus = 2;
-            } else {
-                // 需要判断该驳回节点是否为本次驳回节点，需排除上次驳回节点
-                int preCurNode = auditRecordsVo.getStatus() - 2;
-                AuditRecordsVo targetNode = latestNodes.stream()
-                        .filter(item -> item.getStatus().equals(preCurNode))
-                        .findFirst()
-                        .get();
-                if (auditRecordsVo.getHandlerTime().compareTo(targetNode.getHandlerTime()) > 0) {
-                    maxStatus = auditRecordsVo.getStatus();
-                } else {
-                    maxStatus = auditRecordsVo.getStatus() - 1;
-                }
+        List<AuditRecordsVo> auditRecordsVoList = latestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus).reversed()).toList();
+        Integer maxStatus = 0;
+        AuditRecordsVo lastPassedNode = auditRecordsVoList.stream().filter(item -> "通过".equals(item.getHandlerResult()))
+                .max(Comparator.comparing(AuditRecordsVo::getStatus)).get();
+        for (AuditRecordsVo auditRecordsVo : auditRecordsVoList) {
+            if ("已驳回".equals(auditRecordsVo.getHandlerResult()) && auditRecordsVo.getHandlerTime().compareTo(lastPassedNode.getHandlerTime()) > 0) {
+                maxStatus = auditRecordsVo.getStatus();
+            } else if ("待处理".equals(auditRecordsVo.getHandlerResult())) {
+                maxStatus = maxStatus == 0 ? auditRecordsVo.getStatus() : maxStatus;
+                break;
             }
         }
         return maxStatus;
@@ -756,7 +823,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         Software software = softwareMapper.findById(softwareId);
         String cookieUuid = UserUtils.getCookieUuid(request);
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        if (!uuid.equals(software.getUserUuid())) {
+        if (!uuid.equals(software.getReviewer())) {
             return JsonResponse.failed("不是当前处理人");
         }
         FileModel fileModel = fileUtils.uploadFile(file, softwareId, fileTypeCode, fileType, request);
@@ -892,5 +959,29 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         List<RoleVo> roleVos = roleMapper.findRoleInfoByUserId(user.getId());
         return roleVos.stream().map(RoleVo::getRole).collect(Collectors.toList());
+    }
+
+    /**
+     * send test apply to innovation center
+     * @param software test info
+     */
+    private void sendEmail(Software software) {
+        ApprovalScenario approvalScenario = approvalScenarioService.findById(software.getAsId());
+        if (approvalScenario == null) {
+            return;
+        }
+        if (!"intel".equals(approvalScenario.getName())) {
+            return;
+        }
+        List<Integer> userIdList = roleMapper.findUserByRole(8);
+        List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
+        List<String> receiverList = new ArrayList<>();
+        for (EulerUser eulerUser : eulerUserList) {
+            receiverList.add(eulerUser.getMail());
+        }
+
+        String subject = "英特尔先进技术评测业务申请";
+        String content = "";
+        emailConfig.sendMail(receiverList, subject, content, new ArrayList<>());
     }
 }

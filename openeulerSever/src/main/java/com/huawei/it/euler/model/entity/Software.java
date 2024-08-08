@@ -70,6 +70,8 @@ public class Software {
     @Length(max = 50, message = "测试机构最大不超过{max}个字符")
     private String testOrganization;
 
+    private String cpuVendor;
+
     @JsonIgnore
     private Integer status;
 
@@ -89,4 +91,6 @@ public class Software {
     private String userUuid;
 
     private List<String> platforms;
+
+    private Integer asId;
 }

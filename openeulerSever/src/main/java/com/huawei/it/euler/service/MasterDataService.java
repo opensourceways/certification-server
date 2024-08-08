@@ -22,5 +22,7 @@ public interface MasterDataService {
 
     List<String> findAllInnovationCenter();
 
+    List<String> findAllCPUVendor();
+
     List<HashRatePlatformVo> findAllComputingPlatform();
 }

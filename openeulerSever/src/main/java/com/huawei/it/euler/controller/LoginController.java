@@ -131,8 +131,10 @@ public class LoginController {
     @GetMapping("/logoutForCenter")
     public JsonResponse<String> logoutForCenter(HttpServletRequest request, HttpServletResponse response) {
         log.info("user center logout");
-        String jwt = request.getParameter("data");
-        String uuid = tokenConfig.verifyJwt(jwt);
+        String authorization = request.getHeader("Authorization");
+        log.debug("logout for api request data authorization:{}", authorization);
+        String uuid = tokenConfig.verifyJwt(authorization);
+        log.debug("logout for api request data uuid:{}", uuid);
         if (StringUtils.isEmpty(uuid)){
             return JsonResponse.failed("jwt parse error!");
         }

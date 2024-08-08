@@ -96,6 +96,11 @@ public class SoftwareListVo {
     private String hashratePlatformaNameList;
 
     /**
+     * 硬件厂商
+     */
+    private String cpuVendor;
+
+    /**
      * 已驳回字段
      */
     @JsonIgnore
@@ -105,4 +110,9 @@ public class SoftwareListVo {
      * 操作
      */
     private String operation;
+
+    /**
+     * 测评场景id
+     */
+    private Integer asId;
 }

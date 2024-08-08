@@ -18,7 +18,8 @@ public enum RoleEnum {
     EULER_IC(4, "euler_ic", "区域欧拉创新中心"),
     FLAG_STORE(5, "flag_store", "欧拉社区旗舰店"),
     ADMIN(6, "admin", "管理员"),
-    OSV_USER(7, "OSV_user", "OSV伙伴");
+    OSV_USER(7, "OSV_user", "OSV伙伴"),
+    OPENATOM_INTEL(8, "openatom_intel", "开放原子-英特尔联合验证中心");
 
     @Getter
     private final Integer roleId; // 角色id
