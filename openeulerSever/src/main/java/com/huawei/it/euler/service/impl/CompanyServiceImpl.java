@@ -336,7 +336,7 @@ public class CompanyServiceImpl implements CompanyService {
             log.error(e.getErrorCode());
             log.error(e.getErrorMsg());
         }
-        log.info(response.toString());
+        log.info(response == null ? "response is null!" : response.toString());
         return response;
     }
 
