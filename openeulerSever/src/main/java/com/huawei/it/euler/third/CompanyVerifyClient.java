@@ -52,14 +52,14 @@ public class CompanyVerifyClient {
         log.info("===request body: {}", httpEntity.getBody());
         ResponseEntity<String> responseEntity =
             restTemplate.postForEntity(verifyCompanyInfoUrl, httpEntity, String.class);
-        String body = responseEntity.getBody();
-        log.info("response body: {}", body);
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            log.info("response body: {}", responseEntity.getBody());
             if (responseEntity.getStatusCode() == HttpStatus.BAD_GATEWAY) {
                 throw new UrlRetryException("Backend timeout");
             }
             return false;
         }
+        String body = responseEntity.getBody();
         JSONObject bodyJson = JSONObject.parseObject(body);
         bodyJson = JSONObject.parseObject(bodyJson.getString("data"));
         String message = bodyJson.getString("result");
