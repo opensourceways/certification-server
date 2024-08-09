@@ -285,7 +285,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "");
         // 发送邮件通知
-        sendEmail(software);
+//        sendEmail(software);
     }
 
     private void setCurNode(String userUuid, Integer softwareId) {
@@ -804,11 +804,13 @@ public class SoftwareServiceImpl implements SoftwareService {
     private Integer getMaxNodeStatus(List<AuditRecordsVo> latestNodes) {
         List<AuditRecordsVo> auditRecordsVoList = latestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus).reversed()).toList();
         Integer maxStatus = 0;
-        AuditRecordsVo lastPassedNode = auditRecordsVoList.stream().filter(item -> "通过".equals(item.getHandlerResult()))
-                .max(Comparator.comparing(AuditRecordsVo::getStatus)).get();
+        List<AuditRecordsVo> passRecordList = auditRecordsVoList.stream().filter(item -> "通过".equals(item.getHandlerResult()))
+                .max(Comparator.comparing(AuditRecordsVo::getStatus)).stream().toList();
         for (AuditRecordsVo auditRecordsVo : auditRecordsVoList) {
-            if ("已驳回".equals(auditRecordsVo.getHandlerResult()) && auditRecordsVo.getHandlerTime().compareTo(lastPassedNode.getHandlerTime()) > 0) {
-                maxStatus = auditRecordsVo.getStatus();
+            if ("已驳回".equals(auditRecordsVo.getHandlerResult()) ) {
+                if (passRecordList.isEmpty() || auditRecordsVo.getHandlerTime().compareTo(passRecordList.get(0).getHandlerTime()) > 0) {
+                    maxStatus = auditRecordsVo.getStatus();
+                }
             } else if ("待处理".equals(auditRecordsVo.getHandlerResult())) {
                 maxStatus = maxStatus == 0 ? auditRecordsVo.getStatus() : maxStatus;
                 break;
