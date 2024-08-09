@@ -37,4 +37,8 @@ public class Attachments {
      * 文件类型
      */
     private String fileType;
+
+    private Integer flag;
+
+    private String fileId;
 }
