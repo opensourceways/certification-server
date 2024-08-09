@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -55,7 +56,7 @@ public class Software {
     @Length(max = 50, message = "os版本最大不超过{max}个字符")
     private String osVersion;
 
-    @NotBlank(message = "算力平台不能为空")
+    @NotNull(message = "算力平台不能为空")
     private List<@Valid ComputingPlatformVo> hashratePlatformList;
 
     @JsonIgnore
@@ -87,6 +88,5 @@ public class Software {
     @JsonIgnore
     private String userUuid;
 
-    @JsonIgnore
     private List<String> platforms;
 }

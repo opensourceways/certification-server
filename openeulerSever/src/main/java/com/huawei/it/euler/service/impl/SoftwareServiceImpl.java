@@ -423,6 +423,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             return JsonResponse.failedResult("非法的审核参数");
         }
         Software softwareInDb = softwareMapper.findById(vo.getSoftwareId());
+        if (softwareInDb == null) {
+            return JsonResponse.failedResult("审核条目不存在");
+        }
         if (softwareInDb.getStatus() == 3) {
             if (handlerResult != 1) {
                 return JsonResponse.failedResult("非法的审核结果参数");

@@ -4,7 +4,27 @@
 
 package com.huawei.it.euler.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
+import static com.huawei.it.euler.service.impl.SoftwareServiceImpl.PARTNER_ROLE;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,33 +44,25 @@ import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.LicenseInfoVo;
 import com.huawei.it.euler.model.vo.UserCompanyVo;
 import com.huawei.it.euler.service.CompanyService;
-import com.huawei.it.euler.third.JwtTokenClient;
-import com.huawei.it.euler.util.*;
+import com.huawei.it.euler.third.CompanyVerifyClient;
+import com.huawei.it.euler.util.EncryptUtils;
+import com.huawei.it.euler.util.FileUtils;
+import com.huawei.it.euler.util.StringPropertyUtils;
+import com.huawei.it.euler.util.UserUtils;
+import com.huaweicloud.sdk.core.auth.BasicCredentials;
+import com.huaweicloud.sdk.core.auth.ICredential;
+import com.huaweicloud.sdk.core.exception.ConnectionException;
+import com.huaweicloud.sdk.core.exception.RequestTimeoutException;
+import com.huaweicloud.sdk.core.exception.ServiceResponseException;
+import com.huaweicloud.sdk.ocr.v1.OcrClient;
+import com.huaweicloud.sdk.ocr.v1.model.BusinessLicenseRequestBody;
+import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseRequest;
+import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseResponse;
+import com.huaweicloud.sdk.ocr.v1.region.OcrRegion;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.huawei.it.euler.service.impl.SoftwareServiceImpl.PARTNER_ROLE;
-
 /**
  * CompanyServiceImpl
  *
@@ -78,6 +90,9 @@ public class CompanyServiceImpl implements CompanyService {
     private static final String X_HW_APPKEY = "X-HW-APPKEY";
 
     @Value("${sns.appId}")
+    private String snsAppid;
+
+    @Value("${sns.appId}")
     private String hedsAppid;
 
     @Value("${sns.templateId}")
@@ -89,35 +104,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Value("${sns.xHwAppKey}")
     private String xHwAppKey;
 
-    @Value("${apigw.appId}")
-    private String appId;
+    @Value("${ocr.ak}")
+    private String ocrAK;
 
-    @Value("${apigw.xHwAppKey}")
-    private String romaXHwAppKey;
+    @Value("${ocr.sk}")
+    private String ocrSK;
 
-    @Value("${apigw.verifyCompanyInfoUrl}")
-    private String verifyCompanyInfoUrl;
-
-    @Value("${iam.tokenUrl}")
-    private String tokenUrl;
-
-    @Value("${iam.secret}")
-    private String iamSecret;
-
-    @Value("${iam.enterprise}")
-    private String enterprise;
-
-    @Value("${irs.ocrUrl}")
-    private String ocrUrl;
-
-    @Value("${irs.irsUrl}")
-    private String irsUrl;
-
-    @Value("${irs.projectName}")
-    private String projectName;
-
-    @Value("${irs.scene}")
-    private String scene;
+    @Value("${ocr.projectId}")
+    private String ocrProjectId;
 
     @Autowired
     private CompanyMapper companyMapper;
@@ -141,6 +135,9 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private EncryptUtils encryptUtils;
 
+    @Autowired
+    private CompanyVerifyClient companyVerifyClient;
+
     @Transactional
     @Override
     public JsonResponse<String> registerCompany(CompanyVo companyVo, String cookieUuid) throws InputException {
@@ -160,13 +157,14 @@ public class CompanyServiceImpl implements CompanyService {
         company.setApplyTime(currentTime);
         company.setApprovalComment(StringUtils.EMPTY);
         company.setUserUuid(userUuid);
-        if (!checkCompanyInfo(company)) {
+        if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(), company.getLegalPerson())) {
             return JsonResponse.failed(COMPANY_VERIFY_FAILED);
         }
         company.setIsCheckedPass(true);
         company.setStatus(0);
         Company existCompany = companyMapper.findCompanyByUserUuid(userUuid);
         company.setCompanyMail(encryptUtils.aesEncrypt(company.getCompanyMail()));
+        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(), currentTime,existCompany);
         if (existCompany != null) {
             Integer status = existCompany.getStatus();
             if (status == 0) {
@@ -182,41 +180,6 @@ public class CompanyServiceImpl implements CompanyService {
         log.info("successfully insert a new company, company name: {}, insert time: {}",
                 company.getCompanyName(), company.getUpdateTime());
         return JsonResponse.success();
-    }
-
-    private Boolean checkCompanyInfo(Company company) {
-        String companyName = company.getCompanyName();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(X_HW_ID, appId);
-        httpHeaders.set(X_HW_APPKEY, romaXHwAppKey);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("customerName", companyName);
-        HttpEntity httpEntity = new HttpEntity(httpHeaders);
-        ResponseEntity<String> responseEntity =
-                restTemplate.exchange(verifyCompanyInfoUrl, HttpMethod.GET, httpEntity, String.class, map);
-        log.info("License Identity Status Code: {}",
-                CleanXSSUtils.replaceCRLF(String.valueOf(responseEntity.getStatusCodeValue())));
-        if (responseEntity.getStatusCodeValue() != 200) {
-            return false;
-        }
-        String body = responseEntity.getBody();
-        JSONObject jsonObject = JSONObject.parseObject(body);
-        JSONArray listResult = jsonObject.getJSONArray("listResult");
-        if (listResult.isEmpty()) {
-            log.info("company name not match: {}", CleanXSSUtils.replaceCRLF(companyName));
-            return false;
-        }
-        for (int i = 0; i < listResult.size(); i++) {
-            JSONObject result = listResult.getJSONObject(i);
-            String orgName = result.getString("orgName");
-            String legalRep = result.getString("legalRep");
-            String uscCode = result.getString("uscCode");
-            if (Objects.equals(orgName, companyName) && Objects.equals(legalRep, company.getLegalPerson())
-                    && Objects.equals(uscCode, company.getCreditCode())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -312,10 +275,8 @@ public class CompanyServiceImpl implements CompanyService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(X_HW_ID, hedsAppid);
         httpHeaders.set(X_HW_APPKEY, xHwAppKey);
-        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
-        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
         HashMap<String, Object> map = new HashMap<>();
-        map.put("app_id", hedsAppid);
+        map.put("app_id", snsAppid);
         EulerUser user = userMapper.findByUuid(company.getUserUuid());
         map.put("mobiles", user.getTelephone());
         map.put("template_id", templateId);
@@ -349,8 +310,7 @@ public class CompanyServiceImpl implements CompanyService {
             throws InputException, IOException {
         FileModel fileModel = fileUtils.uploadFile(file, null, 2, "license", request);
         softwareMapper.insertAttachment(fileModel);
-        String licenseInfo = getLicenseTextInfo(file);
-        LicenseInfoVo licenseInfoVo = getLicenseInfo(licenseInfo);
+        LicenseInfoVo licenseInfoVo = getLicenseInfo(getLicenseTextInfo(file));
         fileModel.setFilePath(null);
         Map<String, Object> map = new HashMap<>();
         map.put("fileInfo", fileModel);
@@ -358,77 +318,35 @@ public class CompanyServiceImpl implements CompanyService {
         return JsonResponse.success(map);
     }
 
-    private String getLicenseTextInfo(MultipartFile file) throws IOException {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Authorization", getHedsIamToken());
-        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
-        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("scene", "NatureOCR");
+    private RecognizeBusinessLicenseResponse getLicenseTextInfo(MultipartFile file) throws IOException {
+        ICredential auth = new BasicCredentials().withProjectId(ocrProjectId).withAk(ocrAK).withSk(ocrSK);
+        OcrClient ocrClient = OcrClient.newBuilder().withCredential(auth).withRegion(OcrRegion.valueOf("cn-east-3")).build();
+        RecognizeBusinessLicenseRequest request = new RecognizeBusinessLicenseRequest();
+        BusinessLicenseRequestBody body = new BusinessLicenseRequestBody();
         String imageToBase64 = imageToBase64(file);
-        params.put("imageBase64", imageToBase64);
-        HttpEntity httpEntity = new HttpEntity(params, httpHeaders);
-        ResponseEntity<String> responseEntity =
-                restTemplate.postForEntity(ocrUrl, httpEntity, String.class);
-        String body = responseEntity.getBody();
-        JSONObject jsonObject = JSONObject.parseObject(body);
-        String status = jsonObject.getString("status");
-        if (!"200".equals(status)) {
-            log.error("License image OCR failed: {}",
-                    CleanXSSUtils.replaceCRLF(String.valueOf(jsonObject.get("message"))));
-            return StringUtils.EMPTY;
+        body.withImage(imageToBase64);
+        request.withBody(body);
+        RecognizeBusinessLicenseResponse response = null;
+        try {
+            response = ocrClient.recognizeBusinessLicense(request);
+        } catch (ConnectionException | RequestTimeoutException e) {
+            log.error(e.toString());
+        } catch (ServiceResponseException e) {
+            log.error(String.valueOf(e.getHttpStatusCode()));
+            log.error(e.getErrorCode());
+            log.error(e.getErrorMsg());
         }
-        JSONArray data = jsonObject.getJSONArray("data");
-        String classes = "";
-        for (int i = 0; i < data.size(); i++) {
-            JSONObject item = data.getJSONObject(i);
-            classes = item.getString("classes");
-        }
-        classes = classes.replace("[", "");
-        classes = classes.replace("]", "");
-        classes = classes.replace("\",\"", "");
-        return classes;
+        log.info(response.toString());
+        return response;
     }
 
-    private LicenseInfoVo getLicenseInfo(String licenseTextInfo) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Authorization", getHedsIamToken());
-        httpHeaders.set("X-HW-ID","com.huawei.cabg.oem");
-        httpHeaders.set("X-HW-APPKEY","vCUwBMlGsJqgLy12TU/h9g==");
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("project_name", projectName);
-        List<String> sceneList = new ArrayList<>();
-        sceneList.add(scene);
-        params.put("scene", sceneList);
-        params.put("service", "text");
-        params.put("tenant_name", hedsAppid);
-        params.put("text", licenseTextInfo);
-        HttpEntity httpEntity = new HttpEntity(params, httpHeaders);
-        ResponseEntity<String> responseEntity =
-                restTemplate.postForEntity(irsUrl, httpEntity, String.class);
-        String body = responseEntity.getBody();
-        JSONObject bodyJson = JSONObject.parseObject(body);
-        String message = bodyJson.getString("message");
-        if (!"parase success".equals(message)) {
-            log.error("Failed to extract information, error message: {}", CleanXSSUtils.replaceCRLF(message));
-            return getEmptyLicenseInfoVo();
+    private LicenseInfoVo getLicenseInfo(RecognizeBusinessLicenseResponse licenseTextInfo) {
+        if (licenseTextInfo == null) {
+            return null;
         }
-        JSONObject resultJson = bodyJson.getJSONObject("result");
-        JSONArray licenseInfoArray = resultJson.getJSONArray("LicenseIdentify");
         LicenseInfoVo licenseInfoVo = new LicenseInfoVo();
-        for (int i = 0; i < licenseInfoArray.size(); i++) {
-            JSONObject licenseInfo = licenseInfoArray.getJSONObject(i);
-            String taskNameEn = licenseInfo.getString("task_name_en");
-            JSONArray texts = licenseInfo.getJSONArray("text");
-            String text = texts.isEmpty() ? StringUtils.EMPTY : texts.getString(0);
-            setLicenseInfoVo(licenseInfoVo, taskNameEn, text);
-        }
+        setLicenseInfoVo(licenseInfoVo, licenseTextInfo);
         return licenseInfoVo;
-    }
-
-    private String getHedsIamToken() {
-        JwtTokenClient jwtTokenClient = new JwtTokenClient(tokenUrl, hedsAppid, iamSecret, enterprise, hedsAppid);
-        return jwtTokenClient.getJwtToken();
     }
 
     private LicenseInfoVo getEmptyLicenseInfoVo() {
@@ -443,28 +361,24 @@ public class CompanyServiceImpl implements CompanyService {
         return licenseInfoVo;
     }
 
-    private void setLicenseInfoVo(LicenseInfoVo licenseInfoVo, String taskNameEn, String text) {
-        if ("companyName".equals(taskNameEn)) {
-            licenseInfoVo.setCompanyName(text);
-        }
-        if ("creditCode".equals(taskNameEn)) {
-            licenseInfoVo.setCreditCode(text);
-        }
-        if ("address".equals(taskNameEn)) {
-            licenseInfoVo.setAddress(text);
-        }
-        if ("legalPerson".equals(taskNameEn)) {
-            licenseInfoVo.setLegalPerson(text);
-        }
-        if ("registrationCapital".equals(taskNameEn)) {
-            licenseInfoVo.setRegistrationCapital(text);
-        }
-        if ("registrationDate".equals(taskNameEn)) {
-            licenseInfoVo.setRegistrationDate(StringUtils.EMPTY);
-        }
-        if ("expirationDate".equals(taskNameEn)) {
-            licenseInfoVo.setExpirationDate(StringUtils.EMPTY);
-        }
+    private void setLicenseInfoVo(LicenseInfoVo licenseInfoVo, RecognizeBusinessLicenseResponse licenseTextInfo) {
+       licenseInfoVo.setAddress(licenseTextInfo.getResult().getAddress());
+       licenseInfoVo.setCompanyName(licenseTextInfo.getResult().getName());
+       licenseInfoVo.setCreditCode(licenseTextInfo.getResult().getRegistrationNumber());
+       licenseInfoVo.setLegalPerson(licenseTextInfo.getResult().getLegalRepresentative());
+       licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
+
+        // 解析结束日期字符串
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
+//        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//        String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
+//        if (licenseTermParts.length > 1) {
+//            String endDateString = licenseTermParts[1].trim();
+//            LocalDate endDate = LocalDate.parse(endDateString, formatter);
+//            licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
+//        }
+//        LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
+//        licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
     }
 
     private String imageToBase64(MultipartFile file) throws IOException {

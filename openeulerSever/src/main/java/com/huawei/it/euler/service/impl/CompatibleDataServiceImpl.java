@@ -26,6 +26,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,7 +54,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     /**
      * 兼容性数据导入模板相对路径
      */
-    private static final String DATA_TEMPLATE = "/static/兼容性数据导入模板.xlsx";
+    private static final String DATA_TEMPLATE = "/static/test.xlsx";
 
     private static final HashMap<String, List<String>> SYSTEM_NAME_VERSION = new HashMap() {{
        put("KylinSec", Arrays.asList("3.4-5A", "3.5.1"));
@@ -63,11 +65,11 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     private static final HashMap<String, HashMap<String, List<String>>> SERVER = new HashMap() {{
         put("Kunpeng916", new HashMap<String, List<String>>() {{
-            put("华为", Arrays.asList("Taishan 100", "Taishan200", "2288"));
+            put("华为", Arrays.asList("Taishan 100", "Taishan 200", "2288"));
             put("其他", Collections.singletonList("其他"));
         }});
         put("Kunpeng920", new HashMap<String, List<String>>() {{
-            put("华为", Arrays.asList("Taishan 100", "Taishan200", "2288"));
+            put("华为", Arrays.asList("Taishan 100", "Taishan 200", "2288"));
             put("清华同方", Arrays.asList("超强K620", "超强Z520-M1"));
             put("宝德", Arrays.asList("自强PR210K", "自强PR212K"));
             put("百信", Arrays.asList("恒山TS02E-F30", "恒山TS02F-F30"));
@@ -108,7 +110,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
             put("其他", Collections.singletonList("其他"));
         }});
         put("Intel", new HashMap<String, List<String>>() {{
-            put("华为", Arrays.asList("Taishan 100", "Taishan200", "2288"));
+            put("华为", Arrays.asList("Taishan 100", "Taishan 200", "2288"));
             put("超聚变", Collections.singletonList("5288 V3"));
             put("其他", Collections.singletonList("其他"));
         }});
@@ -154,7 +156,10 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
-        try (InputStream inputStream = CompatibleDataServiceImpl.class.getResourceAsStream(DATA_TEMPLATE)) {
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        org.springframework.core.io.Resource[] resources = resolver.getResources(DATA_TEMPLATE);
+        org.springframework.core.io.Resource resource = resources[0];
+        try (InputStream inputStream = resource.getInputStream()) {
             response.reset();
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
