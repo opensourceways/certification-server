@@ -36,7 +36,6 @@ public class AesGcmEncryptionService {
         secretKeySpec = new SecretKeySpec(keyBytes, ALGORITHM);
     }
 
-
     public String encrypt(String plaintext) throws Exception {
         // 生成随机IV
         byte[] iv = new byte[GCM_IV_LENGTH];
