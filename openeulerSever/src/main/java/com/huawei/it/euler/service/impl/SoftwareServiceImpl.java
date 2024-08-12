@@ -948,6 +948,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response)
             throws InputException, IOException {
         GenerateCertificate certificate = softwareMapper.generateCertificate(certificateConfirmVo.getSoftwareId());
+        certificate.setProductVersion(certificateConfirmVo.getProductVersion());
         certificate.setOsName(certificateConfirmVo.getOsName());
         certificate.setOsVersion(certificateConfirmVo.getOsVersion());
         String hashRatePlatform = JSON.toJSON(certificateConfirmVo.getHashratePlatformList()).toString();
