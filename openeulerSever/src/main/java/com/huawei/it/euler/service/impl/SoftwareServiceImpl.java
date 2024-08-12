@@ -803,16 +803,18 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private Integer getMaxNodeStatus(List<AuditRecordsVo> latestNodes) {
         List<AuditRecordsVo> auditRecordsVoList = latestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus).reversed()).toList();
-        Integer maxStatus = 0;
+        Integer maxStatus = auditRecordsVoList.get(0).getStatus();
         List<AuditRecordsVo> passRecordList = auditRecordsVoList.stream().filter(item -> "通过".equals(item.getHandlerResult()))
                 .max(Comparator.comparing(AuditRecordsVo::getStatus)).stream().toList();
+        boolean lastActionIsBack = false;
         for (AuditRecordsVo auditRecordsVo : auditRecordsVoList) {
             if ("已驳回".equals(auditRecordsVo.getHandlerResult()) ) {
+                maxStatus = auditRecordsVo.getStatus();
                 if (passRecordList.isEmpty() || auditRecordsVo.getHandlerTime().compareTo(passRecordList.get(0).getHandlerTime()) > 0) {
-                    maxStatus = auditRecordsVo.getStatus();
+                    lastActionIsBack = true;
                 }
-            } else if ("待处理".equals(auditRecordsVo.getHandlerResult())) {
-                maxStatus = maxStatus == 0 ? auditRecordsVo.getStatus() : maxStatus;
+            } else if ("待处理".equals(auditRecordsVo.getHandlerResult()) && !lastActionIsBack){
+                maxStatus = auditRecordsVo.getStatus();
                 break;
             }
         }
