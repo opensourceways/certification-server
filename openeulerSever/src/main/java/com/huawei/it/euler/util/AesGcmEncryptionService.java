@@ -1,0 +1,77 @@
+package com.huawei.it.euler.util;
+
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Base64;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import jakarta.annotation.PostConstruct;
+
+@Service
+public class AesGcmEncryptionService {
+
+    private static final int GCM_IV_LENGTH = 12; // GCM模式下的IV长度
+    private static final int GCM_TAG_LENGTH = 16; // GCM模式下的TAG长度
+    private static final String ALGORITHM = "AES"; // 使用的加密算法
+    private SecretKeySpec secretKeySpec;
+
+    @Value("${aes.key}")
+    private String aesKey;
+
+    @PostConstruct
+    public void init() {
+        // 安全地初始化密钥
+        byte[] keyBytes = aesKey.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length != 32) { // 确保密钥长度为256位（32字节）
+            throw new IllegalArgumentException("无效的AES密钥长度（必须是32字节）");
+        }
+        secretKeySpec = new SecretKeySpec(keyBytes, ALGORITHM);
+    }
+
+    public String encrypt(String plaintext) throws Exception {
+        // 生成随机IV
+        byte[] iv = new byte[GCM_IV_LENGTH];
+        new SecureRandom().nextBytes(iv);
+
+        // 初始化加密器
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, parameterSpec);
+
+        // 加密明文
+        byte[] cipherText = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+
+        // 组合IV和密文
+        byte[] encryptedData = new byte[iv.length + cipherText.length];
+        System.arraycopy(iv, 0, encryptedData, 0, iv.length);
+        System.arraycopy(cipherText, 0, encryptedData, iv.length, cipherText.length);
+
+        // 使用Base64编码
+        return Base64.getEncoder().encodeToString(encryptedData);
+    }
+
+    public String decrypt(String ciphertext) throws Exception {
+        // 解码Base64
+        byte[] decodedData = Base64.getDecoder().decode(ciphertext);
+
+        // 提取IV
+        byte[] iv = new byte[GCM_IV_LENGTH];
+        System.arraycopy(decodedData, 0, iv, 0, iv.length);
+
+        // 初始化解密器
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, parameterSpec);
+
+        // 解密密文
+        byte[] decryptedData = cipher.doFinal(decodedData, GCM_IV_LENGTH, decodedData.length - GCM_IV_LENGTH);
+
+        return new String(decryptedData, StandardCharsets.UTF_8);
+    }
+}
