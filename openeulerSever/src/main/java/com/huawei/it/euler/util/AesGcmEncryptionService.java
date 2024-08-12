@@ -8,6 +8,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ public class AesGcmEncryptionService {
     private static final int GCM_IV_LENGTH = 12; // GCM模式下的IV长度
     private static final int GCM_TAG_LENGTH = 16; // GCM模式下的TAG长度
     private static final String ALGORITHM = "AES"; // 使用的加密算法
+    private static final Logger log = LoggerFactory.getLogger(AesGcmEncryptionService.class);
     private SecretKeySpec secretKeySpec;
 
     @Value("${aes.key}")
@@ -26,13 +29,13 @@ public class AesGcmEncryptionService {
 
     @PostConstruct
     public void init() {
-        // 安全地初始化密钥
-        byte[] keyBytes = aesKey.getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length != 32) { // 确保密钥长度为256位（32字节）
+        byte[] keyBytes = Base64.getDecoder().decode(aesKey);
+        if (keyBytes.length != 32) { // 确保密钥长度为256位
             throw new IllegalArgumentException("无效的AES密钥长度（必须是32字节）");
         }
         secretKeySpec = new SecretKeySpec(keyBytes, ALGORITHM);
     }
+
 
     public String encrypt(String plaintext) throws Exception {
         // 生成随机IV
