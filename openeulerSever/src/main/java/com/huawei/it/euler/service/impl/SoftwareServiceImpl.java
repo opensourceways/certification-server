@@ -762,7 +762,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         FileModel fileModel = fileUtils.uploadFile(file, softwareId, fileTypeCode, fileType, request);
         Map<String, Object> param = Maps.newHashMap();
         param.put("softwareId", softwareId);
-        param.put("fileType", softwareId);
+        param.put("fileType", fileType);
         List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
         if (FILE_TYPE_SIGN.equals(fileType)) {
             if (CollectionUtil.isEmpty(attachmentsVos)) {
