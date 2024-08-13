@@ -42,6 +42,9 @@ public class ApprovalScenarioServiceImpl implements ApprovalScenarioService {
 
         // find all scenarios supported by this innovation center
         List<ApprovalScenario> approvalScenarioList = approvalScenarioMapper.findByIcId(innovationCenterObj.getId());
+        if (approvalScenarioList.isEmpty()) {
+            approvalScenarioList = approvalScenarioMapper.findByIcId(1);
+        }
 
         ApprovalScenario approvalScenario = getApprovalScenarioByCpuVendor(cpuVendor, approvalScenarioList);
 

@@ -190,7 +190,8 @@ public class UserController {
     @DeleteMapping("/user/deregisterUser")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<String> deregisterUser(HttpServletRequest request) {
-        return userService.deregisterUser(request);
+        return JsonResponse.failed("注销功能暂停!");
+//        return userService.deregisterUser(request);
     }
 
     /**

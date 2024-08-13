@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.config.security.LockCacheConfig;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
@@ -58,6 +59,9 @@ public class SoftwareController {
 
     @Autowired
     private SoftwareMapper softwareMapper;
+
+    @Autowired
+    private LockCacheConfig lockCacheConfig;
 
     /**
      * 根据id查询软件认证详情
@@ -275,7 +279,11 @@ public class SoftwareController {
             @RequestParam("fileTypeCode") @NotNull(message = "文件类型编码不能为空") Integer fileTypeCode,
             @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType,
             HttpServletRequest request) throws TestReportExceedMaxAmountException, InputException {
-        return softwareService.upload(file, softwareId, fileTypeCode, fileType, request);
+        String lockKey = "upload-file-" + softwareId;
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.upload(file, softwareId, fileTypeCode, fileType, request);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
