@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -98,19 +101,19 @@ public class CompanyServiceImpl implements CompanyService {
 
     private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
-    // @Value("${sns.templateId}")
+    @Value("${sns.templateId}")
     private String templateId;
 
-    // @Value("${sns.messageUrl}")
+    @Value("${sns.messageUrl}")
     private String messageUrl;
 
-    // @Value("${sns.senderId}")
+    @Value("${sns.senderId}")
     private String senderId;
 
-    // @Value("${sns.appKey}")
+    @Value("${sns.appKey}")
     private String appKey;
 
-    // @Value("${sns.appSecret}")
+    @Value("${sns.appSecret}")
     private String appSecret;
 
     @Value("${ocr.ak}")
@@ -393,17 +396,32 @@ public class CompanyServiceImpl implements CompanyService {
         licenseInfoVo.setLegalPerson(licenseTextInfo.getResult().getLegalRepresentative());
         licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
 
-        // 解析结束日期字符串
-        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
-        // DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        // String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
-        // if (licenseTermParts.length > 1) {
-        // String endDateString = licenseTermParts[1].trim();
-        // LocalDate endDate = LocalDate.parse(endDateString, formatter);
-        // licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
-        // }
-        // LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
-        // licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        String businessTerm = licenseTextInfo.getResult().getBusinessTerm();
+
+        String[] licenseTermParts = businessTerm.split("至");
+        if (licenseTermParts.length > 1) {
+            String endDateString = licenseTermParts[1].trim();
+            try {
+                LocalDate endDate = LocalDate.parse(endDateString, formatter);
+                licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
+            } catch (DateTimeParseException e) {
+                // 处理解析结束日期失败的情况
+                System.out.println("Failed to parse end date: " + endDateString);
+            }
+        }
+
+        String foundDate = licenseTextInfo.getResult().getFoundDate();
+        try {
+            LocalDate startDate = LocalDate.parse(foundDate, formatter);
+            licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
+        } catch (DateTimeParseException e) {
+            // 处理解析开始日期失败的情况
+            System.out.println("Failed to parse start date: " + foundDate);
+        }
+
     }
 
     private String imageToBase64(MultipartFile file) throws IOException {

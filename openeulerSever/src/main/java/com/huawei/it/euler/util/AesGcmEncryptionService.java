@@ -10,7 +10,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class AesGcmEncryptionService {
@@ -21,10 +24,10 @@ public class AesGcmEncryptionService {
     private static final Logger log = LoggerFactory.getLogger(AesGcmEncryptionService.class);
     private SecretKeySpec secretKeySpec;
 
-    // @Value("${aes.key}")
+     @Value("${aes.key}")
     private String aesKey;
 
-//    @PostConstruct
+    @PostConstruct
     public void init() {
         byte[] keyBytes = Base64.getDecoder().decode(aesKey);
         if (keyBytes.length != 32) { // 确保密钥长度为256位
