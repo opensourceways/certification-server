@@ -10,7 +10,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -24,7 +23,7 @@ public class AesGcmEncryptionService {
     private static final Logger log = LoggerFactory.getLogger(AesGcmEncryptionService.class);
     private SecretKeySpec secretKeySpec;
 
-    @Value("${aes.key}")
+    // @Value("${aes.key}")
     private String aesKey;
 
     @PostConstruct

@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -74,6 +73,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * CompanyServiceImpl
  *
@@ -98,21 +98,19 @@ public class CompanyServiceImpl implements CompanyService {
 
     private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
-    private static final String X_HW_APPKEY = "X-HW-APPKEY";
-
-    @Value("${sns.templateId}")
+    // @Value("${sns.templateId}")
     private String templateId;
 
-    @Value("${sns.messageUrl}")
+    // @Value("${sns.messageUrl}")
     private String messageUrl;
 
-    @Value("${sns.senderId}")
+    // @Value("${sns.senderId}")
     private String senderId;
 
-    @Value("${sns.appKey}")
+    // @Value("${sns.appKey}")
     private String appKey;
 
-    @Value("${sns.appSecret}")
+    // @Value("${sns.appSecret}")
     private String appSecret;
 
     @Value("${ocr.ak}")
@@ -138,9 +136,6 @@ public class CompanyServiceImpl implements CompanyService {
     private SoftwareServiceImpl softwareService;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private FileUtils fileUtils;
 
     @Autowired
@@ -149,7 +144,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private CompanyVerifyClient companyVerifyClient;
 
-    private static CloseableHttpClient client =  null;
+    private static CloseableHttpClient client = null;
 
     @Transactional
     @Override
@@ -170,14 +165,16 @@ public class CompanyServiceImpl implements CompanyService {
         company.setApplyTime(currentTime);
         company.setApprovalComment(StringUtils.EMPTY);
         company.setUserUuid(userUuid);
-        if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(), company.getLegalPerson())) {
+        if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(),
+            company.getLegalPerson())) {
             return JsonResponse.failed(COMPANY_VERIFY_FAILED);
         }
         company.setIsCheckedPass(true);
         company.setStatus(0);
         Company existCompany = companyMapper.findCompanyByUserUuid(userUuid);
         company.setCompanyMail(encryptUtils.aesEncrypt(company.getCompanyMail()));
-        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(), currentTime,existCompany);
+        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(),
+            currentTime, existCompany);
         if (existCompany != null) {
             Integer status = existCompany.getStatus();
             if (status == 0) {
@@ -190,8 +187,8 @@ public class CompanyServiceImpl implements CompanyService {
         } else {
             companyMapper.insertCompany(company);
         }
-        log.info("successfully insert a new company, company name: {}, insert time: {}",
-                company.getCompanyName(), company.getUpdateTime());
+        log.info("successfully insert a new company, company name: {}, insert time: {}", company.getCompanyName(),
+            company.getUpdateTime());
         return JsonResponse.success();
     }
 
@@ -202,7 +199,7 @@ public class CompanyServiceImpl implements CompanyService {
         CompanyVo companyVo = new CompanyVo();
         if (company != null) {
             String companyMail =
-                    StringPropertyUtils.reduceEmailSensitivity(encryptUtils.aesDecrypt(company.getCompanyMail()));
+                StringPropertyUtils.reduceEmailSensitivity(encryptUtils.aesDecrypt(company.getCompanyMail()));
             company.setCompanyMail(companyMail);
             BeanUtils.copyProperties(company, companyVo);
         }
@@ -217,7 +214,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public IPage<UserCompanyVo> findCompaniesByCompanyNameAndStatus(String companyName, List<String> status,
-                                                                    Page<UserCompanyVo> page) {
+        Page<UserCompanyVo> page) {
         List<Integer> statusInt;
         if (status == null || status.isEmpty()) {
             statusInt = null;
@@ -236,7 +233,7 @@ public class CompanyServiceImpl implements CompanyService {
             companyName = null;
         }
         IPage<UserCompanyVo> companiesByCompanyNameAndStatus =
-                companyMapper.findCompaniesByCompanyNameAndStatus(companyName, statusInt, page);
+            companyMapper.findCompaniesByCompanyNameAndStatus(companyName, statusInt, page);
         for (UserCompanyVo companyVo : companiesByCompanyNameAndStatus.getRecords()) {
             String telephone = reduceSensitivity(companyVo.getTelephone(), StringConstant.TLE_PHONE);
             companyVo.setTelephone(telephone);
@@ -292,12 +289,13 @@ public class CompanyServiceImpl implements CompanyService {
             log.warn("telephone is null.");
             return;
         }
-        String status =  companyAuditVo.getResult() ? "通过" : "驳回";
-        String comment =  companyAuditVo.getComment();
+        String status = companyAuditVo.getResult() ? "通过" : "驳回";
+        String comment = companyAuditVo.getComment();
         String templateParas = "[\"" + status + "\",\"" + comment + "\"]";
         String statusCallBack = "";
         String signature = "";
-        String body = buildRequestBody(senderId, user.getTelephone(), templateId, templateParas, statusCallBack, signature);
+        String body =
+            buildRequestBody(senderId, user.getTelephone(), templateId, templateParas, statusCallBack, signature);
         if (body.isEmpty()) {
             log.warn("body is null.");
             return;
@@ -316,7 +314,7 @@ public class CompanyServiceImpl implements CompanyService {
             HttpEntity resEntity = response.getEntity();
             if (resEntity != null) {
                 log.info("Processing Body with name: {} and value: {}", System.getProperty("line.separator"),
-                        EntityUtils.toString(resEntity, "UTF-8"));
+                    EntityUtils.toString(resEntity, "UTF-8"));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -333,7 +331,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public JsonResponse<Map<String, Object>> uploadLicense(MultipartFile file, HttpServletRequest request)
-            throws InputException, IOException {
+        throws InputException, IOException {
         FileModel fileModel = fileUtils.uploadFile(file, null, 2, "license", request);
         softwareMapper.insertAttachment(fileModel);
         LicenseInfoVo licenseInfoVo = getLicenseInfo(getLicenseTextInfo(file));
@@ -346,7 +344,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private RecognizeBusinessLicenseResponse getLicenseTextInfo(MultipartFile file) throws IOException {
         ICredential auth = new BasicCredentials().withProjectId(ocrProjectId).withAk(ocrAK).withSk(ocrSK);
-        OcrClient ocrClient = OcrClient.newBuilder().withCredential(auth).withRegion(OcrRegion.valueOf("cn-east-3")).build();
+        OcrClient ocrClient =
+            OcrClient.newBuilder().withCredential(auth).withRegion(OcrRegion.valueOf("cn-east-3")).build();
         RecognizeBusinessLicenseRequest request = new RecognizeBusinessLicenseRequest();
         BusinessLicenseRequestBody body = new BusinessLicenseRequestBody();
         String imageToBase64 = imageToBase64(file);
@@ -388,23 +387,23 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     private void setLicenseInfoVo(LicenseInfoVo licenseInfoVo, RecognizeBusinessLicenseResponse licenseTextInfo) {
-       licenseInfoVo.setAddress(licenseTextInfo.getResult().getAddress());
-       licenseInfoVo.setCompanyName(licenseTextInfo.getResult().getName());
-       licenseInfoVo.setCreditCode(licenseTextInfo.getResult().getRegistrationNumber());
-       licenseInfoVo.setLegalPerson(licenseTextInfo.getResult().getLegalRepresentative());
-       licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
+        licenseInfoVo.setAddress(licenseTextInfo.getResult().getAddress());
+        licenseInfoVo.setCompanyName(licenseTextInfo.getResult().getName());
+        licenseInfoVo.setCreditCode(licenseTextInfo.getResult().getRegistrationNumber());
+        licenseInfoVo.setLegalPerson(licenseTextInfo.getResult().getLegalRepresentative());
+        licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
 
         // 解析结束日期字符串
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
-//        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//        String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
-//        if (licenseTermParts.length > 1) {
-//            String endDateString = licenseTermParts[1].trim();
-//            LocalDate endDate = LocalDate.parse(endDateString, formatter);
-//            licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
-//        }
-//        LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
-//        licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
+        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
+        // DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
+        // if (licenseTermParts.length > 1) {
+        // String endDateString = licenseTermParts[1].trim();
+        // LocalDate endDate = LocalDate.parse(endDateString, formatter);
+        // licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
+        // }
+        // LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
+        // licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
     }
 
     private String imageToBase64(MultipartFile file) throws IOException {
@@ -419,8 +418,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void preview(String fileId, HttpServletRequest request, HttpServletResponse response)
-            throws InputException {
+    public void preview(String fileId, HttpServletRequest request, HttpServletResponse response) throws InputException {
         Attachments attachments = softwareMapper.downloadAttachments(fileId);
         if (attachments == null) {
             throw new ParamException("无权限预览当前文件");
@@ -442,7 +440,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public void download(String fileId, HttpServletRequest request, HttpServletResponse response)
-            throws UnsupportedEncodingException, InputException {
+        throws UnsupportedEncodingException, InputException {
         softwareService.downloadAttachments(fileId, response, request);
     }
 
@@ -456,7 +454,8 @@ public class CompanyServiceImpl implements CompanyService {
         return str;
     }
 
-    private String buildRequestBody(String sender,String receiver,String templateId,String templateParas,String statusCallBack,String signature) throws UnsupportedEncodingException {
+    private String buildRequestBody(String sender, String receiver, String templateId, String templateParas,
+        String statusCallBack, String signature) throws UnsupportedEncodingException {
         StringBuilder body = new StringBuilder();
         appendToBody(body, "from=", sender);
         appendToBody(body, "&to=", receiver);
@@ -467,14 +466,16 @@ public class CompanyServiceImpl implements CompanyService {
         return body.toString();
     }
 
-    private  void appendToBody(StringBuilder body,String key,String value) throws UnsupportedEncodingException {
-        if(null != value && !value.isEmpty()){
-            body.append(key).append(URLEncoder.encode(value,"UTF-8"));
+    private void appendToBody(StringBuilder body, String key, String value) throws UnsupportedEncodingException {
+        if (null != value && !value.isEmpty()) {
+            body.append(key).append(URLEncoder.encode(value, "UTF-8"));
         }
     }
 
     private CloseableHttpClient createIgnoreSSLHttpClient() throws Exception {
-        SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
-        return HttpClients.custom().setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE)).build();
+        SSLContext sslContext =
+            new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
+        return HttpClients.custom()
+            .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE)).build();
     }
 }
