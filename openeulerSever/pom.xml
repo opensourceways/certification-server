@@ -303,6 +303,13 @@
             <artifactId>spring-boot-starter-aop</artifactId>
             <version>3.1.5</version>
         </dependency>
+        <dependency>
+                <systemPath>${project.basedir}/libs/java-sdk-core-3.2.5.jar</systemPath>
+                <groupId>com.huawei.apigateway</groupId>
+                <artifactId>java-sdk-core</artifactId>
+                <version>3.2.5</version>
+                <scope>system</scope>
+        </dependency>
     </dependencies>
 
     <build>

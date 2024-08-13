@@ -9,25 +9,34 @@ import static com.huawei.it.euler.service.impl.SoftwareServiceImpl.PARTNER_ROLE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloud.apigateway.sdk.utils.Client;
+import com.cloud.apigateway.sdk.utils.Request;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
@@ -62,7 +71,9 @@ import com.huaweicloud.sdk.ocr.v1.region.OcrRegion;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * CompanyServiceImpl
  *
@@ -85,24 +96,22 @@ public class CompanyServiceImpl implements CompanyService {
 
     private static final String FILE_TYPE_LICENSE = "license";
 
-    private static final String X_HW_ID = "X-HW-ID";
+    private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
-    private static final String X_HW_APPKEY = "X-HW-APPKEY";
-
-    @Value("${sns.appId}")
-    private String snsAppid;
-
-    @Value("${sns.appId}")
-    private String hedsAppid;
-
-    @Value("${sns.templateId}")
+    // @Value("${sns.templateId}")
     private String templateId;
 
-    @Value("${sns.messageUrl}")
+    // @Value("${sns.messageUrl}")
     private String messageUrl;
 
-    @Value("${sns.xHwAppKey}")
-    private String xHwAppKey;
+    // @Value("${sns.senderId}")
+    private String senderId;
+
+    // @Value("${sns.appKey}")
+    private String appKey;
+
+    // @Value("${sns.appSecret}")
+    private String appSecret;
 
     @Value("${ocr.ak}")
     private String ocrAK;
@@ -127,9 +136,6 @@ public class CompanyServiceImpl implements CompanyService {
     private SoftwareServiceImpl softwareService;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private FileUtils fileUtils;
 
     @Autowired
@@ -137,6 +143,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Autowired
     private CompanyVerifyClient companyVerifyClient;
+
+    private static CloseableHttpClient client = null;
 
     @Transactional
     @Override
@@ -157,14 +165,16 @@ public class CompanyServiceImpl implements CompanyService {
         company.setApplyTime(currentTime);
         company.setApprovalComment(StringUtils.EMPTY);
         company.setUserUuid(userUuid);
-        if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(), company.getLegalPerson())) {
+        if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(),
+            company.getLegalPerson())) {
             return JsonResponse.failed(COMPANY_VERIFY_FAILED);
         }
         company.setIsCheckedPass(true);
         company.setStatus(0);
         Company existCompany = companyMapper.findCompanyByUserUuid(userUuid);
         company.setCompanyMail(encryptUtils.aesEncrypt(company.getCompanyMail()));
-        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(), currentTime,existCompany);
+        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(),
+            currentTime, existCompany);
         if (existCompany != null) {
             Integer status = existCompany.getStatus();
             if (status == 0) {
@@ -177,8 +187,8 @@ public class CompanyServiceImpl implements CompanyService {
         } else {
             companyMapper.insertCompany(company);
         }
-        log.info("successfully insert a new company, company name: {}, insert time: {}",
-                company.getCompanyName(), company.getUpdateTime());
+        log.info("successfully insert a new company, company name: {}, insert time: {}", company.getCompanyName(),
+            company.getUpdateTime());
         return JsonResponse.success();
     }
 
@@ -189,7 +199,7 @@ public class CompanyServiceImpl implements CompanyService {
         CompanyVo companyVo = new CompanyVo();
         if (company != null) {
             String companyMail =
-                    StringPropertyUtils.reduceEmailSensitivity(encryptUtils.aesDecrypt(company.getCompanyMail()));
+                StringPropertyUtils.reduceEmailSensitivity(encryptUtils.aesDecrypt(company.getCompanyMail()));
             company.setCompanyMail(companyMail);
             BeanUtils.copyProperties(company, companyVo);
         }
@@ -204,7 +214,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public IPage<UserCompanyVo> findCompaniesByCompanyNameAndStatus(String companyName, List<String> status,
-                                                                    Page<UserCompanyVo> page) {
+        Page<UserCompanyVo> page) {
         List<Integer> statusInt;
         if (status == null || status.isEmpty()) {
             statusInt = null;
@@ -223,7 +233,7 @@ public class CompanyServiceImpl implements CompanyService {
             companyName = null;
         }
         IPage<UserCompanyVo> companiesByCompanyNameAndStatus =
-                companyMapper.findCompaniesByCompanyNameAndStatus(companyName, statusInt, page);
+            companyMapper.findCompaniesByCompanyNameAndStatus(companyName, statusInt, page);
         for (UserCompanyVo companyVo : companiesByCompanyNameAndStatus.getRecords()) {
             String telephone = reduceSensitivity(companyVo.getTelephone(), StringConstant.TLE_PHONE);
             companyVo.setTelephone(telephone);
@@ -270,30 +280,44 @@ public class CompanyServiceImpl implements CompanyService {
         return JsonResponse.success();
     }
 
+    @SneakyThrows
     private void sendEmailNotification(CompanyAuditVo companyAuditVo) {
+        client = createIgnoreSSLHttpClient();
         Company company = companyMapper.findCompanyByUserUuid(companyAuditVo.getUserUuid());
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(X_HW_ID, hedsAppid);
-        httpHeaders.set(X_HW_APPKEY, xHwAppKey);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("app_id", snsAppid);
         EulerUser user = userMapper.findByUuid(company.getUserUuid());
-        map.put("mobiles", user.getTelephone());
-        map.put("template_id", templateId);
-        Map<String, Object> templateParams = new HashMap<>();
-        templateParams.put("status", companyAuditVo.getResult() ? "通过" : "驳回");
-        templateParams.put("comment", companyAuditVo.getComment());
-        map.put("template_params", JSONObject.toJSON(templateParams).toString());
-        HttpEntity httpEntity = new HttpEntity(map, httpHeaders);
-        ResponseEntity<String> responseEntity =
-                restTemplate.postForEntity(messageUrl, httpEntity, String.class);
-        String body = responseEntity.getBody();
-        JSONObject jsonObject = JSONObject.parseObject(body);
-        String respCode = jsonObject.getString("resp_code");
-        if ("200".equals(respCode)) {
-            log.info("Send message to {} success", user.getId());
-        } else {
-            log.info("Send message to {} failed", user.getId());
+        if (user.getTelephone() == null) {
+            log.warn("telephone is null.");
+            return;
+        }
+        String status = companyAuditVo.getResult() ? "通过" : "驳回";
+        String comment = companyAuditVo.getComment();
+        String templateParas = "[\"" + status + "\",\"" + comment + "\"]";
+        String statusCallBack = "";
+        String signature = "";
+        String body =
+            buildRequestBody(senderId, user.getTelephone(), templateId, templateParas, statusCallBack, signature);
+        if (body.isEmpty()) {
+            log.warn("body is null.");
+            return;
+        }
+
+        Request request = new Request();
+        request.setKey(appKey);
+        request.setSecret(appSecret);
+        request.setMethod("POST");
+        request.setUrl(messageUrl);
+        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        request.setBody(body);
+        try {
+            HttpRequestBase signedRequest = Client.sign(request, SIGNATURE_ALGORITHM_SDK_HMAC_SHA256);
+            HttpResponse response = client.execute(signedRequest);
+            HttpEntity resEntity = response.getEntity();
+            if (resEntity != null) {
+                log.info("Processing Body with name: {} and value: {}", System.getProperty("line.separator"),
+                    EntityUtils.toString(resEntity, "UTF-8"));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -307,7 +331,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public JsonResponse<Map<String, Object>> uploadLicense(MultipartFile file, HttpServletRequest request)
-            throws InputException, IOException {
+        throws InputException, IOException {
         FileModel fileModel = fileUtils.uploadFile(file, null, 2, "license", request);
         softwareMapper.insertAttachment(fileModel);
         LicenseInfoVo licenseInfoVo = getLicenseInfo(getLicenseTextInfo(file));
@@ -320,7 +344,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private RecognizeBusinessLicenseResponse getLicenseTextInfo(MultipartFile file) throws IOException {
         ICredential auth = new BasicCredentials().withProjectId(ocrProjectId).withAk(ocrAK).withSk(ocrSK);
-        OcrClient ocrClient = OcrClient.newBuilder().withCredential(auth).withRegion(OcrRegion.valueOf("cn-east-3")).build();
+        OcrClient ocrClient =
+            OcrClient.newBuilder().withCredential(auth).withRegion(OcrRegion.valueOf("cn-east-3")).build();
         RecognizeBusinessLicenseRequest request = new RecognizeBusinessLicenseRequest();
         BusinessLicenseRequestBody body = new BusinessLicenseRequestBody();
         String imageToBase64 = imageToBase64(file);
@@ -362,23 +387,23 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     private void setLicenseInfoVo(LicenseInfoVo licenseInfoVo, RecognizeBusinessLicenseResponse licenseTextInfo) {
-       licenseInfoVo.setAddress(licenseTextInfo.getResult().getAddress());
-       licenseInfoVo.setCompanyName(licenseTextInfo.getResult().getName());
-       licenseInfoVo.setCreditCode(licenseTextInfo.getResult().getRegistrationNumber());
-       licenseInfoVo.setLegalPerson(licenseTextInfo.getResult().getLegalRepresentative());
-       licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
+        licenseInfoVo.setAddress(licenseTextInfo.getResult().getAddress());
+        licenseInfoVo.setCompanyName(licenseTextInfo.getResult().getName());
+        licenseInfoVo.setCreditCode(licenseTextInfo.getResult().getRegistrationNumber());
+        licenseInfoVo.setLegalPerson(licenseTextInfo.getResult().getLegalRepresentative());
+        licenseInfoVo.setRegistrationCapital(licenseTextInfo.getResult().getRegisteredCapital());
 
         // 解析结束日期字符串
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
-//        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//        String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
-//        if (licenseTermParts.length > 1) {
-//            String endDateString = licenseTermParts[1].trim();
-//            LocalDate endDate = LocalDate.parse(endDateString, formatter);
-//            licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
-//        }
-//        LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
-//        licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
+        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
+        // DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // String[] licenseTermParts = licenseTextInfo.getResult().getBusinessTerm().split("至");
+        // if (licenseTermParts.length > 1) {
+        // String endDateString = licenseTermParts[1].trim();
+        // LocalDate endDate = LocalDate.parse(endDateString, formatter);
+        // licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
+        // }
+        // LocalDate startDate = LocalDate.parse(licenseTextInfo.getResult().getFoundDate(), formatter);
+        // licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
     }
 
     private String imageToBase64(MultipartFile file) throws IOException {
@@ -393,8 +418,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void preview(String fileId, HttpServletRequest request, HttpServletResponse response)
-            throws InputException {
+    public void preview(String fileId, HttpServletRequest request, HttpServletResponse response) throws InputException {
         Attachments attachments = softwareMapper.downloadAttachments(fileId);
         if (attachments == null) {
             throw new ParamException("无权限预览当前文件");
@@ -416,7 +440,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public void download(String fileId, HttpServletRequest request, HttpServletResponse response)
-            throws UnsupportedEncodingException, InputException {
+        throws UnsupportedEncodingException, InputException {
         softwareService.downloadAttachments(fileId, response, request);
     }
 
@@ -428,5 +452,30 @@ public class CompanyServiceImpl implements CompanyService {
             str = StringPropertyUtils.reduceEmailSensitivity(str);
         }
         return str;
+    }
+
+    private String buildRequestBody(String sender, String receiver, String templateId, String templateParas,
+        String statusCallBack, String signature) throws UnsupportedEncodingException {
+        StringBuilder body = new StringBuilder();
+        appendToBody(body, "from=", sender);
+        appendToBody(body, "&to=", receiver);
+        appendToBody(body, "&templateId=", templateId);
+        appendToBody(body, "&templateParas=", templateParas);
+        appendToBody(body, "&statusCallback=", statusCallBack);
+        appendToBody(body, "&signature=", signature);
+        return body.toString();
+    }
+
+    private void appendToBody(StringBuilder body, String key, String value) throws UnsupportedEncodingException {
+        if (null != value && !value.isEmpty()) {
+            body.append(key).append(URLEncoder.encode(value, "UTF-8"));
+        }
+    }
+
+    private CloseableHttpClient createIgnoreSSLHttpClient() throws Exception {
+        SSLContext sslContext =
+            new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
+        return HttpClients.custom()
+            .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE)).build();
     }
 }
