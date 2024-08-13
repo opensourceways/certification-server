@@ -68,8 +68,9 @@ public class ExcelUtils {
         }
         try (InputStream inputStream = s3Utils.downloadFile(fileId)) {
             if (inputStream != null) {
-                Workbook workbook = WorkbookFactory.create(inputStream);
-                return readExcelValue(workbook);
+                try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+                    return readExcelValue(workbook);
+                }
             }
         } catch (IOException | EncryptedDocumentException e) {
             throw new RuntimeException(e);
