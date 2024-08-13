@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
@@ -19,31 +20,36 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 @Component
 public class EmailConfig {
     private static final Logger logger = LoggerFactory.getLogger(EmailConfig.class);
 
-    @Value("email.host")
-    private static String host;
+    private static final String INTELNOTICETEMPLATE = "/docs/IntelNoticeEmailTemplate.html";
 
-    @Value("email.port")
-    private static String port;
+    @Value("${email.host}")
+    private String host;
 
-    @Value("email.userName")
-    private static String userName;
+    @Value("${email.port}")
+    private String port;
 
-    @Value("email.password")
-    private static String password;
+    @Value("${email.userName}")
+    private String userName;
+
+    @Value("${email.pwd}")
+    private String password;
 
     /**
      * create email session instance after init.
      *
      * @return email session instance
      */
-    private static Session getMailSession() {
+    private Session getMailSession() {
         Properties props = new Properties();
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", port);
@@ -84,14 +90,14 @@ public class EmailConfig {
 
             // Create the email body part
             MimeBodyPart messageBodyPart = new MimeBodyPart();
-            messageBodyPart.setText(content);
+            messageBodyPart.setContent(content,"text/html;charset=utf-8");
 
             // Create multipart for attachments
             MimeMultipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);
 
             // Add attachments
-            if (attachmentList != null && !attachmentList.isEmpty()){
+            if (attachmentList != null && !attachmentList.isEmpty()) {
                 for (String attachmentPath : attachmentList) {
                     MimeBodyPart attachmentBodyPart = new MimeBodyPart();
                     DataSource source = new FileDataSource(attachmentPath);
@@ -108,6 +114,19 @@ public class EmailConfig {
             Transport.send(message);
         } catch (MessagingException e) {
             logger.error(String.format("email send error, parameters: receiverList-%s,subject-%s, exception==>", StringUtils.join(receiverList, ","), content), e);
+        }
+    }
+
+    public String getIntelNoticeEmailContent(Map<String,String> dataMap) {
+        ClassPathResource resource = new ClassPathResource(INTELNOTICETEMPLATE);
+        try {
+            String contentAsString = resource.getContentAsString(StandardCharsets.UTF_8);
+            for (Map.Entry<String, String> stringStringEntry : dataMap.entrySet()) {
+                contentAsString = contentAsString.replace("${" + stringStringEntry.getKey() + "}", stringStringEntry.getValue());
+            }
+            return contentAsString;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
