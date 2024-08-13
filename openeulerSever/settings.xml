@@ -28,6 +28,11 @@
             <name>Nexus aliyun</name>
             <url>https://maven.aliyun.com/repository/central</url>
         </mirror>
+        <mirror>
+            <id>huaweicloud</id>
+            <mirrorOf>*,!HuaweiCloudSDK</mirrorOf>
+            <url>https://repo.huaweicloud.com/repository/maven/</url>
+        </mirror>
     </mirrors>
     <profiles>
         <profile>
@@ -57,6 +62,16 @@
                     <id>central</id>
                     <url>https://maven.aliyun.com/repository/central</url>
                 </repository>
+                <repository>
+                    <id>HuaweiCloudSDK</id>
+                    <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
@@ -73,6 +88,16 @@
                     <id>huawei-product-maven-plugin</id>
                     <name>huawei product maven plugin</name>
                     <url>https://cmc.centralrepo.rnd.huawei.com/artifactory/product_maven</url>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>HuaweiCloudSDK</id>
+                    <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
                 </pluginRepository>
             </pluginRepositories>
         </profile>
