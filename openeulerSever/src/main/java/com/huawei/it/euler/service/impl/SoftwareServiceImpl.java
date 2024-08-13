@@ -285,7 +285,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "");
         // 发送邮件通知
-//        sendEmail(software);
+        sendEmail(software,user);
     }
 
     private void setCurNode(String userUuid, Integer softwareId) {
@@ -808,12 +808,12 @@ public class SoftwareServiceImpl implements SoftwareService {
                 .max(Comparator.comparing(AuditRecordsVo::getStatus)).stream().toList();
         boolean lastActionIsBack = false;
         for (AuditRecordsVo auditRecordsVo : auditRecordsVoList) {
-            if ("已驳回".equals(auditRecordsVo.getHandlerResult()) ) {
+            if ("已驳回".equals(auditRecordsVo.getHandlerResult())) {
                 maxStatus = auditRecordsVo.getStatus();
                 if (passRecordList.isEmpty() || auditRecordsVo.getHandlerTime().compareTo(passRecordList.get(0).getHandlerTime()) > 0) {
                     lastActionIsBack = true;
                 }
-            } else if ("待处理".equals(auditRecordsVo.getHandlerResult()) && !lastActionIsBack){
+            } else if ("待处理".equals(auditRecordsVo.getHandlerResult()) && !lastActionIsBack) {
                 maxStatus = auditRecordsVo.getStatus();
                 break;
             }
@@ -970,7 +970,7 @@ public class SoftwareServiceImpl implements SoftwareService {
      * send test apply to innovation center
      * @param software test info
      */
-    private void sendEmail(Software software) {
+    private void sendEmail(Software software, EulerUser applyUser) {
         ApprovalScenario approvalScenario = approvalScenarioService.findById(software.getAsId());
         if (approvalScenario == null) {
             return;
@@ -982,11 +982,40 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
         List<String> receiverList = new ArrayList<>();
         for (EulerUser eulerUser : eulerUserList) {
-            receiverList.add(eulerUser.getMail());
+            if (!StringUtils.isEmpty(eulerUser.getMail())) {
+                receiverList.add(eulerUser.getMail());
+            }
         }
 
         String subject = "英特尔先进技术评测业务申请";
-        String content = "";
+
+        Map<String, String> replaceMap = new HashMap<>();
+        replaceMap.put("companyName", software.getCompanyName());
+        replaceMap.put("productName", software.getProductName());
+        replaceMap.put("productFunctionDesc", software.getProductFunctionDesc());
+        replaceMap.put("usageScenesDesc", software.getUsageScenesDesc());
+        replaceMap.put("productVersion", software.getProductVersion());
+        replaceMap.put("osName", software.getOsName());
+        replaceMap.put("osVersion", software.getOsVersion());
+
+        JSONArray jsonArray = JSON.parseArray(software.getJsonHashRatePlatform());
+        List<ComputingPlatformVo> computingPlatformVos = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            ComputingPlatformVo computingPlatformVo = JSON.toJavaObject(jsonObject, ComputingPlatformVo.class);
+            computingPlatformVos.add(computingPlatformVo);
+        }
+        List<String> platformString = computingPlatformVos.stream().map(item -> {
+            String platform = String.join("、", item.getServerTypes());
+            return item.getPlatformName() + "/" + item.getServerProvider() + "/" + platform;
+        }).toList();
+
+        replaceMap.put("jsonHashRatePlatform", StringUtils.join(platformString, "<br>"));
+        replaceMap.put("productType", software.getProductType());
+        replaceMap.put("userName", applyUser.getUsername());
+        replaceMap.put("userEmail", applyUser.getMail());
+        replaceMap.put("userPhone", applyUser.getTelephone());
+        String content = emailConfig.getIntelNoticeEmailContent(replaceMap);
         emailConfig.sendMail(receiverList, subject, content, new ArrayList<>());
     }
 }
