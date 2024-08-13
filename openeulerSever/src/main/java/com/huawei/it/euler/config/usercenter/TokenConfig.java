@@ -110,6 +110,7 @@ public class TokenConfig {
      * @param request request
      */
     public void refreshToken(HttpServletRequest request) {
+        log.info("refresh api code begin");
         Cookie[] cookies = request.getCookies();
         if (cookies == null || cookies.length == 0) {
             return;
@@ -128,6 +129,7 @@ public class TokenConfig {
             }
         }
         if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token)) {
+            log.info("refresh api code error, cannot find uuid or _U_T");
             return;
         }
         String enUuid = encryptUtils.aesEncrypt(uuid);
@@ -141,12 +143,11 @@ public class TokenConfig {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.set("token", token);
-            log.debug("refresh cookie token :{}", token);
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
             ResponseEntity<JSONObject> responseEntity = restTemplate.getForEntity(refreshTokenUrl, JSONObject.class, httpEntity);
             JSONObject refreshData = responseEntity.getBody();
-            log.debug("refresh api code :{}", responseEntity.getStatusCode());
-            log.debug("refresh api data :{}", refreshData.toJSONString());
+            log.info("refresh api code :{}", responseEntity.getStatusCode());
+            log.info("refresh api data :{}", refreshData.toJSONString());
             int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
             // half of tokenIntervalMin times passed then refresh the token
             long newTokenRefreshTime = tokenIntervalMin / 2 * 1000L + System.currentTimeMillis();
