@@ -41,7 +41,7 @@ public class SessionManagement {
 
     public static String toHex(byte[] byteArr) {
         StringBuilder builder = new StringBuilder();
-        if (null == byteArr) {
+        if (byteArr == null) {
             return null;
         }
         for (byte b : byteArr) {
