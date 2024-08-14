@@ -101,19 +101,19 @@ public class CompanyServiceImpl implements CompanyService {
 
     private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
-//    @Value("${sns.templateId}")
+    @Value("${sns.templateId}")
     private String templateId;
 
-//    @Value("${sns.messageUrl}")
+    @Value("${sns.messageUrl}")
     private String messageUrl;
 
-//    @Value("${sns.senderId}")
+    @Value("${sns.senderId}")
     private String senderId;
 
-//    @Value("${sns.appKey}")
+    @Value("${sns.appKey}")
     private String appKey;
 
-//    @Value("${sns.appSecret}")
+    @Value("${sns.appSecret}")
     private String appSecret;
 
     @Value("${ocr.ak}")
