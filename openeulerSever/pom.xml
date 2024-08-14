@@ -352,6 +352,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
+                    <includeSystemScope>true</includeSystemScope>
                     <mainClass>com.huawei.it.euler.OpenEulerApplication</mainClass>
                 </configuration>
                 <executions>
