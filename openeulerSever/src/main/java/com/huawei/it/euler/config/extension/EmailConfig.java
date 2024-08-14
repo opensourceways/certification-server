@@ -122,7 +122,9 @@ public class EmailConfig {
         try {
             String contentAsString = resource.getContentAsString(StandardCharsets.UTF_8);
             for (Map.Entry<String, String> stringStringEntry : dataMap.entrySet()) {
-                contentAsString = contentAsString.replace("${" + stringStringEntry.getKey() + "}", stringStringEntry.getValue());
+                String value = stringStringEntry.getValue();
+                value = StringUtils.isEmpty(value) ? "--" : value;
+                contentAsString = contentAsString.replace("${" + stringStringEntry.getKey() + "}", value);
             }
             return contentAsString;
         } catch (IOException e) {

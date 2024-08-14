@@ -6,15 +6,12 @@ import com.huawei.it.euler.mapper.InnovationCenterMapper;
 import com.huawei.it.euler.model.entity.ApprovalPathNode;
 import com.huawei.it.euler.model.entity.ApprovalScenario;
 import com.huawei.it.euler.model.entity.InnovationCenter;
-import com.huawei.it.euler.model.vo.ProcessVo;
 import com.huawei.it.euler.service.ApprovalScenarioService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ApprovalScenarioServiceImpl implements ApprovalScenarioService {
@@ -77,29 +74,4 @@ public class ApprovalScenarioServiceImpl implements ApprovalScenarioService {
         return approvalScenario;
     }
 
-
-    @Override
-    public Map<String, String> action(Integer asId, ProcessVo processVo) {
-        List<ApprovalPathNode> approvalPathNodeList = approvalPathNodeMapper.findNodeByAsId(asId);
-
-        return Map.of();
-    }
-
-    @Override
-    public List<ApprovalPathNode> findApprovalPathNode(Integer asId, String status) {
-        return List.of();
-    }
-
-    private List<ApprovalPathNode> getUserNode(String scenarioName){
-        List<ApprovalPathNode> userNodeList = new ArrayList<>();
-
-        return userNodeList;
-    }
-
-//    /**
-//     * Find all approval node by approval scenario id, include non-user node and user node.
-//     * @param asId  approval scenario id
-//     * @return approval node collection
-//     */
-//    List<ApprovalPathNode> findAllNodeByAsId(Integer asId);
 }
