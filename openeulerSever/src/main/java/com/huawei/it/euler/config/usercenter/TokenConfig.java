@@ -28,6 +28,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -117,7 +119,8 @@ public class TokenConfig {
             return;
         }
         String uuid = null;
-        String token = null;
+        String ut_key = null;
+        String yg_key = null;
         for (Cookie cookie : cookies) {
             if (cookie == null) {
                 continue;
@@ -126,11 +129,14 @@ public class TokenConfig {
                 uuid = cookie.getValue();
             }
             if (Objects.equals(cookie.getName(), "_U_T_")) {
-                token = cookie.getValue();
+                ut_key = cookie.getValue();
+            }
+            if (Objects.equals(cookie.getName(), "_Y_G_")) {
+                yg_key = cookie.getValue();
             }
         }
-        if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token)) {
-            log.info("refresh api code error, cannot find uuid or _U_T");
+        if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(ut_key) || StringUtils.isEmpty(ut_key)) {
+            log.info("refresh api code error, cannot find cookie");
             return;
         }
         String enUuid = encryptUtils.aesEncrypt(uuid);
@@ -143,14 +149,27 @@ public class TokenConfig {
         if (currentTimeMillis > tokenRefreshTime) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            headers.set("token", token);
+            headers.set("token", ut_key);
+            List<String> cookieList = new ArrayList<>();
+            cookieList.add("_Y_G_=" + yg_key);
+            headers.put(HttpHeaders.COOKIE, cookieList);
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
             ResponseEntity<JSONObject> responseEntity = restTemplate.getForEntity(refreshTokenUrl, JSONObject.class, httpEntity);
             JSONObject refreshData = responseEntity.getBody();
-            log.info("refresh api code :{}", responseEntity.getStatusCode());
-            log.info("refresh api data :{}", refreshData.toJSONString());
+            log.debug("refresh api code :{}", responseEntity.getStatusCode());
+            log.debug("refresh api data :{}", refreshData.toJSONString());
             if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
-                int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
+                JSONObject dataJSONObject = refreshData.getJSONObject("data");
+                if (dataJSONObject == null) {
+                    return;
+                }
+                int tokenIntervalMin;
+                if (dataJSONObject.containsKey("token_expires_in")) {
+                    tokenIntervalMin = dataJSONObject.getInteger("token_expires_in");
+                } else {
+                    // default 30 min
+                    tokenIntervalMin = 30 * 60;
+                }
                 // half of tokenIntervalMin times passed then refresh the token
                 long newTokenRefreshTime = tokenIntervalMin / 2 * 1000L + System.currentTimeMillis();
                 String finalUuid = uuid;
