@@ -1,14 +1,5 @@
 package com.huawei.it.euler.config.security;
 
-import com.huawei.it.euler.config.handler.EulerAccessDeniedHandler;
-import com.huawei.it.euler.config.handler.EulerAuthenticationEntryPoint;
-import com.huawei.it.euler.config.handler.EulerLogoutSuccessHandler;
-import com.huawei.it.euler.filter.CsrfFilter;
-import com.huawei.it.euler.filter.JwtTokenFilter;
-import com.huawei.it.euler.filter.ProtocolFilter;
-import com.huawei.it.euler.filter.SecurityFilter;
-import com.huawei.it.euler.service.UserService;
-import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,12 +9,20 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+
+import com.huawei.it.euler.config.handler.EulerAccessDeniedHandler;
+import com.huawei.it.euler.config.handler.EulerAuthenticationEntryPoint;
+import com.huawei.it.euler.config.handler.EulerLogoutSuccessHandler;
+import com.huawei.it.euler.filter.CsrfFilter;
+import com.huawei.it.euler.filter.JwtTokenFilter;
+import com.huawei.it.euler.filter.ProtocolFilter;
+import com.huawei.it.euler.filter.SecurityFilter;
+import com.huawei.it.euler.service.UserService;
 
 @Configuration
 @EnableWebSecurity
@@ -54,8 +53,8 @@ public class WebSecurityConfig {
     @Autowired
     private ProtocolFilter protocolFilter;
 
-//    @Autowired
-//    private SecurityFilter securityFilter;
+    @Autowired
+    private SecurityFilter securityFilter;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -83,7 +82,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exceptions ->
                         exceptions.accessDeniedHandler(eulerAccessDeniedHandler)
                         .authenticationEntryPoint(eulerAuthenticationEntryPoint))
-//                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(protocolFilter, UsernamePasswordAuthenticationFilter.class);
