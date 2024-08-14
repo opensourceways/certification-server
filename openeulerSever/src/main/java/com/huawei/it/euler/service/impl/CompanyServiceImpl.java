@@ -164,7 +164,6 @@ public class CompanyServiceImpl implements CompanyService {
         company.setStatus(0);
         Company existCompany = companyMapper.findCompanyByUserUuid(userUuid);
         company.setCompanyMail(encryptUtils.aesEncrypt(company.getCompanyMail()));
-        log.info("insert a new company, company name: {}, insert time: {}, exist company: {}", company.getCompanyName(), currentTime,existCompany);
         if (existCompany != null) {
             Integer status = existCompany.getStatus();
             if (status == 0) {
@@ -177,8 +176,6 @@ public class CompanyServiceImpl implements CompanyService {
         } else {
             companyMapper.insertCompany(company);
         }
-        log.info("successfully insert a new company, company name: {}, insert time: {}",
-                company.getCompanyName(), company.getUpdateTime());
         return JsonResponse.success();
     }
 
@@ -264,7 +261,6 @@ public class CompanyServiceImpl implements CompanyService {
         dbCompany.setStatus(newStatus);
         dbCompany.setApprovalComment(companyAuditVo.getComment());
         companyMapper.updateCompany(dbCompany);
-        log.info("A company application completed approval, company name: {}", dbCompany.getCompanyName());
         // 审核结果发送给申请用户
         sendEmailNotification(companyAuditVo);
         return JsonResponse.success();
@@ -336,7 +332,6 @@ public class CompanyServiceImpl implements CompanyService {
             log.error(e.getErrorCode());
             log.error(e.getErrorMsg());
         }
-        log.info(response.toString());
         return response;
     }
 

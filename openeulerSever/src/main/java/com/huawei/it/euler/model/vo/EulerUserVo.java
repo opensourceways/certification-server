@@ -25,7 +25,7 @@ public class EulerUserVo {
     @Pattern(regexp = "^[\\u4e00-\\u9fa5a-zA-Z0-9_-]{1,16}$", message = "用户名最大长度为16，支持汉字、大小写字母、数字、下划线_和短横线-")
     private String username;
 
-    @JsonIgnore
+//    @JsonIgnore
     private String telephone;
 
     @Pattern(regexp = "^$|" + CompanyVo.EMAIL_VALIDATE_REGEX, message = "邮箱格式不正确")
