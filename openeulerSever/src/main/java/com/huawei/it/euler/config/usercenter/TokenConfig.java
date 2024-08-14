@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -148,14 +149,16 @@ public class TokenConfig {
             JSONObject refreshData = responseEntity.getBody();
             log.info("refresh api code :{}", responseEntity.getStatusCode());
             log.info("refresh api data :{}", refreshData.toJSONString());
-            int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
-            // half of tokenIntervalMin times passed then refresh the token
-            long newTokenRefreshTime = tokenIntervalMin / 2 * 1000L + System.currentTimeMillis();
-            String finalUuid = uuid;
-            caffeineCache.policy().expireVariably().ifPresent(e -> {
-                e.put(refreshTimeKey, newTokenRefreshTime, tokenIntervalMin, TimeUnit.MINUTES);
-                e.put(enUuid, finalUuid, tokenIntervalMin, TimeUnit.MINUTES);
-            });
+            if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
+                int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
+                // half of tokenIntervalMin times passed then refresh the token
+                long newTokenRefreshTime = tokenIntervalMin / 2 * 1000L + System.currentTimeMillis();
+                String finalUuid = uuid;
+                caffeineCache.policy().expireVariably().ifPresent(e -> {
+                    e.put(refreshTimeKey, newTokenRefreshTime, tokenIntervalMin, TimeUnit.MINUTES);
+                    e.put(enUuid, finalUuid, tokenIntervalMin, TimeUnit.MINUTES);
+                });
+            }
         }
     }
 
