@@ -124,7 +124,7 @@ public class TokenConfig {
             if (Objects.equals(cookie.getName(), "uuid")) {
                 uuid = cookie.getValue();
             }
-            if (Objects.equals(cookie.getName(), "_U_T")) {
+            if (Objects.equals(cookie.getName(), "_U_T_")) {
                 token = cookie.getValue();
             }
         }
