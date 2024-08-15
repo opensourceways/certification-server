@@ -33,7 +33,7 @@ public class ApprovalPathNodeServiceImpl implements ApprovalPathNodeService {
 
     @Override
     public ApprovalPathNode findANodeByIcIdAndSoftwareStatus(Integer icId, Integer status) {
-        log.info("findANodeByIcIdAndSoftwareStatus({}, {})", icId, status);
+        log.debug("findANodeByIcIdAndSoftwareStatus({}, {})", icId, status);
         ApprovalPathNode approvalPathNode;
         approvalPathNode = approvalPathNodeMapper.findNodeByIcIdAndStatus(icId, status);
         if (approvalPathNode != null) {

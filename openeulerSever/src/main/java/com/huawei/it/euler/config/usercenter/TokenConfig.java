@@ -111,7 +111,7 @@ public class TokenConfig {
      * @param request request
      */
     public void refreshToken(HttpServletRequest request) {
-        log.info("refresh api code begin");
+        log.debug("refresh api code begin");
         Cookie[] cookies = request.getCookies();
         if (cookies == null || cookies.length == 0) {
             return;
@@ -147,8 +147,8 @@ public class TokenConfig {
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
             ResponseEntity<JSONObject> responseEntity = restTemplate.getForEntity(refreshTokenUrl, JSONObject.class, httpEntity);
             JSONObject refreshData = responseEntity.getBody();
-            log.info("refresh api code :{}", responseEntity.getStatusCode());
-            log.info("refresh api data :{}", refreshData.toJSONString());
+            log.debug("refresh api code :{}", responseEntity.getStatusCode());
+            log.debug("refresh api data :{}", refreshData.toJSONString());
             if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
                 int tokenIntervalMin = refreshData.getJSONObject("data").getInteger("tokenExpireInterval");
                 // half of tokenIntervalMin times passed then refresh the token

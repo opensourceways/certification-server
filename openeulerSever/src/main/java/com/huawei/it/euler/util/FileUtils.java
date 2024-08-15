@@ -222,7 +222,7 @@ public class FileUtils {
             LOGGER.error("read InputStream failed");
             return null;
         }
-        LOGGER.info("getFileHeader=======>文件的头部信息：{}", magicNum);
+        LOGGER.debug("getFileHeader=======>文件的头部信息：{}", magicNum);
         return magicNum;
     }
 

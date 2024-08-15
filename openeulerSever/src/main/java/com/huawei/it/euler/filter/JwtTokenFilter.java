@@ -75,7 +75,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        LOGGER.info("url : {}", request.getRequestURL());
+        LOGGER.debug("url : {}", request.getRequestURL());
         String[] jwtWhiteList = urlWhitelist.split(",");
         String currentURL = FilterUtils.getRequestUrl(request);
         for (String exclusionURL : jwtWhiteList) {
