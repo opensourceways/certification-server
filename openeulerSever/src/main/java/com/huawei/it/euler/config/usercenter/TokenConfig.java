@@ -113,7 +113,7 @@ public class TokenConfig {
      * @param request request
      */
     public void refreshToken(HttpServletRequest request) {
-        log.info("refresh api code begin");
+        log.debug("refresh api code begin");
         Cookie[] cookies = request.getCookies();
         if (cookies == null || cookies.length == 0) {
             return;

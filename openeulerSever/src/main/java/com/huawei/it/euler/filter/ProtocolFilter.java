@@ -4,6 +4,18 @@
 
 package com.huawei.it.euler.filter;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import com.huawei.it.euler.mapper.ProtocolMapper;
 import com.huawei.it.euler.model.entity.Protocol;
 import com.huawei.it.euler.model.enumeration.ProtocolEnum;
@@ -11,23 +23,12 @@ import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FilterUtils;
 import com.huawei.it.euler.util.UserUtils;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 协议拦截器，校验是否签署隐私协议
@@ -77,7 +78,7 @@ public class ProtocolFilter extends OncePerRequestFilter {
         if (skipProtocolFilter) {
             return HttpStatus.UNAUTHORIZED.value();
         }
-        LOGGER.info("check privacy protocol start");
+        LOGGER.debug("check privacy protocol start");
         // 白名单接口不校验隐私政策
         boolean isVerifyProtocol = false;
         String currentURL = FilterUtils.getRequestUrl(httpRequest);
@@ -103,7 +104,7 @@ public class ProtocolFilter extends OncePerRequestFilter {
             LOGGER.error("check privacy protocol failed");
             return HttpStatus.INTERNAL_SERVER_ERROR.value();
         }
-        LOGGER.info("check privacy protocol end");
+        LOGGER.debug("check privacy protocol end");
         return HttpStatus.OK.value();
     }
 }
