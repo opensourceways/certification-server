@@ -52,7 +52,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         Cookie cookie = new Cookie("XSRF-TOKEN", token);
         cookie.setPath(cookiePath);
         cookie.setSecure(true);
-        cookie.setHttpOnly(false);
+        cookie.setHttpOnly(true);
         response.addCookie(cookie);
         response.addHeader("XSRF-TOKEN", token);
         // 加入缓存
@@ -68,6 +68,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         String xsrfToken = request.getHeader("X-XSRF-TOKEN");
         if (!Arrays.asList("GET", "HEAD", "OPTIONS", "TRACE").contains(request.getMethod())
                 && !tokenOld.contains(xsrfToken)) {
+            log.info("The X-XSRF-TOKEN request header is verification fails, user : {}", cookieUuid);
             FilterUtils.writeErrorResp(response, "The X-XSRF-TOKEN request header is verification fails",
                     JsonResponse.FORBIDDEN_STATUS);
             return;
