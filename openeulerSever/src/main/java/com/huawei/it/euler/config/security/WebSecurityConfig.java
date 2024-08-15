@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -84,7 +85,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exceptions ->
                         exceptions.accessDeniedHandler(eulerAccessDeniedHandler)
                         .authenticationEntryPoint(eulerAuthenticationEntryPoint))
-                .headers(HeadersConfigurer::defaultsDisabled)
+                .headers(headers -> headers.defaultsDisabled().cacheControl(Customizer.withDefaults()))
 //                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
