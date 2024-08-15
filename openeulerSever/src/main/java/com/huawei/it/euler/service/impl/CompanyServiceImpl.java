@@ -403,7 +403,7 @@ public class CompanyServiceImpl implements CompanyService {
                 licenseInfoVo.setExpirationDate(endDate.format(outputFormatter));
             } catch (DateTimeParseException e) {
                 // 处理解析结束日期失败的情况
-                System.out.println("Failed to parse end date: " + endDateString);
+                log.error("Failed to parse end date: {}", endDateString);
             }
         }
 
@@ -413,7 +413,7 @@ public class CompanyServiceImpl implements CompanyService {
             licenseInfoVo.setRegistrationDate(startDate.format(outputFormatter));
         } catch (DateTimeParseException e) {
             // 处理解析开始日期失败的情况
-            System.out.println("Failed to parse start date: " + foundDate);
+            log.error("Failed to parse start date: {}", foundDate);
         }
 
     }
