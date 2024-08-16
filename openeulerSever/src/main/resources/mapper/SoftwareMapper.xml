@@ -264,7 +264,7 @@
 
     <select id="getEmptyAttachmentsNames" resultMap="AttachmentsMap">
         select file_path, filename, software_id, uuid, file_type, flag ,fileid
-        from attachments_t where flag = '0' limit 1
+        from attachments_t where flag = '0' order by id desc limit 1
     </select>
 
     <select id="downloadAttachments" parameterType="java.lang.String" resultMap="AttachmentsMap">
