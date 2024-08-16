@@ -52,7 +52,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         Cookie cookie = new Cookie("XSRF-TOKEN", token);
         cookie.setPath(cookiePath);
         cookie.setSecure(true);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         response.addCookie(cookie);
         response.addHeader("XSRF-TOKEN", token);
         // 加入缓存
