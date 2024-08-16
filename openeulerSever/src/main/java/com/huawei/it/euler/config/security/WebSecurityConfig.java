@@ -88,8 +88,8 @@ public class WebSecurityConfig {
                 .headers(headers -> headers.defaultsDisabled().cacheControl(Customizer.withDefaults()))
 //                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(protocolFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+//                .addFilterBefore(protocolFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
