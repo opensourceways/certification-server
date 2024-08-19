@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -45,7 +46,7 @@ public class S3Client {
     @Autowired
     private S3Utils s3Utils;
 
-//    @Scheduled(fixedRate = 60000) // 60000 milliseconds = 1 minute
+    @Scheduled(fixedRate = 60000) // 60000 milliseconds = 1 minute
     public void callApiAndDownloadFile() {
         FileModel file = new FileModel();
         try {
@@ -67,12 +68,6 @@ public class S3Client {
                     entity,
                     byte[].class
             );
-
-            // 打印响应头，用于调试
-            System.out.println("Response headers:");
-            response.getHeaders().forEach((key, value) -> {
-                System.out.println(key + ": " + value);
-            });
 
             // 检查 Content-Length
             List<String> contentLengthHeaders = response.getHeaders().get(HttpHeaders.CONTENT_LENGTH);
