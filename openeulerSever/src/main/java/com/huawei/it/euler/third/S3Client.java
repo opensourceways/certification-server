@@ -69,12 +69,6 @@ public class S3Client {
                     byte[].class
             );
 
-            // 打印响应头，用于调试
-            System.out.println("Response headers:");
-            response.getHeaders().forEach((key, value) -> {
-                System.out.println(key + ": " + value);
-            });
-
             // 检查 Content-Length
             List<String> contentLengthHeaders = response.getHeaders().get(HttpHeaders.CONTENT_LENGTH);
             if (contentLengthHeaders != null && !contentLengthHeaders.isEmpty()) {
