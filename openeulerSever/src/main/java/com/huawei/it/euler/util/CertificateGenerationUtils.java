@@ -472,11 +472,4 @@ public class CertificateGenerationUtils {
         }
         return dir.delete();
     }
-
-    public static void main(String[] args) {
-        InputStream fontStream = CertificateGenerationUtils.class.getClassLoader().getResourceAsStream("docs/msyh.ttf");
-        if (fontStream == null){
-            System.out.println();
-        }
-    }
 }

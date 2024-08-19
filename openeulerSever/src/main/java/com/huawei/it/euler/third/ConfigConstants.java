@@ -17,7 +17,7 @@ public class ConfigConstants {
 
     public static String SDK_VERSION = "";
 
-    public static String SSO_TOKEN_KEY = "sso";
+    public static final String SSO_TOKEN_KEY = "sso";
 
     public static String REGISTER_INFO = "";
 
