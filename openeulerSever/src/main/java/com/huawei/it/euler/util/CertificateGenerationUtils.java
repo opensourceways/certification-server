@@ -202,14 +202,14 @@ public class CertificateGenerationUtils {
 
     private void getFirstComponent(XEasyPdfPage page, GenerateCertificate generateCertificate, Boolean isPreview,
                                    String code) {
-        page.addComponent(XEasyPdfHandler.Text.build(OPEN_EULER + "开源社区")
+        page.addComponent(XEasyPdfHandler.Text.build(OPEN_EULER + "社区")
                 .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginTop(18F)
                 .setMarginLeft(310f), XEasyPdfHandler.Text.build("江大勇")
                 .setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
                 .setMarginTop(70F).setMarginLeft(310f),
-                XEasyPdfHandler.Text.build(OPEN_EULER + "开源社区理事长").setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
+                XEasyPdfHandler.Text.build(OPEN_EULER + "委员会主席").setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
                         .setMarginLeft(310f),
-                XEasyPdfHandler.Text.build("发证机构：" + OPEN_EULER + "开源社区")
+                XEasyPdfHandler.Text.build("发证机构：" + OPEN_EULER + "社区")
                         .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f),
                 XEasyPdfHandler.Text.build("测试机构：" + generateCertificate.getTestOrganization())
                         .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
@@ -395,7 +395,7 @@ public class CertificateGenerationUtils {
                         .setMarginLeft(74F).setFontPath(DOCBD),
                 XEasyPdfHandler.Text.build("1. 授权使用条件：")
                         .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
-                XEasyPdfHandler.Text.build("仅用于证明甲方与乙方就证书所列产品完成基于" + OPEN_EULER + "开源操作系统")
+                XEasyPdfHandler.Text.build("仅用于证明甲方与乙方就证书所列产品完成基于" + OPEN_EULER + "操作系统")
                         .setMarginTop(-17F).setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("的兼容性测试").setMarginLeft(185F),
                 XEasyPdfHandler.Text.build("2. 授权使用范围：")
@@ -439,7 +439,7 @@ public class CertificateGenerationUtils {
             log.info("#DealAdvanceed#page null, return.");
             return;
         }
-        String str = OPEN_EULER + "开源社区（甲方）与" + generateCertificate.getCompanyName() + "（乙方）完成了产品兼容性测试。";
+        String str = OPEN_EULER + "社区（甲方）与" + generateCertificate.getCompanyName() + "（乙方）完成了产品兼容性测试。";
         int length = str.length();
         if (length > 43) {
             page.addComponent(
