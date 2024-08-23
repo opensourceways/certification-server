@@ -1018,4 +1018,15 @@ public class SoftwareServiceImpl implements SoftwareService {
         String content = emailConfig.getIntelNoticeEmailContent(replaceMap);
         emailConfig.sendMail(receiverList, subject, content, new ArrayList<>());
     }
+
+
+    @Override
+    public FilterCriteriaVo filterCeriteria() {
+        List<String> osNames = softwareMapper.findOsName();
+        List<String> testOrganizations = softwareMapper.findTestOrganization();
+        FilterCriteriaVo filterCriteriaVo = new FilterCriteriaVo();
+        filterCriteriaVo.setOsNames(osNames);
+        filterCriteriaVo.setTestOrganizations(testOrganizations);
+        return filterCriteriaVo;
+    }
 }

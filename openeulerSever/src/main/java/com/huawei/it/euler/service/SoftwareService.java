@@ -197,4 +197,6 @@ public interface SoftwareService {
      * @param response response
      */
     void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response) throws InputException, IOException;
+
+    FilterCriteriaVo filterCeriteria();
 }
