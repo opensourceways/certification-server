@@ -83,7 +83,6 @@ public class WebSecurityConfig {
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-//                .addFilterBefore(protocolFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
