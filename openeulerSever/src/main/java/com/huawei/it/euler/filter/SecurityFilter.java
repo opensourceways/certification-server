@@ -70,9 +70,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         // get请求和白名单不校验referer
         boolean isVerifyReferer = "GET".equals(httpRequest.getMethod());
         String[] refererWhitelist = refererUrlWhitelist.split(",");
-        String currentURL = FilterUtils.getRequestUrl(httpRequest);
         for (String exclusionURL : refererWhitelist) {
-            if (currentURL.matches(exclusionURL.replaceAll("\\*", "\\.\\*"))) {
+            if (shortUri.matches(exclusionURL.replaceAll("\\*", "\\.\\*"))) {
                 isVerifyReferer = true;
                 break;
             }
@@ -98,9 +97,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         // get请求和白名单不校验origin
         boolean isVerifyOrigin = "GET".equals(httpRequest.getMethod());
         String[] originWhitelist = originUrlWhitelist.split(",");
-        String currentURL = FilterUtils.getRequestUrl(httpRequest);
         for (String exclusionURL : originWhitelist) {
-            if (currentURL.matches(exclusionURL.replaceAll("\\*", "\\.\\*"))) {
+            if (shortUri.matches(exclusionURL.replaceAll("\\*", "\\.\\*"))) {
                 isVerifyOrigin = true;
                 break;
             }
