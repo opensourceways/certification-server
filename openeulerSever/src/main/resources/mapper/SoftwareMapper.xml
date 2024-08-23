@@ -304,4 +304,11 @@
         from attachments_t where software_id = #{softwareId} and file_type = 'sign';
     </select>
 
+    <select id="findOsName" resultType="java.lang.String">
+        select distinct os_name from os_t;
+    </select>
+
+    <select id="findTestOrganization" resultType="java.lang.String">
+        select distinct name from innovation_center_t;
+    </select>
 </mapper>
