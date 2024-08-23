@@ -79,6 +79,12 @@ public class SoftwareController {
         return JsonResponse.success(software);
     }
 
+    @PostMapping("/software/communityCheckList")
+    public JsonResponse<PageVo<CompatibilityVo>> communityCheckList(@RequestBody SoftwareFilterVo vo){
+        PageVo<CompatibilityVo> communityCheckList = softwareService.findCommunityCheckList(vo);
+        return JsonResponse.success(communityCheckList);
+    }
+
     /**
      * 旗舰店证书确认
      *
