@@ -163,6 +163,13 @@ public interface SoftwareMapper {
     String getSignedFileId(Integer softwareId);
 
     /**
+     *  查询社区软件清单
+     * @param vo 筛选条件
+     * @return 社区软件清单集合
+     */
+    List<Compatibility> findCommunityCheckList(SoftwareFilterVo vo);
+
+    /**
      * 查询osName
      *
      * @return 操作系统
