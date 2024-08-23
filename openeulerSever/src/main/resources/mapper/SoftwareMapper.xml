@@ -100,10 +100,10 @@
     <select id="findCommunityCheckList" resultMap="compatibilityMap">
         select <include refid="baseFields"/>
         from software_t where status = 9
-        <if test="test_organization != null and test_organization != ''">
-            and test_organization = #{test_organization}
+        <if test="testOrganization != null and testOrganization != ''">
+            and test_organization = #{testOrganization}
         </if>
-        <if test="os_name != null and os_name != ''">
+        <if test="osName != null and osName != ''">
             and os_name = #{os_name}
         </if>
         <if test="keyword != null and keyword != ''">
