@@ -373,4 +373,9 @@ public class SoftwareController {
             HttpServletResponse response) throws InputException {
         softwareService.previewImage(fileId, response);
     }
+
+    @GetMapping("/software/filterCriteria")
+    public JsonResponse filterCriteria() {
+        return new JsonResponse(JsonResponse.SUCCESS_STATUS,JsonResponse.SUCCESS_MESSAGE,softwareService.filterCeriteria());
+    }
 }
