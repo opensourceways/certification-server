@@ -7,6 +7,7 @@ package com.huawei.it.euler.filter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.util.FilterUtils;
+import com.huawei.it.euler.util.RequestUtils;
 import com.huawei.it.euler.util.SessionManagement;
 import com.huawei.it.euler.util.UserUtils;
 import jakarta.annotation.Resource;
@@ -17,8 +18,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -37,6 +36,8 @@ public class CsrfFilter extends OncePerRequestFilter {
     @Value("${oauth.cookie.path}")
     private String cookiePath;
 
+    @Value("${url.whitelist}")
+    private String urlWhitelist;
     @Resource
     private Cache<String, Object> caffeineCache;
 
@@ -67,6 +68,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         caffeineCache.put(tokenKey, tokenOld);
         String xsrfToken = request.getHeader("X-XSRF-TOKEN");
         if (!Arrays.asList("GET", "HEAD", "OPTIONS", "TRACE").contains(request.getMethod())
+                && !isWriteUrl(request)
                 && !tokenOld.contains(xsrfToken)) {
             log.info("The X-XSRF-TOKEN request header is verification fails, user : {}", cookieUuid);
             FilterUtils.writeErrorResp(response, "The X-XSRF-TOKEN request header is verification fails",
@@ -74,5 +76,16 @@ public class CsrfFilter extends OncePerRequestFilter {
             return;
         }
         chain.doFilter(request, response);
+    }
+
+    private boolean isWriteUrl(HttpServletRequest request){
+        String shortUri = RequestUtils.getShortUri(request);
+        String[] writeUrlArr = urlWhitelist.split(",");
+        for (String writeUrl : writeUrlArr) {
+            if (shortUri.matches(writeUrl.replaceAll("\\*", "\\.\\*"))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

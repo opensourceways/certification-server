@@ -8,6 +8,7 @@ import com.huawei.it.euler.model.entity.CompatibleDataApproval;
 import com.huawei.it.euler.model.entity.CompatibleDataInfo;
 import com.huawei.it.euler.model.vo.CompatibleDataSearchVo;
 import com.huawei.it.euler.model.vo.CompatibleSimilarVo;
+import com.huawei.it.euler.model.vo.SoftwareFilterVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -46,4 +47,11 @@ public interface CompatibleDataMapper {
     List<Integer> selectUserRoleByUuid(@Param("uuid") String uuid);
 
     List<CompatibleSimilarVo> selectDataByStatus();
+
+    /**
+     * 查询已通过的兼容性数据清单
+     * @param vo 筛选条件
+     * @return 数据清单
+     */
+    List<CompatibleDataInfo> findCommunityUploadList(SoftwareFilterVo vo);
 }

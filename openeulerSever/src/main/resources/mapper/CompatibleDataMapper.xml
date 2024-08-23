@@ -161,4 +161,15 @@
         where status in ('审核中', '已通过')
     </select>
 
+    <select id="findCommunityUploadList" resultMap="dataInfoMap">
+        select <include refid="dataInfoFields"/>
+        from compatible_data_info_t
+        where status = '已通过'
+        <if test="os_name != null and os_name != ''">
+            and system_name = #{os_name}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and lower(product_name) like lower(concat('%/',#{keyword},'%')) escape '/'
+        </if>
+    </select>
 </mapper>
