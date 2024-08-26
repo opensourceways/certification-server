@@ -107,7 +107,7 @@
             and os_name = #{osName}
         </if>
         <if test="keyword != null and keyword != ''">
-            and lower(company_name) like lower(concat('%/',#{keyword},'%')) escape '/' || lower(product_name) like lower(concat('%/',#{keyword},'%')) escape '/'
+            and (lower(company_name) like lower(concat('%/',#{keyword},'%')) escape '/' || lower(product_name) like lower(concat('%/',#{keyword},'%')) escape '/')
         </if>
     </select>
 
