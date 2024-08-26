@@ -198,5 +198,12 @@ public interface SoftwareService {
      */
     void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response) throws InputException, IOException;
 
+    /**
+     *  查询社区软件清单
+     * @param vo 筛选条件
+     * @return 社区软件清单集合
+     */
+    PageVo<CompatibilityVo> findCommunityCheckList(SoftwareFilterVo vo);
+
     FilterCriteriaVo filterCeriteria();
 }

@@ -43,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * SoftwareServiceImpl
@@ -94,6 +95,9 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private ProtocolMapper protocolMapper;
+
+    @Autowired
+    private CompatibleDataMapper compatibleDataMapper;
 
     @Autowired
     private EncryptUtils encryptUtils;
@@ -285,7 +289,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "");
         // 发送邮件通知
-        sendEmail(software,user);
+        sendEmail(software, user);
     }
 
     private void setCurNode(String userUuid, Integer softwareId) {
@@ -968,6 +972,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     /**
      * send test apply to innovation center
+     *
      * @param software test info
      */
     private void sendEmail(Software software, EulerUser applyUser) {
@@ -1017,6 +1022,99 @@ public class SoftwareServiceImpl implements SoftwareService {
         replaceMap.put("userPhone", applyUser.getTelephone());
         String content = emailConfig.getIntelNoticeEmailContent(replaceMap);
         emailConfig.sendMail(receiverList, subject, content, new ArrayList<>());
+    }
+
+    @Override
+    public PageVo<CompatibilityVo> findCommunityCheckList(SoftwareFilterVo vo) {
+        List<String> datasource = vo.getDataSource();
+        if (datasource == null || datasource.isEmpty()) {
+            datasource = Arrays.asList("assessment", "upload");
+        }
+        List<CompatibilityVo> checkList = new ArrayList<>();
+        if (datasource.contains("assessment")) {
+            checkList = getCheckList(vo);
+        }
+        List<CompatibilityVo> uploadList = new ArrayList<>();
+        if (datasource.contains("upload")) {
+            uploadList = getUploadList(vo);
+        }
+        List<CompatibilityVo> allDataList = Stream.of(checkList, uploadList).flatMap(Collection::stream).toList();
+        List<CompatibilityVo> listPage = ListPageUtils.getListPage(allDataList, vo.getPageNo(), vo.getPageSize());
+        return new PageVo<>(allDataList.size(), listPage);
+    }
+
+    private List<CompatibilityVo> getCheckList(SoftwareFilterVo vo) {
+        List<String> productType = vo.getProductType();
+        List<Compatibility> communityCheckList = softwareMapper.findCommunityCheckList(vo);
+        communityCheckList = communityCheckList.stream().filter(item -> {
+            boolean checkType = true;
+            if (!item.getType().contains("/")) {
+                return false;
+            }
+            String[] split = item.getType().split("/");
+            item.setType(split[1]);
+            if (productType != null && !productType.isEmpty()) {
+                for (String str : productType) {
+                    checkType = split[0].contains(str);
+                    if (checkType) {
+                        break;
+                    }
+                }
+            }
+            return checkType;
+        }).map(item -> {
+            String jsonPlatformTypeAndServerModel = item.getJsonPlatformTypeAndServerModel();
+            JSONArray jsonArray = JSON.parseArray(jsonPlatformTypeAndServerModel);
+            List<ComputingPlatformVo> computingPlatformVoList = new ArrayList<>();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                ComputingPlatformVo computingPlatformVo = JSON.toJavaObject(jsonObject, ComputingPlatformVo.class);
+                computingPlatformVoList.add(computingPlatformVo);
+            }
+            item.setPlatformTypeAndServerModel(computingPlatformVoList);
+            return item;
+        }).toList();
+        return communityCheckList.stream().map(compatibility -> {
+            CompatibilityVo compatibilityVo = new CompatibilityVo();
+            BeanUtils.copyProperties(compatibility,compatibilityVo);
+            return compatibilityVo;
+        }).toList();
+    }
+
+    private List<CompatibilityVo> getUploadList(SoftwareFilterVo vo){
+        List<String> productType = vo.getProductType();
+        List<CompatibleDataInfo> communityUploadList = compatibleDataMapper.findCommunityUploadList(vo);
+        communityUploadList = communityUploadList.stream().filter(item -> {
+            boolean checkType = true;
+            if (productType != null && !productType.isEmpty()) {
+                for (String str : productType) {
+                    checkType = item.getProductType().contains(str);
+                    if (checkType) {
+                        break;
+                    }
+                }
+            }
+            return checkType;
+        }).toList();
+        return communityUploadList.stream().map(item -> {
+            CompatibilityVo compatibilityVo = new CompatibilityVo();
+            BeanUtils.copyProperties(item,compatibilityVo);
+
+            List<ComputingPlatformVo> computingPlatformVoList = new ArrayList<>();
+            ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
+            computingPlatformVo.setPlatformName(item.getServerPlatform());
+            computingPlatformVo.setServerProvider(item.getServerSupplier());
+            computingPlatformVo.setServerTypes(Arrays.asList(item.getServerModel()));
+            computingPlatformVoList.add(computingPlatformVo);
+
+            compatibilityVo.setType(item.getProductSubtype())
+                    .setCompanyName(item.getCompanyName())
+                    .setTestOrganization(item.getUploadCompany())
+                    .setPlatformTypeAndServerModel(computingPlatformVoList)
+                    .setOsName(item.getSystemName())
+                    .setOsVersion(item.getSystemVersion());
+            return compatibilityVo;
+        }).toList();
     }
 
 
