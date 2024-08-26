@@ -4,6 +4,18 @@
 
 package com.huawei.it.euler.controller;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.constraints.Length;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.common.JsonResponse;
@@ -14,24 +26,16 @@ import com.huawei.it.euler.model.vo.CompanySearchVo;
 import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.UserCompanyVo;
 import com.huawei.it.euler.service.CompanyService;
+import com.huawei.it.euler.util.EncryptUtils;
+import com.huawei.it.euler.util.LogUtils;
 import com.huawei.it.euler.util.UserUtils;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.Length;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
 /**
  * CompanyController
  *
@@ -45,6 +49,12 @@ public class CompanyController {
 
     @Autowired
     private CompanyService companyService;
+
+    @Autowired
+    private LogUtils logUtils;
+
+    @Autowired
+    private EncryptUtils encryptUtils;
 
     /**
      * 提交企业实名认证信息
@@ -128,7 +138,10 @@ public class CompanyController {
      */
     @PostMapping("/companies/company/audit")
     @PreAuthorize("hasRole('china_region')")
-    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo) {
+    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo,HttpServletRequest request) {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+        logUtils.insertAuditLog(request, userUuid, "company", "company audit", "company audit:" + companyAuditVo.getResult());
         return companyService.approveCompany(companyAuditVo);
     }
 
