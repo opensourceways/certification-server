@@ -97,6 +97,20 @@
         from software_t where id = #{id}
     </select>
 
+    <select id="findCommunityCheckList" resultMap="compatibilityMap">
+        select <include refid="baseFields"/>
+        from software_t where status = 9
+        <if test="testOrganization != null and testOrganization != ''">
+            and test_organization = #{testOrganization}
+        </if>
+        <if test="osName != null and osName != ''">
+            and os_name = #{osName}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and lower(company_name) like lower(concat('%/',#{keyword},'%')) escape '/' || lower(product_name) like lower(concat('%/',#{keyword},'%')) escape '/'
+        </if>
+    </select>
+
     <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
         update software_t
         set product_version = #{productVersion}, os_name = #{osName}, os_version = #{osVersion},
