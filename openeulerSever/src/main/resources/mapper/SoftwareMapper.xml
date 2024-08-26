@@ -104,7 +104,7 @@
             and test_organization = #{testOrganization}
         </if>
         <if test="osName != null and osName != ''">
-            and os_name = #{os_name}
+            and os_name = #{osName}
         </if>
         <if test="keyword != null and keyword != ''">
             and lower(company_name) like lower(concat('%/',#{keyword},'%')) escape '/' || lower(product_name) like lower(concat('%/',#{keyword},'%')) escape '/'
