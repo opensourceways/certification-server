@@ -204,4 +204,6 @@ public interface SoftwareService {
      * @return 社区软件清单集合
      */
     PageVo<CompatibilityVo> findCommunityCheckList(SoftwareFilterVo vo);
+
+    FilterCriteriaVo filterCeriteria();
 }
