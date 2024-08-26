@@ -168,4 +168,18 @@ public interface SoftwareMapper {
      * @return 社区软件清单集合
      */
     List<Compatibility> findCommunityCheckList(SoftwareFilterVo vo);
+
+    /**
+     * 查询osName
+     *
+     * @return 操作系统
+     */
+    List<String> findOsName();
+
+    /**
+     * 查询测试机构
+     *
+     * @return 测试机构
+     */
+    List<String> findTestOrganization();
 }
