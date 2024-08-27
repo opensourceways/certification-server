@@ -4,12 +4,11 @@
 
 package com.huawei.it.euler.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.util.CollectionUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * UserUtils
@@ -17,6 +16,9 @@ import java.util.Map;
  * @since 2024/06/29
  */
 public class UserUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
+
     /**
      * 请求获取uuid
      *
@@ -24,19 +26,16 @@ public class UserUtils {
      * @return uuid
      */
     public static String getCookieUuid(HttpServletRequest request) {
-       Map<String, String> cookieMap = new HashMap<>();
-       Cookie[] cookies = request.getCookies();
-       if (cookies != null) {
-           for (Cookie cookie : cookies) {
-               cookieMap.put(cookie.getName(), cookie.getValue());
-           }
-           String uuid = null;
-           if (!CollectionUtils.isEmpty(cookieMap)) {
-               uuid = cookieMap.get("uuid");
-           }
-           return uuid;
-       }
-
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("uuid".equals(cookie.getName())) {
+                    log.debug("Found uuid cookie: {}", cookie.getValue());
+                    return cookie.getValue();
+                }
+            }
+        }
+        log.debug("uuid cookie not found");
         return null;
     }
 }
