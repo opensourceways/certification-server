@@ -1,0 +1,92 @@
+application:
+  dbType: mysql
+
+server:
+  port: 8003
+  servlet:
+    context-path: /certification
+
+spring:
+  application:
+    name: euler-service
+  # 数据库连接配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://159.138.45.71:3306/openeuler-compatibility?characterEncoding=utf-8&userSSL=false&serverTimezone=GMT%2B8
+    username: openeuler-compatibility
+    password: KTssbw4ce!r5fj5u
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 250MB
+  main:
+    allow-circular-references: true
+
+# mybatis的相关配置
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: com.huawei.it.model.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+euler:
+  jwt:
+    header: Authorization
+    expire: 7200 #token有效时间2小时，秒单位
+    secret: ji8n3439n439n43ld9ne9343fdfer49h
+
+# heds s3桶配置
+s3:
+  endPoint: obs.ap-southeast-1.myhuaweicloud.com
+  ak: WIVRJUXVOBAHFU44BO3B
+  sk: NsdJoFNn1AT3Ut2Z1NuUIfGPd87c1VPHpZKYipIU
+  bucketName: obs-openeuler-compatibility-test
+  pathStyle: true
+
+# ocr服务配置
+ocr:
+  ak: DMZMCADZUEHTKFPREXCL
+  sk: pnvemwhjMgHgEs0kojdOCGOvy0KqrNrif3wUIPIw
+  projectId: 0612bdc78f80251f2fcac017ebad7ad7
+
+# 信息提取配置
+verifyCompany:
+  appKey: ed785ac207de46ec8e84f2972e02552153d38ee17d7043678fcfee4336a3586a
+  url: https://shuzike06.apistore.huaweicloud.com/company
+
+# euler登录服务配置
+eulerlogin:
+  clientId: 655d637668e3addd8ee560cb
+  clientSecret: 35bde7972f936bf059a88921746e0d6c
+  authCodeUrl: https://omapi.osinfra.cn/oneid/oidc/authorize
+  accessTokenUrl: https://omapi.osinfra.cn/oneid/oidc/token
+  userInfoUrl: https://omapi.osinfra.cn/oneid/oidc/user
+  redirectUrl: https://openeuler-compatibility.openeuler.org/server/certification/auth/callback
+  frontCallbackUrl: https://openeuler-compatibility.openeuler.org/#/redirectJump
+  logoutUrl: https://omapi.osinfra.cn/logout
+  frontUrl: https://openeuler-compatibility.openeuler.org/#/
+  refreshTokenUrl: https://omapi.osinfra.cn/oneid/verify/token
+
+# 简单通知服务配置
+sns:
+  appId: "test"
+  templateId: B104E4B354C44271AC038B488B68DCEB
+  messageUrl: https://apigw-beta.huawei.com/api/test/sns/sms/send/v2
+  xHwAppKey: Fliix82tyRNgsrHYls2G5w==
+
+oauth:
+  cookie:
+    path: /
+
+origin:
+  value: https://localhost:8080
+referer:
+  value: https://localhost:8080/
+
+url:
+  whitelist: /v3/api-docs,/webjars/**,/logout,/health/check,/auth/login,/auth/callback,/index.html,/user/getAllProvince,/auth/logout,/auth/logoutCallback,/software/compatibilityChecklist,/software/downloadAuthenticate,/software/filterCriteria,/software/communityChecklist
+
+protocol:
+  url:
+    whitelist: /v3/api-docs,/webjars/**,/logout,/health/check,/auth/login,/auth/callback,/index.html,/user/getAllProvince,/auth/logout,/auth/logoutCallback,/software/compatibilityChecklist,/software/downloadAuthenticate,/software/filterCriteria,/software/communityChecklist,/user/signPrivacyAgreement
