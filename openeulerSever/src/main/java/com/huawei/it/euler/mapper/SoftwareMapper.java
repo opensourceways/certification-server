@@ -4,14 +4,15 @@
 
 package com.huawei.it.euler.mapper;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.huawei.it.euler.model.entity.*;
-import com.huawei.it.euler.model.vo.*;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Map;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.huawei.it.euler.model.entity.*;
+import com.huawei.it.euler.model.vo.*;
 
 /**
  * SoftwareMapper
@@ -90,7 +91,7 @@ public interface SoftwareMapper {
      * @return
      */
     IPage<AuditRecordsVo> getAuditRecordsListPage(@Param("softwareId") Integer softwareId,
-                                                  @Param("nodeName") String nodeName, IPage<AuditRecordsVo> page);
+        @Param("nodeName") String nodeName, IPage<AuditRecordsVo> page);
 
     /**
      * 证书信息确认查询
@@ -113,7 +114,6 @@ public interface SoftwareMapper {
      * @param fileModel 附件信息
      */
     void updateSign(FileModel fileModel);
-    void updateFlag(FileModel fileModel);//更新flag
 
     /**
      * 查询上传文件名称
@@ -130,7 +130,7 @@ public interface SoftwareMapper {
      * @return Attachments
      */
     Attachments downloadAttachments(String fileId);
-    Attachments getEmptyAttachmentsNames();
+
     /**
      * 删除附件
      *
@@ -163,7 +163,8 @@ public interface SoftwareMapper {
     String getSignedFileId(Integer softwareId);
 
     /**
-     *  查询社区软件清单
+     * 查询社区软件清单
+     * 
      * @param vo 筛选条件
      * @return 社区软件清单集合
      */
