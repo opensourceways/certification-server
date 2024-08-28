@@ -162,7 +162,7 @@ public class UserServiceImpl implements UserService {
         EulerUser user = userMapper.findByUuid(uuid);
         UserDetails userDetails;
         if (user != null) {
-            userDetails = new User(user.getTelephone(), user.getPassword(), getUserAuthorities(user.getId()));
+            userDetails = new User("", "", getUserAuthorities(user.getId()));
         } else {
             throw new UsernameNotFoundException(ACCOUNT_INVAILD);
         }
