@@ -178,11 +178,16 @@ public class UserServiceImpl implements UserService {
     }
 
     public Integer getUserDataScopeByRole(Integer uuid, Integer role) {
-        Set<Integer> dateScope = roleMapper.findRoleByUserId(uuid,role).stream().map(RoleVo::getDataScope)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
-        if(dateScope.size() > 1 ){
-            throw new ParamException("用户数据范围不唯一");
-        }
-        return dateScope.stream().findFirst().orElse(null);
+        return roleMapper.findRoleByUserId(uuid, role)
+                .stream()
+                .map(RoleVo::getDataScope)
+                .filter(Objects::nonNull)
+                .reduce((a, b) -> {
+                    if (!a.equals(b)) {
+                        throw new ParamException("用户数据范围不唯一");
+                    }
+                    return a;
+                })
+                .orElse(null);
     }
 }
