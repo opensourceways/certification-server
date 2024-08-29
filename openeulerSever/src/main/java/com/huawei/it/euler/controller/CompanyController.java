@@ -196,7 +196,7 @@ public class CompanyController {
      * @param request request
      */
     @GetMapping("/companies/download")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public void downloadLogo(@RequestParam("fileId") @NotBlank(message = "附件id不能为空")
         @Length(max = 50, message = "附件id超出范围") String fileId, HttpServletResponse response,
         HttpServletRequest request) throws InputException, UnsupportedEncodingException {

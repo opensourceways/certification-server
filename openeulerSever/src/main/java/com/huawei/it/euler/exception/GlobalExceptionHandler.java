@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(value = RuntimeException.class)
     public JsonResponse<String> handler(RuntimeException exception, HttpServletRequest request) {
-        log.error("URL: {}, RuntimeException, errorMessage: {}", request.getRequestURL(), exception.getMessage());
+        log.error("URL: {}, RuntimeException, errorMessage: {}", request.getRequestURL(), exception);
         return JsonResponse.failed(ERROR_MESSAGE);
     }
 

@@ -71,7 +71,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @GetMapping("/software/findById")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<Software> findById(
             @RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -129,7 +129,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/processReview")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<String> processReview(
             @RequestBody @Validated ProcessVo processVo, HttpServletRequest request) throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -144,7 +144,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @GetMapping("/software/transferredUserList")
-    @PreAuthorize("hasAnyRole('sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<SimpleUserVo>> transferredUserList(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -160,7 +160,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @GetMapping("/software/node")
-    @PreAuthorize("hasAnyRole('sig_group', 'euler_ic','openatom_intel', 'flag_store', 'user')")
+    @PreAuthorize("hasAnyRole('sig_group', 'program_review','report_review','certificate_issuance','openatom_intel', 'flag_store', 'user')")
     public JsonResponse<List<AuditRecordsVo>> node(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -184,7 +184,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/softwareList")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<Map<String, Object>> getSoftwareList(
             @RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -214,7 +214,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/reviewSoftwareList")
-    @PreAuthorize("hasAnyRole('china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole( 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<Map<String, Object>> getReviewSoftwareList(
             @RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -247,7 +247,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @GetMapping("/software/auditRecordsList")
-    @PreAuthorize("hasAnyRole('user', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store')")
+    @PreAuthorize("hasAnyRole('user', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<IPage<AuditRecordsVo>> getAuditRecordsList(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
             @RequestParam("nodeName") String nodeName,
@@ -266,7 +266,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @GetMapping("/software/certificateInfo")
-    @PreAuthorize("hasAnyRole('user', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store')")
+    @PreAuthorize("hasAnyRole('user', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<CertificateInfoVo> certificateInfo(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) {
         return new JsonResponse<>(softwareService.certificateInfo(softwareId, request));
@@ -283,7 +283,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/upload")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<String> upload(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
             @RequestParam("file") MultipartFile file,
@@ -306,7 +306,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @GetMapping("/software/getAttachments")
-    @PreAuthorize("hasAnyRole('user', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store')")
+    @PreAuthorize("hasAnyRole('user', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<List<AttachmentsVo>> getAttachmentsNames(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
             @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType,
@@ -322,7 +322,7 @@ public class SoftwareController {
      * @param request request
      */
     @GetMapping("/software/downloadAttachments")
-    @PreAuthorize("hasAnyRole('user', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public void downloadAttachments(
             @RequestParam("fileId") @NotBlank(message = "附件id不能为空") String fileId, HttpServletResponse response,
             HttpServletRequest request) throws InputException, UnsupportedEncodingException {
@@ -351,7 +351,7 @@ public class SoftwareController {
      * @param response response
      */
     @GetMapping("/software/previewCertificate")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public void previewCertificate(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
             HttpServletResponse response) throws InputException, IOException {
@@ -365,7 +365,7 @@ public class SoftwareController {
      * @param response response
      */
     @PostMapping("/software/previewCertificateConfirmInfo")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public void previewCertificateConfirmInfo(@Valid @RequestBody CertificateConfirmVo certificateConfirmVo,
                                        HttpServletResponse response) throws Exception {
         softwareService.previewCertificateConfirmInfo(certificateConfirmVo, response);
@@ -378,7 +378,7 @@ public class SoftwareController {
      * @param response response
      */
     @GetMapping("/software/imagePreview")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public void previewImage(
             @RequestParam("fileId") @NotBlank(message = "附件id不能为空") String fileId,
             HttpServletResponse response) throws InputException {
