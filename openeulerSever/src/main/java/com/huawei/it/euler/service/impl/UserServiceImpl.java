@@ -4,6 +4,21 @@
 
 package com.huawei.it.euler.service.impl;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.ProtocolMapper;
@@ -18,20 +33,8 @@ import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
 import com.huawei.it.euler.util.UserUtils;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * UserServiceImpl
@@ -124,13 +127,8 @@ public class UserServiceImpl implements UserService {
     public JsonResponse<String> signAgreement(Integer protocolType, String userUuid) {
         Date date = new Date();
         Protocol protocol = new Protocol();
-        protocol.setProtocolType(protocolType)
-                .setProtocolName(ProtocolEnum.getProtocolNameByType(protocolType))
-                .setStatus(1)
-                .setCreatedBy(userUuid)
-                .setCreatedTime(date)
-                .setUpdatedBy(userUuid)
-                .setUpdatedTime(date);
+        protocol.setProtocolType(protocolType).setProtocolName(ProtocolEnum.getProtocolNameByType(protocolType))
+            .setStatus(1).setCreatedBy(userUuid).setCreatedTime(date).setUpdatedBy(userUuid).setUpdatedTime(date);
         if (Objects.equals(protocolType, ProtocolEnum.PRIVACY_POLICY.getProtocolType())) {
             Protocol signedProtocol = protocolMapper.selectProtocolByType(protocolType, userUuid);
             if (signedProtocol != null) {
@@ -167,5 +165,24 @@ public class UserServiceImpl implements UserService {
             throw new UsernameNotFoundException(ACCOUNT_INVAILD);
         }
         return userDetails;
+    }
+
+    public String getUserAllDateScope(Integer uuid) {
+        Set<Integer> dateScope = roleMapper.findRoleByUserId(uuid,null).stream().map(RoleVo::getDataScope)
+            .filter(Objects::nonNull).collect(Collectors.toSet());
+        if (dateScope.contains(0)) {
+            return "ALL";
+        } else {
+            return String.join(",", dateScope.stream().map(String::valueOf).toArray(String[]::new));
+        }
+    }
+
+    public Integer getUserDataScopeByRole(Integer uuid, Integer role) {
+        Set<Integer> dateScope = roleMapper.findRoleByUserId(uuid,role).stream().map(RoleVo::getDataScope)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        if(dateScope.size() > 1 ){
+            throw new ParamException("用户数据范围不唯一");
+        }
+        return dateScope.stream().findFirst().orElse(null);
     }
 }
