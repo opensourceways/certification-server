@@ -100,4 +100,16 @@ public interface UserService extends UserDetailsService {
      * @return JsonResponse
      */
     JsonResponse<String> cancelAgreement(Integer protocolType, String userUuid);
+
+
+    /**
+     * 查询时获取用户的数据权限
+     *
+     * @param uuid 用户uuid
+     * @return 用户的数据权限
+     */
+    String getUserAllDateScope(Integer uuid);
+
+
+    Integer getUserDataScopeByRole(Integer uuid, Integer role);
 }

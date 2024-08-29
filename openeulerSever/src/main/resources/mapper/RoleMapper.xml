@@ -36,4 +36,13 @@
         where role_id = #{roleId}
     </select>
 
+    <select id="findRoleByUserId" resultType="com.huawei.it.euler.model.vo.RoleVo">
+        select role_id as role,data_scope as dataScope
+        from user_role_mapping_t
+        where uuid = #{uuid}
+        <if test="roleId != null">
+            and role_id = #{roleId}
+        </if>
+    </select>
+
 </mapper>
