@@ -12,7 +12,6 @@
         <result column="approval_comment" property="approvalComment"/>
         <result column="update_time" property="updateTime"/>
         <result column="apply_time" property="applyTime"/>
-        <result column="user_telephone" property="userTelephone"/>
         <result column="logo_name" property="logoName"/>
         <result column="license_name" property="licenseName"/>
         <result column="user_uuid" property="userUuid"/>
@@ -30,16 +29,16 @@
     <sql id="allFields">
         id, user_id, status, logo, region, license, company_name, credit_code, address, legal_person,
         registration_capital, registration_date, expiration_date, approval_comment, update_time, apply_time,
-        user_telephone, logo_name, license_name, user_uuid, company_mail, is_checked_pass
+         logo_name, license_name, user_uuid, company_mail, is_checked_pass
     </sql>
 
     <insert id="insertCompany" parameterType="com.huawei.it.euler.model.entity.Company">
         insert into company_t (user_id, status, logo, region, license, company_name, credit_code, address, legal_person,
                                registration_capital, registration_date, expiration_date, approval_comment, update_time,
-                               apply_time, user_telephone, logo_name, license_name, user_uuid, company_mail, is_checked_pass)
+                               apply_time,  logo_name, license_name, user_uuid, company_mail, is_checked_pass)
         values (#{userId}, #{status}, #{logo}, #{region}, #{license}, #{companyName}, #{creditCode}, #{address},
                 #{legalPerson}, #{registrationCapital}, #{registrationDate}, #{expirationDate}, #{approvalComment},
-                #{updateTime}, #{applyTime}, #{userTelephone}, #{logoName}, #{licenseName}, #{userUuid}, #{companyMail},
+                #{updateTime}, #{applyTime}, #{logoName}, #{licenseName}, #{userUuid}, #{companyMail},
                 #{isCheckedPass})
     </insert>
 
@@ -59,7 +58,6 @@
             approval_comment = #{approvalComment},
             update_time = #{updateTime},
             apply_time = #{applyTime},
-            user_telephone = #{userTelephone},
             logo_name = #{logoName},
             license_name = #{licenseName},
             user_uuid = #{userUuid},
