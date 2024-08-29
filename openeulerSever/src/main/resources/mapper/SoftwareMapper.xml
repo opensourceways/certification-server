@@ -18,7 +18,6 @@
         <id column="status" property="status"/>
         <id column="update_time" property="updateTime"/>
         <id column="application_time" property="applicationTime"/>
-        <id column="user_telephone" property="userTelephone"/>
         <id column="user_uuid" property="userUuid"/>
         <result column="cpu_vendor" property="cpuVendor"/>
         <result column="as_id" property="asId"/>
@@ -78,13 +77,13 @@
 
     <sql id="baseFields">
         id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
-        hashrate_platform, server_type, product_type, test_organization, status, update_time, application_time, user_telephone,
+        hashrate_platform, server_type, product_type, test_organization, status, update_time, application_time,
         reviewer, user_uuid, cpu_vendor, as_id
     </sql>
 
     <sql id="insertFields">
         company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
-        hashrate_platform, product_type, test_organization, status, update_time, application_time, user_telephone,
+        hashrate_platform, product_type, test_organization, status, update_time, application_time,
         reviewer, user_uuid, cpu_vendor, as_id
     </sql>
 
