@@ -92,6 +92,10 @@ public class UserServiceImpl implements UserService {
         return roleMapper.findByUserId(userId);
     }
 
+    public List<Integer> getUserRolesByUUID(Integer uuid) {
+        return roleMapper.findByUUID(uuid);
+    }
+
     @Override
     public List<RoleVo> getUserRoleInfo(Integer userId) {
         return roleMapper.findRoleInfoByUserId(userId);
@@ -213,14 +217,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isAttachmentPermission(String userUuid, Attachments attachment) {
-        List<String> roleList = getUserRoles(Integer.valueOf(userUuid));
+        List<Integer> roleList = getUserRolesByUUID(Integer.valueOf(userUuid));
         if (RoleEnum.isUser(roleList) && Objects.equals(attachment.getUuid(), userUuid)) {
             return true;
         }
         switch (attachment.getFileType()) {
             case "logo":
             case "license":
-                return roleList.contains(RoleEnum.CHINA_REGION.getRole());
+                return roleList.contains(RoleEnum.CHINA_REGION.getRoleId());
             case "testReport":
             case "sign":
             case "certificates":
