@@ -4,13 +4,18 @@
 
 package com.huawei.it.euler.controller;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
-import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson.JSONObject;
-import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.common.JsonResponse;
-import com.huawei.it.euler.common.JwtUtils;
-import com.huawei.it.euler.config.CacheConfig;
 import com.huawei.it.euler.config.CookieConfig;
 import com.huawei.it.euler.config.usercenter.TokenConfig;
 import com.huawei.it.euler.model.entity.EulerUser;
@@ -20,31 +25,10 @@ import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
 import com.huawei.it.euler.util.SessionManagement;
 import com.huawei.it.euler.util.UserUtils;
-import jakarta.servlet.http.Cookie;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * LoginController
@@ -55,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/auth")
 public class LoginController {
-
 
     @Value("${eulerlogin.clientId}")
     private String clientId;
@@ -98,7 +81,8 @@ public class LoginController {
     @GetMapping("/login")
     public JsonResponse<String> login() throws GeneralSecurityException {
         String state = SessionManagement.genSessionIdToHex();
-        String loginUrl = authCodeUrl + "?response_type=code" + "&scope=openid profile email phone address offline_access" + "&state="
+        String loginUrl =
+            authCodeUrl + "?response_type=code" + "&scope=openid profile email phone address offline_access" + "&state="
                 + state + "&client_id=" + clientId + "&redirect_uri=" + redirectUrl;
         return new JsonResponse<>(loginUrl);
     }
@@ -106,7 +90,7 @@ public class LoginController {
     /**
      * idaas sso自定义登录
      *
-     * @param request  request
+     * @param request request
      * @param response response
      * @return JsonResponse
      */
@@ -124,7 +108,7 @@ public class LoginController {
     /**
      * user center will call that when other application logout to clear current application session
      *
-     * @param request  request
+     * @param request request
      * @param response responses
      * @return JsonResponse
      */
@@ -135,7 +119,7 @@ public class LoginController {
         log.debug("logout for api request data authorization:{}", authorization);
         String uuid = tokenConfig.verifyJwt(authorization);
         log.debug("logout for api request data uuid:{}", uuid);
-        if (StringUtils.isEmpty(uuid)){
+        if (StringUtils.isEmpty(uuid)) {
             return JsonResponse.failed("jwt parse error!");
         }
         String userUuid = encryptUtils.aesDecrypt(uuid);
@@ -156,7 +140,7 @@ public class LoginController {
     /**
      * idaas sso登录回调
      *
-     * @param request  request
+     * @param request request
      * @param response response
      */
     @GetMapping("/callback")
@@ -195,8 +179,8 @@ public class LoginController {
                 }
             }
             String existUserTel = existUser.getTelephone();
-            existUserTel = encryptUtils.isEncrypted(existUserTel)
-                    ? encryptUtils.aesDecrypt(existUserTel) : existUserTel;
+            existUserTel =
+                encryptUtils.isEncrypted(existUserTel) ? encryptUtils.aesDecrypt(existUserTel) : existUserTel;
             if (existUser.hasChange(telephone, existUserTel)) {
                 existUser.setInfo(encryptUtils.aesEncrypt(telephone));
             }
