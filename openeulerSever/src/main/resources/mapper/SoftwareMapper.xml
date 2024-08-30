@@ -135,7 +135,7 @@
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         insert into software_t(<include refid="insertFields"/>) values (#{companyId}, #{companyName}, #{productName},
         #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
-        #{productType}, #{testOrganization},#{testOrgId} #{status}, #{updateTime}, #{applicationTime}, #{userTelephone},
+        #{productType}, #{testOrganization},#{testOrgId}, #{status}, #{updateTime}, #{applicationTime},
         #{reviewer},
         #{userUuid}, #{cpuVendor}, #{asId})
     </insert>
