@@ -16,7 +16,7 @@ import lombok.Getter;
  */
 @Getter
 public enum CenterEnum {
-    USER(1, "openEuler社区"),
+    USER(1, "openEuler开源社区"),
     CHINA_REGION(2, "江苏鲲鹏&欧拉生态创新中心"),
     SIG_GROUP(4, "四川鲲鹏&欧拉生态创新中心"),
     EULER_IC(5, "长江鲲鹏&欧拉生态创新中心"),
