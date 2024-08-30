@@ -188,7 +188,7 @@
                 and lower(product_name) like lower(concat('%/',#{productName},'%')) escape '/'
             </if>
         </where>
-        order by status ASC, s.update_time ASC
+        order by s.update_time DESC
     </select>
 
     <select id="getReviewSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
