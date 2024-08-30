@@ -124,7 +124,7 @@ public interface SoftwareService {
      * @param softwareId 软件id
      * @return 列表
      */
-    List<AuditRecordsVo> getNodeList(Integer softwareId);
+    List<AuditRecordsVo> getNodeList(Integer softwareId, HttpServletRequest request);
 
     /**
      * 上传文件

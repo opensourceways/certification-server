@@ -23,10 +23,14 @@ import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.ProtocolMapper;
 import com.huawei.it.euler.mapper.RoleMapper;
+import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.mapper.UserMapper;
+import com.huawei.it.euler.model.entity.Attachments;
 import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.entity.Protocol;
+import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.ProtocolEnum;
+import com.huawei.it.euler.model.enumeration.RoleEnum;
 import com.huawei.it.euler.model.vo.EulerUserVo;
 import com.huawei.it.euler.model.vo.RoleVo;
 import com.huawei.it.euler.service.UserService;
@@ -51,6 +55,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private SoftwareMapper softwareMapper;
 
     @Autowired
     private ProtocolMapper protocolMapper;
@@ -167,8 +174,9 @@ public class UserServiceImpl implements UserService {
         return userDetails;
     }
 
+    @Override
     public String getUserAllDateScope(Integer uuid) {
-        Set<Integer> dateScope = roleMapper.findRoleByUserId(uuid,null).stream().map(RoleVo::getDataScope)
+        Set<Integer> dateScope = roleMapper.findRoleByUserId(uuid, null).stream().map(RoleVo::getDataScope)
             .filter(Objects::nonNull).collect(Collectors.toSet());
         if (dateScope.contains(0)) {
             return "ALL";
@@ -177,17 +185,49 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
     public Integer getUserDataScopeByRole(Integer uuid, Integer role) {
-        return roleMapper.findRoleByUserId(uuid, role)
-                .stream()
-                .map(RoleVo::getDataScope)
-                .filter(Objects::nonNull)
-                .reduce((a, b) -> {
-                    if (!a.equals(b)) {
-                        throw new ParamException("用户数据范围不唯一");
-                    }
-                    return a;
-                })
-                .orElse(null);
+        return roleMapper.findRoleByUserId(uuid, role).stream().map(RoleVo::getDataScope).filter(Objects::nonNull)
+            .reduce((a, b) -> {
+                if (!a.equals(b)) {
+                    throw new ParamException("用户数据范围不唯一");
+                }
+                return a;
+            }).orElse(null);
+    }
+
+    @Override
+    public boolean isUserPermission(Integer userUuid, Software software) {
+        if (Objects.equals(userUuid, Integer.valueOf(software.getUserUuid()))) {
+            return true;
+        } else {
+            Set<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, null).stream().map(RoleVo::getDataScope)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+            if (dateScope.contains(0)) {
+                return true;
+            } else {
+                return dateScope.contains(software.getTestOrgId());
+            }
+        }
+    }
+
+    @Override
+    public boolean isAttachmentPermission(String userUuid, Attachments attachment) {
+        List<String> roleList = getUserRoles(Integer.valueOf(userUuid));
+        if (RoleEnum.isUser(roleList) && Objects.equals(attachment.getUuid(), userUuid)) {
+            return true;
+        }
+        switch (attachment.getFileType()) {
+            case "logo":
+            case "license":
+                return roleList.contains(RoleEnum.CHINA_REGION.getRole());
+            case "testReport":
+            case "sign":
+            case "certificate":
+                Software software = softwareMapper.findById(Integer.valueOf(attachment.getSoftwareId()));
+                return isUserPermission(Integer.valueOf(userUuid), software);
+            default:
+                throw new ParamException("无权限下载");
+        }
     }
 }
