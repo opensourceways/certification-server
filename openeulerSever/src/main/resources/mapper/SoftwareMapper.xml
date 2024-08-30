@@ -15,6 +15,7 @@
         <id column="hashrate_platform" property="jsonHashRatePlatform"/>
         <id column="product_type" property="productType"/>
         <id column="test_organization" property="testOrganization"/>
+        <id column="test_org_id" property="testOrgId" />
         <id column="status" property="status"/>
         <id column="update_time" property="updateTime"/>
         <id column="application_time" property="applicationTime"/>
@@ -77,13 +78,13 @@
 
     <sql id="baseFields">
         id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
-        hashrate_platform, server_type, product_type, test_organization, status, update_time, application_time,
+        hashrate_platform, server_type, product_type, test_organization,test_org_id, status, update_time, application_time,
         reviewer, user_uuid, cpu_vendor, as_id
     </sql>
 
     <sql id="insertFields">
         company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
-        hashrate_platform, product_type, test_organization, status, update_time, application_time,
+        hashrate_platform, product_type, test_organization,test_org_id, status, update_time, application_time,
         reviewer, user_uuid, cpu_vendor, as_id
     </sql>
 
@@ -134,7 +135,7 @@
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         insert into software_t(<include refid="insertFields"/>) values (#{companyId}, #{companyName}, #{productName},
         #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
-        #{productType}, #{testOrganization}, #{status}, #{updateTime}, #{applicationTime}, #{userTelephone},
+        #{productType}, #{testOrganization},#{testOrgId} #{status}, #{updateTime}, #{applicationTime}, #{userTelephone},
         #{reviewer},
         #{userUuid}, #{cpuVendor}, #{asId})
     </insert>
