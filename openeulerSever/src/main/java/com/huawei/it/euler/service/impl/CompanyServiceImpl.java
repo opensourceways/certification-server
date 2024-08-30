@@ -4,8 +4,6 @@
 
 package com.huawei.it.euler.service.impl;
 
-import static com.huawei.it.euler.service.impl.SoftwareServiceImpl.PARTNER_ROLE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -56,6 +54,7 @@ import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.LicenseInfoVo;
 import com.huawei.it.euler.model.vo.UserCompanyVo;
 import com.huawei.it.euler.service.CompanyService;
+import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.third.CompanyVerifyClient;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FileUtils;
@@ -133,6 +132,9 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     @Lazy
@@ -441,11 +443,8 @@ public class CompanyServiceImpl implements CompanyService {
         }
         String cookieUuid = UserUtils.getCookieUuid(request);
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        List<String> roles = softwareService.getRoles(uuid);
-        if (PARTNER_ROLE.containsAll(roles)) {
-            if (!Objects.equals(uuid, attachments.getUuid())) {
-                throw new ParamException("无权限预览当前文件");
-            }
+        if (!userService.isAttachmentPermission(uuid, attachments)) {
+            throw new ParamException("无权限预览当前文件");
         }
         softwareService.previewImage(fileId, response);
     }
