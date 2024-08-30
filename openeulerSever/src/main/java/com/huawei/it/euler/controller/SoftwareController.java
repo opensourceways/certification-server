@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.huawei.it.euler.service.impl.SoftwareServiceImpl.PARTNER_ROLE;
 
 /**
  * SoftwareController
@@ -163,16 +162,7 @@ public class SoftwareController {
     @PreAuthorize("hasAnyRole('euler_ic', 'program_review','report_review','certificate_issuance','openatom_intel', 'flag_store', 'user')")
     public JsonResponse<List<AuditRecordsVo>> node(
             @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        Software software = softwareMapper.findById(softwareId);
-        List<String> roles = softwareService.getRoles(uuid);
-        if (PARTNER_ROLE.containsAll(roles)) {
-            if (software != null && !Objects.equals(uuid, software.getUserUuid())) {
-                throw new ParamException("无权限查询该测评申请节点信息");
-            }
-        }
-        List<AuditRecordsVo> nodeList = softwareService.getNodeList(softwareId);
+        List<AuditRecordsVo> nodeList = softwareService.getNodeList(softwareId,request);
         return JsonResponse.success(nodeList);
     }
 

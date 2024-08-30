@@ -4,16 +4,19 @@
 
 package com.huawei.it.euler.service;
 
-import com.huawei.it.euler.common.JsonResponse;
-import com.huawei.it.euler.model.entity.EulerUser;
-import com.huawei.it.euler.model.vo.EulerUserVo;
-import com.huawei.it.euler.model.vo.RoleVo;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.model.entity.Attachments;
+import com.huawei.it.euler.model.entity.EulerUser;
+import com.huawei.it.euler.model.entity.Software;
+import com.huawei.it.euler.model.vo.EulerUserVo;
+import com.huawei.it.euler.model.vo.RoleVo;
 
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 用户service
@@ -110,6 +113,21 @@ public interface UserService extends UserDetailsService {
      */
     String getUserAllDateScope(Integer uuid);
 
-
+    /**
+     * 查询用户对应角色的数据权限
+     * @param uuid 用户uuid
+     * @param role  角色id
+     * @return 用户的数据权限
+     */
     Integer getUserDataScopeByRole(Integer uuid, Integer role);
+
+    /**
+     *  查询用户是否有流程的权限
+     * @param userUuid 用户uuid
+     * @param software 流程信息
+     * @return 结果
+     */
+    boolean isUserPermission(Integer userUuid, Software software);
+
+    boolean isAttachmentPermission(String userUuid, Attachments attachment);
 }
