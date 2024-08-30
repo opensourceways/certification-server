@@ -5,6 +5,7 @@
 package com.huawei.it.euler.model.enumeration;
 
 import java.util.List;
+import java.util.Objects;
 
 import lombok.Getter;
 
@@ -51,9 +52,9 @@ public enum RoleEnum {
         this.roleName = roleName;
     }
 
-    public static boolean isUser(List<String> roles) {
-        for (String role : roles) {
-            if (role.equals(USER.getRole()) || role.equals(OSV_USER.getRole())) {
+    public static boolean isUser(List<Integer> roles) {
+        for (Integer role : roles) {
+            if (Objects.equals(role, USER.getRoleId()) || Objects.equals(role, OSV_USER.getRoleId())) {
                 return true;
             }
         }

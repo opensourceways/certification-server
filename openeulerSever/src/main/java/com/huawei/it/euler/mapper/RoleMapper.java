@@ -22,6 +22,8 @@ public interface RoleMapper {
 
     List<String> findByUserId(@Param("userId") Integer userId);
 
+    List<Integer> findByUUID(@Param("uuid") Integer uuid);
+
     List<RoleVo> findRoleInfoByUserId(@Param("userId") Integer userId);
 
     void insertDefaultRole(@Param("userId") Integer userId);
