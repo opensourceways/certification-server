@@ -223,7 +223,7 @@ public class UserServiceImpl implements UserService {
                 return roleList.contains(RoleEnum.CHINA_REGION.getRole());
             case "testReport":
             case "sign":
-            case "certificate":
+            case "certificates":
                 Software software = softwareMapper.findById(Integer.valueOf(attachment.getSoftwareId()));
                 return isUserPermission(Integer.valueOf(userUuid), software);
             default:
