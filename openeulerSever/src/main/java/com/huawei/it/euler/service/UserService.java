@@ -47,6 +47,7 @@ public interface UserService extends UserDetailsService {
      */
     List<String> getUserRoles(Integer userId);
 
+    List<Integer> getUserRolesByUUID(Integer uuid);
     /**
      * 获取用户角色列表
      *
