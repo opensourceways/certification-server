@@ -68,21 +68,17 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                .csrf(csrf -> csrf.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .logout(logout -> logout.logoutSuccessHandler(eulerLogoutSuccessHandler))
-                .authorizeHttpRequests(
-                        authz -> authz.requestMatchers(urlWhitelist.split(","))
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated())
-                .exceptionHandling(exceptions ->
-                        exceptions.accessDeniedHandler(eulerAccessDeniedHandler)
-                        .authenticationEntryPoint(eulerAuthenticationEntryPoint))
-                .headers(headers -> headers.defaultsDisabled().cacheControl(Customizer.withDefaults()))
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+            .csrf(csrf -> csrf.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .logout(logout -> logout.logoutSuccessHandler(eulerLogoutSuccessHandler))
+            .authorizeHttpRequests(
+                authz -> authz.requestMatchers(urlWhitelist.split(",")).permitAll().anyRequest().authenticated())
+            .exceptionHandling(exceptions -> exceptions.accessDeniedHandler(eulerAccessDeniedHandler)
+                .authenticationEntryPoint(eulerAuthenticationEntryPoint))
+            .headers(headers -> headers.defaultsDisabled().cacheControl(Customizer.withDefaults()))
+            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(csrfFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
