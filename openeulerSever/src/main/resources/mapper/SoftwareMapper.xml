@@ -148,7 +148,8 @@
             reviewer              = #{reviewer},
             update_time           = #{updateTime},
             authentication_status = #{authenticationStatus},
-            test_org_id           = #{testOrgId}
+            test_org_id           = #{testOrgId},
+            review_role           = #{reviewRole}
         where id = #{id}
     </update>
 

@@ -52,6 +52,7 @@
         <include refid="allFields"></include>
         from approval_path_node_t
         where as_id = #{asId}
+        order by software_status asc
     </select>
 
     <select id="findNodeByAsIdAndStatus" parameterType="java.lang.Integer" resultMap="BaseResultMap">
