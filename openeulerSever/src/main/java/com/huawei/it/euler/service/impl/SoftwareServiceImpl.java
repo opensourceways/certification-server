@@ -153,6 +153,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (softwareDb.getStatus() != 6) {
             return JsonResponse.failed("该测评申请无法更新软件认证信息");
         }
+        ApprovalPathNode approvalPathNode =
+            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(softwareDb.getAsId(), softwareDb.getStatus());
+        if (!userService.isUserDataScopeByRole(Integer.valueOf(cookieUuid), approvalPathNode.getRoleId(),
+            softwareDb.getId())) {
+            throw new ParamException("该用户无权访问当前信息");
+        }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
         String jsonHashRatePlatform = JSON.toJSON(hashratePlatformList).toString();
         // 校验OS、算力平台参数
@@ -423,9 +429,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         } else {
             // 转审
             if (vo.getHandlerResult() == 3) {
+                if (userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()),
+                    approvalPathNode.getRoleId(), vo.getSoftwareId())) {
+                    throw new ParamException("转审人不能是该角色的成员");
+                }
                 handler = vo.getTransferredUser();
-                software
-                    .setTestOrgId(userService.getUserDataScopeByRole(Integer.valueOf(handler), nextNodeNameForNumber));
             } else {
                 // 非转审
                 handler = approvalPathNode.getUserUuid();
@@ -536,9 +544,10 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failedResult("该成员无权限审核");
             }
         }
-        Node latestNodeInDb = nodeMapper.findLatestNodeById(vo.getSoftwareId());
-        BeanUtils.copyProperties(latestNodeInDb, latestNode);
-        if (!latestNode.getHandler().equals(uuid)) {
+        ApprovalPathNode approvalPathNode =
+            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(softwareInDb.getAsId(), softwareInDb.getStatus());
+        if (!userService.isUserDataScopeByRole(Integer.valueOf(cookieUuid), approvalPathNode.getRoleId(),
+            softwareInDb.getId())) {
             return JsonResponse.failedResult("非法的审核人");
         }
         // 处理结果 0-待处理 1-通过 2-驳回 3-转审
@@ -567,7 +576,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (ObjectUtils.isEmpty(approvalPathNode)) {
             return new ArrayList<>();
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(approvalPathNode.getRoleId());
+        List<Integer> userIdList = roleMapper.findUserByRole(approvalPathNode.getRoleId(),software.getTestOrgId());
         List<EulerUser> users = userMapper.findByUserId(userIdList);
         List<SimpleUserVo> userVos = users.stream().map(item -> {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
@@ -973,7 +982,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(8);
+        List<Integer> userIdList = roleMapper.findUserByRole(8,software.getTestOrgId());
         List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
         List<String> receiverList = new ArrayList<>();
         for (EulerUser eulerUser : eulerUserList) {
