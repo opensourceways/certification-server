@@ -292,7 +292,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         Node nextNode = new Node();
         setNextNode(software, nextNode, approvalPath);
         // 更新软件信息表
-        updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "", software.getTestOrgId());
+        updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "", software.getTestOrgId(),approvalPath.get(0).getRoleId());
         // 发送邮件通知
         sendEmail(software, user);
     }
@@ -379,15 +379,16 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(software.getId(), nextNode.getHandler(), nextNodeNameForNumber, new Date(),
-            authenticationStatus, software.getTestOrgId());
+            authenticationStatus, software.getTestOrgId(),software.getReviewRole());
         return JsonResponse.success();
     }
 
     private void updateSoftwareStatusAndReviewer(Integer id, String handler, Integer status, Date date,
-        String authenticationStatus, Integer testOrgId) {
+        String authenticationStatus, Integer testOrgId,Integer reviewRole) {
         SoftwareVo softwareVo = new SoftwareVo();
         softwareVo.setId(id);
         softwareVo.setReviewer(handler);
+        softwareVo.setReviewRole(reviewRole);
         softwareVo.setStatus(status);
         softwareVo.setUpdateTime(date);
         softwareVo.setAuthenticationStatus(authenticationStatus);
@@ -413,6 +414,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             nextNode.setHandlerResult(0);
             // 节点3、7的处理人就是申请人
             String handler = getHandler(nextNodeNameForNumber, vo, approvalPathNode, software);
+            software.setReviewRole(approvalPathNode.getRoleId());
             nextNode.setHandler(handler);
             nodeMapper.insertNode(nextNode);
         }

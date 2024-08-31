@@ -42,6 +42,9 @@ public class SoftwareVo {
     private String reviewer;
 
     @JsonIgnore
+    private Integer reviewRole;
+
+    @JsonIgnore
     private Integer status;
 
     @JsonIgnore
