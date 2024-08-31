@@ -4,18 +4,18 @@
 
 package com.huawei.it.euler.service.impl;
 
-import ch.qos.logback.core.util.StringUtil;
-import com.huawei.it.euler.mapper.ApprovalPathNodeMapper;
-import com.huawei.it.euler.mapper.InnovationCenterMapper;
-import com.huawei.it.euler.mapper.MasterDataMapper;
-import com.huawei.it.euler.model.entity.ApprovalPathNode;
-import com.huawei.it.euler.model.entity.InnovationCenter;
-import com.huawei.it.euler.service.ApprovalPathNodeService;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.huawei.it.euler.mapper.ApprovalPathNodeMapper;
+import com.huawei.it.euler.mapper.InnovationCenterMapper;
+import com.huawei.it.euler.model.entity.ApprovalPathNode;
+import com.huawei.it.euler.model.entity.InnovationCenter;
+import com.huawei.it.euler.service.ApprovalPathNodeService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * ApprovalPathNodeServiceImpl
