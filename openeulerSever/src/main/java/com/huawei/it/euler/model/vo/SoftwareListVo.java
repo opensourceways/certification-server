@@ -67,6 +67,8 @@ public class SoftwareListVo {
      */
     private String testOrganization;
 
+    @JsonIgnore
+    private Integer testOrgId;
     /**
      * 申请时间
      */
@@ -85,11 +87,12 @@ public class SoftwareListVo {
     @JsonIgnore
     private String reviewerUuid;
 
+    @JsonIgnore
+    private Integer reviewRole;
     /**
      * 认证状态
      */
     private String status;
-
     /**
      * 算力平台名称
      */
