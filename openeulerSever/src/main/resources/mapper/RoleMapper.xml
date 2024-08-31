@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.RoleMapper">
 
-    <select id="findByIdList" parameterType="java.util.List">
+    <select id="findByIdList" parameterType="java.util.List" resultType="java.lang.String">
         select role_t.role
         from role_t
         where id in
@@ -36,10 +36,11 @@
         values (#{userId}, 1, NOW())
     </insert>
 
-    <select id="findUserByRole" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select user_id
-        from user_role_mapping_t
-        where role_id = #{roleId}
+    <select id="findUserByRole" resultType="java.lang.Integer">
+        SELECT user_id
+        FROM user_role_mapping_t
+        WHERE role_id = #{roleId}
+          AND (data_scope = #{softwareId} OR data_scope = 0)
     </select>
 
     <select id="findRoleByUserId" resultType="com.huawei.it.euler.model.vo.RoleVo">

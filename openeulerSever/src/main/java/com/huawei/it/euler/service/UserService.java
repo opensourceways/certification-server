@@ -48,6 +48,7 @@ public interface UserService extends UserDetailsService {
     List<String> getUserRoles(Integer userId);
 
     List<Integer> getUserRolesByUUID(Integer uuid);
+
     /**
      * 获取用户角色列表
      *
@@ -105,7 +106,6 @@ public interface UserService extends UserDetailsService {
      */
     JsonResponse<String> cancelAgreement(Integer protocolType, String userUuid);
 
-
     /**
      * 查询时获取用户的数据权限
      *
@@ -115,15 +115,17 @@ public interface UserService extends UserDetailsService {
     String getUserAllDateScope(Integer uuid);
 
     /**
-     * 查询用户对应角色的数据权限
+     * 查询用户对应角色是否有的操作权限
+     * 
      * @param uuid 用户uuid
-     * @param role  角色id
+     * @param role 角色id
      * @return 用户的数据权限
      */
-    Integer getUserDataScopeByRole(Integer uuid, Integer role);
+    boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareId);
 
     /**
-     *  查询用户是否有流程的权限
+     * 查询用户是否有流程的权限
+     * 
      * @param userUuid 用户uuid
      * @param software 流程信息
      * @return 结果
