@@ -158,7 +158,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/softwareList")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user')")
     public JsonResponse<Map<String, Object>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
         HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
@@ -256,7 +256,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/upload")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     public JsonResponse<String> upload(@RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
         @RequestParam("file") MultipartFile file,
         @RequestParam("fileTypeCode") @NotNull(message = "文件类型编码不能为空") Integer fileTypeCode,

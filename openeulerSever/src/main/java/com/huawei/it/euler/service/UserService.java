@@ -5,6 +5,7 @@
 package com.huawei.it.euler.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -113,7 +114,7 @@ public interface UserService extends UserDetailsService {
      * @return 用户的数据权限
      */
     String getUserAllDateScope(Integer uuid);
-
+    Map<Integer, List<Integer>> getUserAllRole(Integer uuid);
     /**
      * 查询用户对应角色是否有的操作权限
      * 
@@ -121,7 +122,7 @@ public interface UserService extends UserDetailsService {
      * @param role 角色id
      * @return 用户的数据权限
      */
-    boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareId);
+    boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareOrgId);
 
     /**
      * 查询用户是否有流程的权限

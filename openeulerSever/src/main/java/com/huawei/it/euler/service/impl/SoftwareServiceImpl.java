@@ -156,7 +156,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         ApprovalPathNode approvalPathNode =
             approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(softwareDb.getAsId(), softwareDb.getStatus());
         if (!userService.isUserDataScopeByRole(Integer.valueOf(cookieUuid), approvalPathNode.getRoleId(),
-            softwareDb.getId())) {
+            softwareDb.getTestOrgId())) {
             throw new ParamException("该用户无权访问当前信息");
         }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
@@ -430,7 +430,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             // 转审
             if (vo.getHandlerResult() == 3) {
                 if (userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()),
-                    approvalPathNode.getRoleId(), vo.getSoftwareId())) {
+                    approvalPathNode.getRoleId(), software.getTestOrgId())) {
                     throw new ParamException("转审人不能是该角色的成员");
                 }
                 handler = vo.getTransferredUser();
@@ -547,7 +547,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         ApprovalPathNode approvalPathNode =
             approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(softwareInDb.getAsId(), softwareInDb.getStatus());
         if (!userService.isUserDataScopeByRole(Integer.valueOf(cookieUuid), approvalPathNode.getRoleId(),
-            softwareInDb.getId())) {
+            softwareInDb.getTestOrgId())) {
             return JsonResponse.failedResult("非法的审核人");
         }
         // 处理结果 0-待处理 1-通过 2-驳回 3-转审
@@ -582,7 +582,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
             BeanUtils.copyProperties(item, simpleUserVo);
             return simpleUserVo;
-        }).collect(Collectors.toList());
+        }).toList();
         // 转审人不能为自己
         String uuid = encryptUtils.aesDecrypt(cookieUuid);
         return userVos.stream().filter(item -> !item.getUuid().equals(uuid)).collect(Collectors.toList());
@@ -662,10 +662,13 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(item.getAuthenticationStatus());
             }
         });
+        Map<Integer,List<Integer>> roleMap= userService.getUserAllRole(Integer.valueOf(userUuid));
         reviewSoftwareList.forEach(item -> {
             String status = item.getStatus();
+            Integer testOrgId = item.getTestOrgId();
+            Integer reviewRole = item.getReviewRole();
             String cpuVendor = item.getCpuVendor();
-            if (userUuid.equals(item.getReviewerUuid())) {
+            if (roleMap.getOrDefault(reviewRole, Collections.emptyList()).contains(testOrgId)) {
                 switch (status) {
                     case "测试阶段":
                         if (IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {

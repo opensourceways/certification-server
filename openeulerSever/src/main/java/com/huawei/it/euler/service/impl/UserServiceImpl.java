@@ -4,10 +4,7 @@
 
 package com.huawei.it.euler.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,11 +186,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    public Map<Integer, List<Integer>> getUserAllRole(Integer uuid) {
+        List<RoleVo> roleList = roleMapper.findRoleByUserId(uuid, null);
+        return roleList.stream().collect(Collectors.groupingBy(role -> Integer.parseInt(role.getRole()),
+            Collectors.mapping(RoleVo::getDataScope, Collectors.toList())));
+    }
+
     @Override
-    public boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareId) {
+    public boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareOrgId) {
         List<Integer> dateScope = roleMapper.findRoleByUserId(uuid, role).stream().map(RoleVo::getDataScope)
             .filter(Objects::nonNull).toList();
-        return dateScope.contains(0) || dateScope.contains(softwareId);
+        return dateScope.contains(0) || dateScope.contains(softwareOrgId);
     }
 
     @Override
