@@ -651,54 +651,51 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        selectSoftware.setDataScope(userService.getUserAllDateScope(Integer.valueOf(userUuid)));
-        // 通过uuid直接查询该用户下所有认证列表
+        selectSoftware.setDataScope(userService.getUserAllDateScope(userUuid));
         List<SoftwareListVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(selectSoftware);
-        reviewSoftwareList.forEach(item -> {
+        Map<Integer,List<Integer>> roleMap= userService.getUserAllRole(userUuid);
+        updateSoftwareListStatus(reviewSoftwareList, roleMap);
+
+        return reviewSoftwareList;
+    }
+
+    private void updateSoftwareListStatus(List<SoftwareListVo> softwareList, Map<Integer, List<Integer>> roleMap) {
+        softwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
             }
-        });
-        Map<Integer,List<Integer>> roleMap= userService.getUserAllRole(Integer.valueOf(userUuid));
-        reviewSoftwareList.forEach(item -> {
-            String status = item.getStatus();
-            Integer testOrgId = item.getTestOrgId();
-            Integer reviewRole = item.getReviewRole();
-            String cpuVendor = item.getCpuVendor();
-            if (roleMap.getOrDefault(reviewRole, Collections.emptyList()).contains(testOrgId)) {
-                switch (status) {
-                    case "测试阶段":
-                        if (IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {
-                            item.setOperation("上传报告");
-                            break;
-                        }
-                        break;
-                    case "证书初审":
-                        item.setOperation("证书初审");
-                        break;
-                    case "已完成":
-                        item.setOperation("查看证书");
-                        break;
-                    case "方案审核":
-                    case "报告初审":
-                    case "报告复审":
-                    case "证书签发":
-                        item.setOperation("审核");
-                        break;
-                    case "证书确认已驳回":
-                    case "证书初审已驳回":
-                    case "报告复审已驳回":
-                        item.setOperation("去处理");
-                        break;
-                    default:
-                        break;
-                }
+            if (!roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList()).contains(item.getTestOrgId())) {
+                return;
             }
+
+            String operation = getOperation(item.getStatus(), item.getCpuVendor());
+            item.setOperation(operation);
         });
-        return reviewSoftwareList;
+    }
+
+    private String getOperation(String status, String cpuVendor) {
+        switch (status) {
+            case "测试阶段":
+                return IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor) ? "上传报告" : null;
+            case "证书初审":
+                return "证书初审";
+            case "已完成":
+                return "查看证书";
+            case "方案审核":
+            case "报告初审":
+            case "报告复审":
+            case "证书签发":
+                return "审核";
+            case "证书确认已驳回":
+            case "证书初审已驳回":
+            case "报告复审已驳回":
+                return "去处理";
+            default:
+                return null;
+        }
     }
 
     @Override
