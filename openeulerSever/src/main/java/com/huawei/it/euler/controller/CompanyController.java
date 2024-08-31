@@ -7,6 +7,7 @@ package com.huawei.it.euler.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
@@ -85,7 +86,7 @@ public class CompanyController {
     }
 
     /**
-     * 查询当前用户认证的企业信息
+     * 查询当前用户的公司名
      *
      * @param request request
      * @return JsonResponse
@@ -168,7 +169,7 @@ public class CompanyController {
      */
     @PostMapping("/companies/uploadLicense")
     @PreAuthorize("hasRole('user')")
-    public JsonResponse uploadLicense(@RequestParam("file") @NotNull(message = "模板文件不能为空")
+    public JsonResponse<Map<String, Object>> uploadLicense(@RequestParam("file") @NotNull(message = "模板文件不能为空")
         MultipartFile file, HttpServletRequest request) throws InputException, IOException {
         return companyService.uploadLicense(file, request);
     }
