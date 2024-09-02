@@ -114,6 +114,7 @@ public class UserController {
             List<RoleVo> roleVos = userService.getUserRoleInfo(user.getId());
             vo.setRoles(roleVos.stream().map(RoleVo::getRole).collect(Collectors.toList()));
             vo.setRoleNames(roleVos.stream().map(RoleVo::getRoleName).collect(Collectors.toList()));
+            vo.setRole(userService.getUserAllRole(Integer.valueOf(user.getUuid())));
         }
         return JsonResponse.success(vo);
     }
