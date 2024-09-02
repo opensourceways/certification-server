@@ -292,7 +292,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         Node nextNode = new Node();
         setNextNode(software, nextNode, approvalPath);
         // 更新软件信息表
-        updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "", software.getTestOrgId(),approvalPath.get(0).getRoleId());
+        updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "", software.getTestOrgId(),
+            approvalPath.get(0).getRoleId());
         // 发送邮件通知
         sendEmail(software, user);
     }
@@ -379,12 +380,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(software.getId(), nextNode.getHandler(), nextNodeNameForNumber, new Date(),
-            authenticationStatus, software.getTestOrgId(),software.getReviewRole());
+            authenticationStatus, software.getTestOrgId(), software.getReviewRole());
         return JsonResponse.success();
     }
 
     private void updateSoftwareStatusAndReviewer(Integer id, String handler, Integer status, Date date,
-        String authenticationStatus, Integer testOrgId,Integer reviewRole) {
+        String authenticationStatus, Integer testOrgId, Integer reviewRole) {
         SoftwareVo softwareVo = new SoftwareVo();
         softwareVo.setId(id);
         softwareVo.setReviewer(handler);
@@ -414,7 +415,6 @@ public class SoftwareServiceImpl implements SoftwareService {
             nextNode.setHandlerResult(0);
             // 节点3、7的处理人就是申请人
             String handler = getHandler(nextNodeNameForNumber, vo, approvalPathNode, software);
-            software.setReviewRole(approvalPathNode.getRoleId());
             nextNode.setHandler(handler);
             nodeMapper.insertNode(nextNode);
         }
@@ -426,8 +426,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         String handler;
         if (nextNodeNameForNumber == 1 || nextNodeNameForNumber == 7) {
             handler = software.getUserUuid();
+            software.setReviewRole(1);
         } else if (nextNodeNameForNumber == 3) {
             handler = approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid();
+            software.setReviewRole(approvalPathNode == null ? 1 : approvalPathNode.getRoleId());
         } else {
             // 转审
             if (vo.getHandlerResult() == 3) {
@@ -439,6 +441,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 // 非转审
                 handler = approvalPathNode.getUserUuid();
+                software.setReviewRole(approvalPathNode.getRoleId());
             }
         }
         return handler;
@@ -546,10 +549,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failedResult("该成员无权限审核");
             }
         }
-        ApprovalPathNode approvalPathNode =
-            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(softwareInDb.getAsId(), softwareInDb.getStatus());
-        if (!userService.isUserDataScopeByRole(Integer.valueOf(cookieUuid), approvalPathNode.getRoleId(),
-            softwareInDb.getTestOrgId())) {
+        if (!userService.isUserPermission(Integer.valueOf(uuid),softwareInDb)) {
             return JsonResponse.failedResult("非法的审核人");
         }
         // 处理结果 0-待处理 1-通过 2-驳回 3-转审
@@ -578,7 +578,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (ObjectUtils.isEmpty(approvalPathNode)) {
             return new ArrayList<>();
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(approvalPathNode.getRoleId(),software.getTestOrgId());
+        List<Integer> userIdList = roleMapper.findUserByRole(approvalPathNode.getRoleId(), software.getTestOrgId());
         List<EulerUser> users = userMapper.findByUserId(userIdList);
         List<SimpleUserVo> userVos = users.stream().map(item -> {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
@@ -658,7 +658,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         selectSoftware.setDataScope(userService.getUserAllDateScope(userUuid));
         List<SoftwareListVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(selectSoftware);
-        Map<Integer,List<Integer>> roleMap= userService.getUserAllRole(userUuid);
+        Map<Integer, List<Integer>> roleMap = userService.getUserAllRole(userUuid);
         updateSoftwareListStatus(reviewSoftwareList, roleMap);
 
         return reviewSoftwareList;
@@ -669,7 +669,8 @@ public class SoftwareServiceImpl implements SoftwareService {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
             }
-            if (!roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList()).contains(item.getTestOrgId())) {
+            List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
+            if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
             }
 
@@ -984,7 +985,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(8,software.getTestOrgId());
+        List<Integer> userIdList = roleMapper.findUserByRole(8, software.getTestOrgId());
         List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
         List<String> receiverList = new ArrayList<>();
         for (EulerUser eulerUser : eulerUserList) {
