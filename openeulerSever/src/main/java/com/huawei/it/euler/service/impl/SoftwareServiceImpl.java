@@ -149,14 +149,12 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Transactional
     public JsonResponse<String> updateSoftware(SoftwareVo software, String cookieUuid, HttpServletRequest request)
         throws IOException {
+        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
         Software softwareDb = softwareMapper.findById(software.getId());
         if (softwareDb.getStatus() != 6) {
             return JsonResponse.failed("该测评申请无法更新软件认证信息");
         }
-        ApprovalPathNode approvalPathNode =
-            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(softwareDb.getAsId(), softwareDb.getStatus());
-        if (!userService.isUserDataScopeByRole(Integer.valueOf(cookieUuid), approvalPathNode.getRoleId(),
-            softwareDb.getTestOrgId())) {
+       if (!userService.isUserDataScopeByRole(Integer.valueOf(userUuid), softwareDb)) {
             throw new ParamException("该用户无权访问当前信息");
         }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
@@ -433,8 +431,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         } else {
             // 转审
             if (vo.getHandlerResult() == 3) {
-                if (userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()),
-                    approvalPathNode.getRoleId(), software.getTestOrgId())) {
+                if (!userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()), software)) {
                     throw new ParamException("转审人不能是该角色的成员");
                 }
                 handler = vo.getTransferredUser();
@@ -551,7 +548,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         Node latestNodeInDb = nodeMapper.findLatestNodeById(vo.getSoftwareId());
         BeanUtils.copyProperties(latestNodeInDb, latestNode);
-        if (!userService.isUserPermission(Integer.valueOf(uuid),softwareInDb)) {
+        if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
             return JsonResponse.failedResult("非法的审核人");
         }
         // 处理结果 0-待处理 1-通过 2-驳回 3-转审

@@ -118,11 +118,11 @@ public interface UserService extends UserDetailsService {
     /**
      * 查询用户对应角色是否有的操作权限
      * 
-     * @param uuid 用户uuid
-     * @param role 角色id
+     * @param userUuid 用户uuid
+     * @param software 角色id
      * @return 用户的数据权限
      */
-    boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareOrgId);
+    boolean isUserDataScopeByRole(Integer userUuid, Software software);
 
     /**
      * 查询用户是否有流程的权限
