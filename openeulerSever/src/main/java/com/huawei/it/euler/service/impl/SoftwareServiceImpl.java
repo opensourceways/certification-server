@@ -549,6 +549,8 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failedResult("该成员无权限审核");
             }
         }
+        Node latestNodeInDb = nodeMapper.findLatestNodeById(vo.getSoftwareId());
+        BeanUtils.copyProperties(latestNodeInDb, latestNode);
         if (!userService.isUserPermission(Integer.valueOf(uuid),softwareInDb)) {
             return JsonResponse.failedResult("非法的审核人");
         }
