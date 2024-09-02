@@ -193,10 +193,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isUserDataScopeByRole(Integer uuid, Integer role, Integer softwareOrgId) {
-        List<Integer> dateScope = roleMapper.findRoleByUserId(uuid, role).stream().map(RoleVo::getDataScope)
+    public boolean isUserDataScopeByRole(Integer userUuid, Software software) {
+        if (RoleEnum.USER.getRoleId().equals(software.getReviewRole())
+            && Objects.equals(userUuid, Integer.valueOf(software.getUserUuid()))) {
+            return true;
+        }
+        List<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, software.getReviewRole()).stream().map(RoleVo::getDataScope)
             .filter(Objects::nonNull).toList();
-        return dateScope.contains(0) || dateScope.contains(softwareOrgId);
+        return dateScope.contains(0) || dateScope.contains(software.getTestOrgId());
     }
 
     @Override
