@@ -14,36 +14,35 @@ import lombok.Getter;
  *
  * @since 2024/06/29
  */
+@Getter
 public enum RoleEnum {
+    // user
     USER(1, "user", "合作伙伴"),
-
+    // china region
     CHINA_REGION(2, "china_region", "中国区"),
-
+    // sig group
     SIG_GROUP(3, "sig_group", "社区兼容性SIG组"),
-
+    // euler ic
     EULER_IC(4, "euler_ic", "区域欧拉创新中心"),
-
+    // flag store
     FLAG_STORE(5, "flag_store", "欧拉社区旗舰店"),
-
+    // admin
     ADMIN(6, "admin", "管理员"),
-
+    // osv user
     OSV_USER(7, "OSV_user", "OSV伙伴"),
-
+    // openatom intel
     OPENATOM_INTEL(8, "openatom_intel", "开放原子-英特尔联合验证中心"),
-
+    // program review
     PROGRAM_REVIEW(10, "program_review", "方案审核"),
-
+    // report review
     REPORT_REVIEW(11, "report_review", "报告复审"),
-
+    // certificate issuance
     CERTIFICATE_ISSUANCE(12, "certificate_issuance", "证书签发");
 
-    @Getter
     private final Integer roleId; // 角色id
 
-    @Getter
     private final String role; // 角色英文名
 
-    @Getter
     private final String roleName; // 角色中文名
 
     RoleEnum(Integer roleId, String role, String roleName) {

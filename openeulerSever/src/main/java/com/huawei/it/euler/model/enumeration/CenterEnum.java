@@ -4,7 +4,9 @@
 
 package com.huawei.it.euler.model.enumeration;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
@@ -16,18 +18,24 @@ import lombok.Getter;
  */
 @Getter
 public enum CenterEnum {
+    // openEuler社区
     USER(1, "openEuler社区"),
+    // 江苏鲲鹏&欧拉生态创新中心
     CHINA_REGION(2, "江苏鲲鹏&欧拉生态创新中心"),
+    // 四川鲲鹏&欧拉生态创新中心
     SIG_GROUP(4, "四川鲲鹏&欧拉生态创新中心"),
+    // 长江鲲鹏&欧拉生态创新中心
     EULER_IC(5, "长江鲲鹏&欧拉生态创新中心"),
+    // 湖南欧拉生态创新中心
     FLAG_STORE(6, "湖南欧拉生态创新中心"),
+    // 北京欧拉生态创新中心
     ADMIN(7, "北京欧拉生态创新中心"),
+    // 开放原子-英特尔联合验证中心
     OSV_USER(8, "开放原子-英特尔联合验证中心");
 
     private final Integer id; // id
 
     private final String name; // 中心名称
-
 
     CenterEnum(Integer id, String name) {
         this.id = id;
@@ -57,5 +65,9 @@ public enum CenterEnum {
             }
         }
         throw new IllegalArgumentException("Invalid Status name: " + name);
+    }
+
+    public static List<CenterEnum> getAllEnums() {
+        return Arrays.asList(values());
     }
 }
