@@ -41,7 +41,8 @@ public interface SoftwareService {
      * @param request request
      * @return
      */
-    JsonResponse<String> updateSoftware(SoftwareVo software, String cookieUuid, HttpServletRequest request) throws IOException;
+    JsonResponse<String> updateSoftware(SoftwareVo software, String cookieUuid, HttpServletRequest request)
+        throws IOException;
 
     /**
      * 新增软件信息
@@ -50,18 +51,10 @@ public interface SoftwareService {
      * @param cookieUuid uuid
      * @param request request
      */
-    void insertSoftware(Software software, String cookieUuid, HttpServletRequest request) throws InputException, IOException;
+    void insertSoftware(Software software, String cookieUuid, HttpServletRequest request)
+        throws InputException, IOException;
 
-    JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid,Integer nodeStatus);
-    /**
-     * 软件认证审核流程
-     *
-     * @param vo 审核参数
-     * @param cookieUuid uuid
-     * @param request request
-     * @return JsonResponse
-     */
-    JsonResponse<String> processReview(ProcessVo vo, String cookieUuid, HttpServletRequest request) throws IOException;
+    JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid, Integer nodeStatus);
 
     /**
      * 获取转审人员列表
@@ -107,8 +100,8 @@ public interface SoftwareService {
      * @param request request
      * @return 列表
      */
-    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
-                                                  IPage<AuditRecordsVo> page, HttpServletRequest request);
+    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName, IPage<AuditRecordsVo> page,
+        HttpServletRequest request);
 
     /**
      * 证书信息确认查询
@@ -137,8 +130,8 @@ public interface SoftwareService {
      * @param request request
      * @return JsonResponse
      */
-    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode,
-                                String fileType, HttpServletRequest request) throws InputException, TestReportExceedMaxAmountException;
+    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
+        HttpServletRequest request) throws InputException, TestReportExceedMaxAmountException;
 
     /**
      * 查询上传文件名称
@@ -158,7 +151,7 @@ public interface SoftwareService {
      * @param response response
      */
     void downloadAttachments(String fileId, HttpServletResponse response, HttpServletRequest request)
-            throws UnsupportedEncodingException, InputException;
+        throws UnsupportedEncodingException, InputException;
 
     /**
      * 文件预览
@@ -197,10 +190,12 @@ public interface SoftwareService {
      * @param certificateConfirmVo certificateConfirmVo
      * @param response response
      */
-    void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response) throws InputException, IOException;
+    void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response)
+        throws InputException, IOException;
 
     /**
-     *  查询社区软件清单
+     * 查询社区软件清单
+     * 
      * @param vo 筛选条件
      * @return 社区软件清单集合
      */

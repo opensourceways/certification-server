@@ -178,21 +178,6 @@ public class SoftwareController {
     }
 
     /**
-     * 软件认证审核
-     *
-     * @param processVo processVo
-     * @param request request
-     * @return JsonResponse
-     */
-    @PostMapping("/software/processReview")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<String> processReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-        throws Exception {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        return softwareService.processReview(processVo, cookieUuid, request);
-    }
-
-    /**
      * 获取转审人员列表
      *
      * @param softwareId softwareId

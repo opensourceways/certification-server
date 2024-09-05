@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.huawei.it.euler.model.query.AttachmentQuery;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,7 +25,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.extension.EmailConfig;
 import com.huawei.it.euler.exception.InputException;
@@ -36,6 +34,7 @@ import com.huawei.it.euler.mapper.*;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.entity.*;
 import com.huawei.it.euler.model.enumeration.*;
+import com.huawei.it.euler.model.query.AttachmentQuery;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.*;
 import com.huawei.it.euler.util.*;
@@ -433,78 +432,6 @@ public class SoftwareServiceImpl implements SoftwareService {
             generateCertificate(vo.getSoftwareId());
         }
         softwareMapper.updateSoftware(software);
-        return JsonResponse.success();
-    }
-
-    @Override
-    public JsonResponse<String> processReview(ProcessVo vo, String cookieUuid, HttpServletRequest request)
-        throws IOException {
-        Node latestNode = new Node();
-        Software software = new Software();
-
-        Integer handlerResult = vo.getHandlerResult();
-        // 设置下一个节点信息
-        Node nextNode = new Node();
-        Map<String, Object> map;
-        if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
-            map = getNextNodeNameForNumberAtIntel(handlerResult, software.getStatus());
-        } else {
-            map = getNextNode(handlerResult, software.getStatus());
-        }
-
-        int nextNodeNameForNumber = Integer.parseInt(map.get("nextNodeNameForNumber").toString());
-        String authenticationStatus = map.get("authenticationStatus").toString();
-        // 判断是否是末节点
-        JsonResponse<String> response = checkFinalNode(nextNode, nextNodeNameForNumber, software, vo);
-        if (response.getCode() == 400) {
-            return response;
-        }
-        if (nextNodeNameForNumber == 9) {
-            // 证书签发节点已通过，需要生成证书
-            String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-            logUtils.insertAuditLog(request, userUuid, "certificate", "generate", "generate certificate");
-            generateCertificate(vo.getSoftwareId());
-        }
-        // 更新软件信息表
-        updateSoftwareStatusAndReviewer(software.getId(), nextNode.getHandler(), nextNodeNameForNumber, new Date(),
-            authenticationStatus, software.getTestOrgId(), software.getReviewRole());
-        return JsonResponse.success();
-    }
-
-    private void updateSoftwareStatusAndReviewer(Integer id, String handler, Integer status, Date date,
-        String authenticationStatus, Integer testOrgId, Integer reviewRole) {
-        SoftwareVo softwareVo = new SoftwareVo();
-        softwareVo.setId(id);
-        softwareVo.setReviewer(handler);
-        softwareVo.setReviewRole(reviewRole);
-        softwareVo.setStatus(status);
-        softwareVo.setUpdateTime(date);
-        softwareVo.setAuthenticationStatus(authenticationStatus);
-        softwareVo.setTestOrgId(testOrgId);
-        softwareMapper.updateSoftwareStatusAndReviewer(softwareVo);
-    }
-
-    private JsonResponse<String> checkFinalNode(Node nextNode, int nextNodeNameForNumber, Software software,
-        ProcessVo vo) {
-        if (nextNodeNameForNumber <= 8) {
-            String nodeName = NODE_NAME_MAP.get(nextNodeNameForNumber);
-            nextNode.setStatus(nextNodeNameForNumber);
-            if (StringUtils.isBlank(nodeName)) {
-                return JsonResponse.failedResult("非法的请求");
-            }
-            // 查询处理人
-            ApprovalPathNode approvalPathNode =
-                approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
-            nextNode.setNodeName(nodeName);
-            nextNode.setSoftwareId(software.getId());
-            Date date = new Date();
-            nextNode.setUpdateTime(date);
-            nextNode.setHandlerResult(0);
-            // 节点3、7的处理人就是申请人
-            String handler = getHandler(nextNodeNameForNumber, vo, approvalPathNode, software);
-            nextNode.setHandler(handler);
-            nodeMapper.insertNode(nextNode);
-        }
         return JsonResponse.success();
     }
 
@@ -915,10 +842,10 @@ public class SoftwareServiceImpl implements SoftwareService {
             return JsonResponse.failed("不是当前处理人");
         }
         FileModel fileModel = fileUtils.uploadFile(file, softwareId, fileTypeCode, fileType, request);
-        Map<String, Object> param = Maps.newHashMap();
-        param.put("softwareId", softwareId);
-        param.put("fileType", fileType);
-        List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
+        AttachmentQuery attachmentQuery = new AttachmentQuery();
+        attachmentQuery.setSoftwareId(softwareId);
+        attachmentQuery.setFileType(fileType);
+        List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
         if (FILE_TYPE_SIGN.equals(fileType)) {
             if (CollectionUtil.isEmpty(attachmentsVos)) {
                 softwareMapper.insertAttachment(fileModel);
@@ -948,10 +875,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限获取该测评申请文件");
         }
-        Map<String, Object> param = Maps.newHashMap();
-        param.put("softwareId", softwareId);
-        param.put("fileType", fileType);
-        return softwareMapper.getAttachmentsNames(param);
+        AttachmentQuery attachmentQuery = new AttachmentQuery();
+        attachmentQuery.setSoftwareId(softwareId);
+        attachmentQuery.setFileType(fileType);
+        return softwareMapper.getAttachmentsNames(attachmentQuery);
     }
 
     @Override
