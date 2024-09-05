@@ -98,5 +98,8 @@ public class Software {
 
     private List<String> platforms;
 
+    @JsonIgnore
+    private String authenticationStatus;
+
     private Integer asId;
 }

@@ -143,13 +143,12 @@
         #{userUuid}, #{cpuVendor}, #{asId})
     </insert>
 
-    <update id="updateSoftwareStatusAndReviewer" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
+    <update id="updateSoftware" parameterType="com.huawei.it.euler.model.entity.Software">
         update software_t
         set status                = #{status},
             reviewer              = #{reviewer},
             update_time           = #{updateTime},
             authentication_status = #{authenticationStatus},
-            test_org_id           = #{testOrgId},
             review_role           = #{reviewRole}
         where id = #{id}
     </update>
@@ -296,7 +295,7 @@
           and file_type = 'sign'
     </update>
 
-    <select id="getAttachmentsNames" parameterType="java.util.Map" resultMap="AttachmentsVoMap">
+    <select id="getAttachmentsNames" parameterType="com.huawei.it.euler.model.query.AttachmentQuery" resultMap="AttachmentsVoMap">
         select filename, fileid
         from attachments_t
         where software_id = #{softwareId}
