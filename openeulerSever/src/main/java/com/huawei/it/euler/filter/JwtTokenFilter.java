@@ -4,7 +4,19 @@
 
 package com.huawei.it.euler.filter;
 
-import com.alibaba.fastjson.JSONObject;
+import java.io.IOException;
+import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.config.CookieConfig;
 import com.huawei.it.euler.config.usercenter.TokenConfig;
@@ -13,6 +25,7 @@ import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FilterUtils;
 import com.huawei.it.euler.util.UserUtils;
+
 import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,29 +33,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-
-import java.io.IOException;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Jwt拦截器
@@ -75,8 +65,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        LOGGER.debug("url : {}", request.getRequestURL());
-        LOGGER.info("url : {}", request.getRequestURL());
         String[] jwtWhiteList = urlWhitelist.split(",");
         String currentURL = FilterUtils.getRequestUrl(request);
         for (String exclusionURL : jwtWhiteList) {

@@ -25,6 +25,7 @@ import com.huawei.it.euler.config.security.LockCacheConfig;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.model.entity.Software;
+import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
 import com.huawei.it.euler.util.EncryptUtils;
@@ -74,22 +75,7 @@ public class SoftwareController {
     }
 
     /**
-     * 旗舰店证书确认
-     *
-     * @param software softwareVo
-     * @param request request
-     * @return JsonResponse
-     */
-    @PostMapping("/software/update")
-    @PreAuthorize("hasAnyRole('flag_store')")
-    public JsonResponse<String> update(@RequestBody @Validated SoftwareVo software, HttpServletRequest request)
-        throws IOException {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        return softwareService.updateSoftware(software, cookieUuid, request);
-    }
-
-    /**
-     * 提交软件认证
+     * 申请评测
      *
      * @param software software
      * @param request request
@@ -105,18 +91,90 @@ public class SoftwareController {
     }
 
     /**
-     * 软件认证审核
+     * program_review 方案审核
+     */
+    @PostMapping("/software/programReview")
+    @PreAuthorize("hasAnyRole( 'program_review', 'openatom_intel',  'admin')")
+    public JsonResponse<String> programReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+        throws Exception {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        return softwareService.commonProcess(processVo, userUuid, NodeEnum.PROGRAM_REVIEW.getId());
+    }
+
+    /**
+     * program_review 测试阶段
+     */
+    @PostMapping("/software/testingPhase")
+    @PreAuthorize("hasAnyRole( 'user', 'openatom_intel',  'admin')")
+    public JsonResponse<String> testingPhase(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws Exception {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        return softwareService.testingPhase(processVo, userUuid);
+    }
+
+    /**
+     * reportReview 报告初审
+     */
+    @PostMapping("/software/reportReview")
+    @PreAuthorize("hasAnyRole( 'euler_ic',  'admin')")
+    public JsonResponse<String> reportReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws Exception {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_REVIEW.getId());
+    }
+
+    /**
+     * reportReview 报告复审
+     */
+    @PostMapping("/software/reportReReview")
+    @PreAuthorize("hasAnyRole( 'euler_ic',  'admin')")
+    public JsonResponse<String> reportReReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws Exception {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_RE_REVIEW.getId());
+    }
+
+    /**
+     * 证书初审
      *
-     * @param processVo processVo
+     * @param software softwareVo
      * @param request request
      * @return JsonResponse
      */
-    @PostMapping("/software/processReview")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<String> processReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-        throws Exception {
+    @PostMapping("/software/certificateReview")
+    @PreAuthorize("hasAnyRole('flag_store')")
+    public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software, HttpServletRequest request)
+        throws IOException {
         String cookieUuid = UserUtils.getCookieUuid(request);
-        return softwareService.processReview(processVo, cookieUuid, request);
+        return softwareService.updateSoftware(software, cookieUuid, request);
+    }
+
+    /**
+     * certificateConfirmation 证书确认
+     */
+    @PostMapping("/software/certificateConfirmation")
+    @PreAuthorize("hasAnyRole( 'user',  'admin')")
+    public JsonResponse<String> certificateConfirmation(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws Exception {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_RE_REVIEW.getId());
+    }
+
+    /**
+     * certificateConfirmation 证书签发
+     */
+    @PostMapping("/software/certificateIssuance")
+    @PreAuthorize("hasAnyRole( 'user',  'admin')")
+    public JsonResponse<String> certificateIssuance(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws Exception {
+        String cookieUuid = UserUtils.getCookieUuid(request);
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        return softwareService.certificateIssuance(processVo, userUuid);
     }
 
     /**
