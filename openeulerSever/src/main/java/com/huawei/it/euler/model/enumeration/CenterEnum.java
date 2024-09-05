@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Getter;
 
 /**
@@ -17,6 +19,7 @@ import lombok.Getter;
  * @since 2024/06/29
  */
 @Getter
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum CenterEnum {
     // openEuler社区
     USER(1, "openEuler社区"),

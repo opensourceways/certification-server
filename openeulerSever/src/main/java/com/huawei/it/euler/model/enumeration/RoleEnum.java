@@ -32,8 +32,6 @@ public enum RoleEnum {
     OSV_USER(7, "OSV_user", "OSV伙伴"),
     // openatom intel
     OPENATOM_INTEL(8, "openatom_intel", "开放原子-英特尔联合验证中心"),
-    // program review
-    PROGRAM_REVIEW(10, "program_review", "方案审核"),
     // report review
     REPORT_REVIEW(11, "report_review", "报告复审"),
     // certificate issuance

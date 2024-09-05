@@ -5,13 +5,13 @@
 package com.huawei.it.euler.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.it.euler.model.entity.*;
+import com.huawei.it.euler.model.query.AttachmentQuery;
 import com.huawei.it.euler.model.vo.*;
 
 /**
@@ -54,9 +54,9 @@ public interface SoftwareMapper {
     /**
      * 更新状态
      *
-     * @param vo 状态
+     * @param software 状态
      */
-    void updateSoftwareStatusAndReviewer(SoftwareVo vo);
+    void updateSoftware(Software software);
 
     /**
      * 查询兼容性认证申请列表
@@ -121,7 +121,7 @@ public interface SoftwareMapper {
      * @param param 参数
      * @return 名称列表
      */
-    List<AttachmentsVo> getAttachmentsNames(Map<String, Object> param);
+    List<AttachmentsVo> getAttachmentsNames(AttachmentQuery param);
 
     /**
      * 下载附件
