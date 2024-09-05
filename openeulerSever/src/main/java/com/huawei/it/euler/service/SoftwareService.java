@@ -52,6 +52,7 @@ public interface SoftwareService {
      */
     void insertSoftware(Software software, String cookieUuid, HttpServletRequest request) throws InputException, IOException;
 
+    JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid,Integer nodeStatus);
     /**
      * 软件认证审核流程
      *

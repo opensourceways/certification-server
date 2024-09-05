@@ -11,8 +11,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.huawei.it.euler.model.query.AttachmentQuery;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,9 +35,7 @@ import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.mapper.*;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.entity.*;
-import com.huawei.it.euler.model.enumeration.CenterEnum;
-import com.huawei.it.euler.model.enumeration.IntelTestEnum;
-import com.huawei.it.euler.model.enumeration.ProtocolEnum;
+import com.huawei.it.euler.model.enumeration.*;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.*;
 import com.huawei.it.euler.util.*;
@@ -53,6 +54,8 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @Slf4j
 public class SoftwareServiceImpl implements SoftwareService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SoftwareServiceImpl.class);
+
     private static Map<Integer, String> NODE_NAME_MAP = new HashMap<>();
 
     private static final String FILE_TYPE_SIGN = "sign";
@@ -154,7 +157,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (softwareDb.getStatus() != 6) {
             return JsonResponse.failed("该测评申请无法更新软件认证信息");
         }
-       if (!userService.isUserDataScopeByRole(Integer.valueOf(userUuid), softwareDb)) {
+        if (!userService.isUserDataScopeByRole(Integer.valueOf(userUuid), softwareDb)) {
             throw new ParamException("该用户无权访问当前信息");
         }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
@@ -341,6 +344,94 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
+    public JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid,Integer nodeStatus) {
+        Software software = checkCommonProcess(vo, Uuid);
+        if (!Objects.equals(software.getStatus(), nodeStatus)) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            throw new ParamException("审批阶段错误");
+        }
+        updateCurNode(vo);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
+        return JsonResponse.success();
+    }
+
+    public JsonResponse<String> testingPhase(ProcessVo vo, Integer Uuid) {
+        Software software = checkCommonProcess(vo, Uuid);
+        if (!Objects.equals(software.getStatus(), NodeEnum.TESTING_PHASE.getId())) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            throw new ParamException("审批阶段错误");
+        }
+        if (vo.getHandlerResult() != 1) {
+            return JsonResponse.failedResult("非法的审核结果参数");
+        }
+        AttachmentQuery attachmentQuery = new AttachmentQuery();
+        attachmentQuery.setSoftwareId(software.getId());
+        attachmentQuery.setFileType("testReport");
+        List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
+        if (CollectionUtil.isEmpty(attachmentsVos)) {
+            return JsonResponse.failed("未上传测试报告");
+        }
+        updateCurNode(vo);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
+        return JsonResponse.success();
+    }
+    
+    public JsonResponse<String> reportReview(ProcessVo vo, Integer Uuid) {
+        Software software = checkCommonProcess(vo, Uuid);
+        if (!Objects.equals(software.getStatus(), NodeEnum.REPORT_REVIEW.getId())) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            throw new ParamException("审批阶段错误");
+        }
+        if (!Objects.equals(Integer.valueOf(software.getReviewer()), Uuid)) {
+            LOGGER.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), Uuid);
+            throw new ParamException("审批人员错误");
+        }
+        updateCurNode(vo);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
+        return JsonResponse.success();
+    }
+
+    public JsonResponse<String> certificateConfirmation(ProcessVo vo, Integer Uuid) {
+        Software software = checkCommonProcess(vo, Uuid);
+        if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_CONFIRMATION.getId())) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            throw new ParamException("审批阶段错误");
+        }
+        if (vo.getHandlerResult() == 1) {
+            AttachmentQuery attachmentQuery = new AttachmentQuery();
+            attachmentQuery.setSoftwareId(software.getId());
+            attachmentQuery.setFileType("sign");
+            List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
+            if (CollectionUtil.isEmpty(attachmentsVos)) {
+                return JsonResponse.failed("未上传签名");
+            }
+        }
+        updateCurNode(vo);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
+        return JsonResponse.success();
+    }
+
+    public JsonResponse<String> certificateIssuance(ProcessVo vo, Integer Uuid) {
+        Software software = checkCommonProcess(vo, Uuid);
+        if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_ISSUANCE.getId())) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            throw new ParamException("审批阶段错误");
+        }
+        updateCurNode(vo);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
+        return JsonResponse.success();
+    }
+
     @Override
     public JsonResponse<String> processReview(ProcessVo vo, String cookieUuid, HttpServletRequest request)
         throws IOException {
@@ -360,7 +451,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
             map = getNextNodeNameForNumberAtIntel(handlerResult, software.getStatus());
         } else {
-            map = getNextNodeNameForNumber(handlerResult, software.getStatus());
+            map = getNextNode(handlerResult, software.getStatus());
         }
 
         int nextNodeNameForNumber = Integer.parseInt(map.get("nextNodeNameForNumber").toString());
@@ -419,75 +510,60 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
-    private String getHandler(int nextNodeNameForNumber, ProcessVo vo, ApprovalPathNode approvalPathNode,
-        Software software) {
-        String handler;
-        if (nextNodeNameForNumber == 1 || nextNodeNameForNumber == 7) {
-            handler = software.getUserUuid();
-            software.setReviewRole(1);
-        } else if (nextNodeNameForNumber == 3) {
-            handler = approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid();
-            software.setReviewRole(approvalPathNode == null ? 1 : approvalPathNode.getRoleId());
-        } else {
-            // 转审
-            if (vo.getHandlerResult() == 3) {
-                if (!userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()), software)) {
-                    throw new ParamException("转审人不能是该角色的成员");
+    private Software getNextNode(ProcessVo vo, Software software) {
+        Integer nextNodeNumber = software.getStatus();
+        switch (vo.getHandlerResult()) {
+            case 1:
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor()) && nextNodeNumber == 3) {
+                    nextNodeNumber = 5;
+                } else {
+                    nextNodeNumber = software.getStatus() + 1;
                 }
-                handler = vo.getTransferredUser();
-            } else {
-                // 非转审
-                handler = approvalPathNode.getUserUuid();
-                software.setReviewRole(approvalPathNode.getRoleId());
-            }
-        }
-        return handler;
-    }
-
-    private Map<String, Object> getNextNodeNameForNumber(Integer handlerResult, Integer status) {
-        Integer nextNodeNameForNumber = 0;
-        String authenticationStatus = "";
-        switch (handlerResult) {
-            case 1:
-                nextNodeNameForNumber = status + 1;
+                software.setStatus(nextNodeNumber);
+                getHandler(nextNodeNumber, software);
                 break;
             case 2:
-                nextNodeNameForNumber = status - 1;
-                authenticationStatus = NODE_NAME_MAP.get(status) + "已驳回";
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor()) && nextNodeNumber == 5) {
+                    nextNodeNumber = 3;
+                } else {
+                    nextNodeNumber = software.getStatus() - 1;
+                }
+                software.setStatus(nextNodeNumber);
+                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()).getName() + "已驳回");
+                getHandler(nextNodeNumber, software);
                 break;
             case 3:
-                nextNodeNameForNumber = status;
+                software.setReviewer(vo.getTransferredUser());
                 break;
             default:
                 break;
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("nextNodeNameForNumber", nextNodeNameForNumber);
-        map.put("authenticationStatus", authenticationStatus);
-        return map;
+        return software;
     }
 
-    private Map<String, Object> getNextNodeNameForNumberAtIntel(Integer handlerResult, Integer status) {
-        Integer nextNodeNameForNumber = 0;
-        String authenticationStatus = "";
-        switch (handlerResult) {
-            case 1:
-                nextNodeNameForNumber = status == 3 ? 5 : status + 1;
-                break;
-            case 2:
-                nextNodeNameForNumber = status == 5 ? 3 : status - 1;
-                authenticationStatus = NODE_NAME_MAP.get(status) + "已驳回";
-                break;
-            case 3:
-                nextNodeNameForNumber = status;
-                break;
-            default:
-                break;
+    private Software getHandler(int nextNodeNameForNumber, Software software) {
+        if (nextNodeNameForNumber == NodeEnum.APPLY.getId()
+                || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
+            software.setReviewer(software.getUserUuid());
+            software.setReviewRole(RoleEnum.USER.getRoleId());
+            return software;
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("nextNodeNameForNumber", nextNodeNameForNumber);
-        map.put("authenticationStatus", authenticationStatus);
-        return map;
+        if (nextNodeNameForNumber == NodeEnum.REPORT_REVIEW.getId()) {
+            Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
+            software.setReviewer(node.getHandler());
+            software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
+            return software;
+        }
+        ApprovalPathNode approvalPathNode =
+                approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
+        if (nextNodeNameForNumber == 3) {
+            software.setReviewer(approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid());
+            software.setReviewRole(approvalPathNode == null ? RoleEnum.USER.getRoleId() : approvalPathNode.getRoleId());
+        } else {
+            software.setReviewer(approvalPathNode.getUserUuid());
+            software.setReviewRole(approvalPathNode.getRoleId());
+        }
+        return software;
     }
 
     private void updateLatestNode(Integer handlerResult, Node latestNode, String transferredComments, Date date) {
@@ -497,65 +573,57 @@ public class SoftwareServiceImpl implements SoftwareService {
         nodeMapper.updateNodeById(latestNode);
     }
 
-    private JsonResponse<String> checkProcessData(ProcessVo vo, Node latestNode, Software software, String cookieUuid) {
+    private Software checkCommonProcess(ProcessVo vo, Integer uuid) {
         Integer handlerResult = vo.getHandlerResult();
+        if (handlerResult < 1 || handlerResult > 3) {
+            LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
+            throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
+        }
         if (StringUtils.isBlank(vo.getTransferredComments())
             || (handlerResult == 3 && StringUtils.isBlank(vo.getTransferredUser()))) {
-            return JsonResponse.failedResult("非法的审核参数");
+            LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
+            throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
         }
         Software softwareInDb = softwareMapper.findById(vo.getSoftwareId());
         if (softwareInDb == null) {
-            return JsonResponse.failedResult("审核条目不存在");
+            LOGGER.error("审核条目不存在:{}", vo.getSoftwareId());
+            throw new ParamException("审核条目不存在:" + vo.getSoftwareId());
         }
-        if (softwareInDb.getStatus() == 3) {
-            if (handlerResult != 1) {
-                return JsonResponse.failedResult("非法的审核结果参数");
-            }
-            Map<String, Object> param = Maps.newHashMap();
-            param.put("softwareId", softwareInDb.getId());
-            param.put("fileType", "testReport");
-            List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
-            if (CollectionUtil.isEmpty(attachmentsVos)) {
-                return JsonResponse.failed("未上传测试报告");
-            }
+        if (!userService.isUserDataScopeByRole(uuid, softwareInDb)) {
+            LOGGER.error("非法的审核人:{}", uuid);
+            throw new ParamException("非法的审核人:" + uuid);
         }
-        if (softwareInDb.getStatus() == 7) {
-            if (handlerResult == 1) {
-                Map<String, Object> param = Maps.newHashMap();
-                param.put("softwareId", softwareInDb.getId());
-                param.put("fileType", "sign");
-                List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
-                if (CollectionUtil.isEmpty(attachmentsVos)) {
-                    return JsonResponse.failed("未上传签名");
-                }
-            }
-        }
-        BeanUtils.copyProperties(softwareInDb, software);
-        // 判断当前流程是否已经结束
-        if (software.getStatus() == 9) {
-            return JsonResponse.failedResult("审批流程结束");
-        }
-        // 校验当前用户是否是该节点的审核人
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
         if (handlerResult == 3) {
-            if (vo.getTransferredUser().equals(uuid)) {
-                return JsonResponse.failedResult("转审人不能为自己");
+            if (Integer.valueOf(vo.getTransferredUser()).equals(uuid)) {
+                LOGGER.error("转审人不能为自己:{}", uuid);
+                throw new ParamException("转审人不能为自己:" + uuid);
             }
-            boolean isApprove = checkPermission(vo, cookieUuid);
-            if (!isApprove) {
-                return JsonResponse.failedResult("该成员无权限审核");
+            if (!userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()), softwareInDb)) {
+                LOGGER.error("转审人没有权限:{}", Integer.valueOf(vo.getTransferredUser()));
+                throw new ParamException("转审人没有权限:{}" + Integer.valueOf(vo.getTransferredUser()));
             }
         }
-        Node latestNodeInDb = nodeMapper.findLatestNodeById(vo.getSoftwareId());
-        BeanUtils.copyProperties(latestNodeInDb, latestNode);
-        if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
-            return JsonResponse.failedResult("非法的审核人");
-        }
-        // 处理结果 0-待处理 1-通过 2-驳回 3-转审
-        if (handlerResult < 1 || handlerResult > 3) {
-            return JsonResponse.failedResult("非法的审核结果参数");
-        }
-        return JsonResponse.success();
+        return softwareInDb;
+    }
+
+    private void updateCurNode(ProcessVo vo) {
+        // 当前节点更新
+        Node latestNode = nodeMapper.findLatestNodeById(vo.getSoftwareId());
+        latestNode.setHandlerResult(vo.getHandlerResult());
+        latestNode.setTransferredComments(vo.getTransferredComments());
+        latestNode.setHandlerTime(new Date());
+        nodeMapper.updateNodeById(latestNode);
+    }
+
+    private void addNextNode(Software software) {
+        Node node = new Node();
+        node.setNodeName(NodeEnum.findById(software.getStatus()).getName());
+        node.setSoftwareId(software.getId());
+        node.setHandlerResult(0);
+        node.setStatus(software.getStatus());
+        node.setUpdateTime(new Date());
+        node.setHandler(software.getReviewer());
+        nodeMapper.insertNode(node);
     }
 
     private boolean checkPermission(ProcessVo vo, String cookieUuid) {
