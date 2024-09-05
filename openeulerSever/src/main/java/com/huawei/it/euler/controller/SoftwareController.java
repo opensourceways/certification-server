@@ -174,7 +174,7 @@ public class SoftwareController {
             throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
-        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_RE_REVIEW.getId());
+        return softwareService.certificateIssuance(processVo, userUuid);
     }
 
     /**

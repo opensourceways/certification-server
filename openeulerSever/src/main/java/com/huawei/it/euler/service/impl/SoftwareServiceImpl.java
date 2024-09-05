@@ -419,7 +419,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
-    public JsonResponse<String> certificateIssuance(ProcessVo vo, Integer Uuid) {
+    public JsonResponse<String> certificateIssuance(ProcessVo vo, Integer Uuid) throws IOException {
         Software software = checkCommonProcess(vo, Uuid);
         if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_ISSUANCE.getId())) {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
@@ -427,7 +427,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         updateCurNode(vo);
         getNextNode(vo, software);
-        addNextNode(software);
+        if (software.getStatus() < NodeEnum.FINISHED.getId()){
+            addNextNode(software);
+        }else if (software.getStatus().equals(NodeEnum.FINISHED.getId())){
+            generateCertificate(vo.getSoftwareId());
+        }
         softwareMapper.updateSoftware(software);
         return JsonResponse.success();
     }
@@ -437,14 +441,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         throws IOException {
         Node latestNode = new Node();
         Software software = new Software();
-        JsonResponse<String> jsonResponse = checkProcessData(vo, latestNode, software, cookieUuid);
-        if (jsonResponse.getCode() == 400) {
-            return jsonResponse;
-        }
+
         Integer handlerResult = vo.getHandlerResult();
-        // 设置当前节点信息
-        Date date = new Date();
-        updateLatestNode(handlerResult, latestNode, vo.getTransferredComments(), date);
         // 设置下一个节点信息
         Node nextNode = new Node();
         Map<String, Object> map;
