@@ -55,8 +55,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SoftwareServiceImpl implements SoftwareService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SoftwareServiceImpl.class);
 
-    private static Map<Integer, String> NODE_NAME_MAP = new HashMap<>();
-
     private static final String FILE_TYPE_SIGN = "sign";
 
     private static final String FILE_TYPE_TEST_REPORT = "testReport";
@@ -112,17 +110,6 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Autowired
     private EmailConfig emailConfig;
 
-    static {
-        NODE_NAME_MAP.put(1, "测评申请");
-        NODE_NAME_MAP.put(2, "方案审核");
-        NODE_NAME_MAP.put(3, "测试阶段");
-        NODE_NAME_MAP.put(4, "报告初审");
-        NODE_NAME_MAP.put(5, "报告复审");
-        NODE_NAME_MAP.put(6, "证书初审");
-        NODE_NAME_MAP.put(7, "证书确认");
-        NODE_NAME_MAP.put(8, "证书签发");
-    }
-
     @Override
     public Software findById(Integer id, String cookieUuid) {
         String userUuid = encryptUtils.aesDecrypt(cookieUuid);
@@ -170,7 +157,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setSoftwareId(software.getId());
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
-        JsonResponse<String> processJsonRep = processReview(processVo, cookieUuid, request);
+        JsonResponse<String> processJsonRep = commonProcess(processVo, Integer.valueOf(userUuid),NodeEnum.CERTIFICATE_REVIEW.getId());
         if (!Objects.equals(processJsonRep.getCode(), JsonResponse.SUCCESS_STATUS)) {
             return processJsonRep;
         }
@@ -232,7 +219,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public void insertSoftware(Software software, String cookieUuid, HttpServletRequest request)
-        throws InputException, IOException {
+        throws InputException {
         String userUuid = encryptUtils.aesDecrypt(cookieUuid);
         EulerUser user = userMapper.findByUuid(userUuid);
         if (Objects.equals(user.getUseable(), 0)) {
@@ -283,7 +270,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             processVo.setSoftwareId(software.getId());
             processVo.setHandlerResult(1);
             processVo.setTransferredComments("通过");
-            processReview(processVo, cookieUuid, request);
+            commonProcess(processVo, Integer.valueOf(userUuid), 1);
             return;
         }
         // 设置节点表当前信息 1-认证申请
@@ -291,9 +278,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 设置节点表下一个节点状态 2-方案审核
         Node nextNode = new Node();
         setNextNode(software, nextNode, approvalPath);
+        software.setReviewer(nextNode.getHandler());
+        software.setReviewRole(approvalPath.get(0).getRoleId());
         // 更新软件信息表
-        updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "", software.getTestOrgId(),
-            approvalPath.get(0).getRoleId());
+        softwareMapper.updateSoftware(software);
         // 发送邮件通知
         sendEmail(software, user);
     }
@@ -301,7 +289,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     private void setCurNode(String userUuid, Integer softwareId) {
         Node curNode = new Node();
         Date date = new Date();
-        curNode.setNodeName(NODE_NAME_MAP.get(1));
+        curNode.setNodeName(NodeEnum.APPLY.getName());
         curNode.setStatus(1);
         // 设置处理结果：0-待处理 1-通过 2-驳回 3-转审
         curNode.setHandlerResult(1);
@@ -315,7 +303,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private void setNextNode(Software software, Node nextNode, List<ApprovalPathNode> approvalPath) {
-        nextNode.setNodeName(NODE_NAME_MAP.get(2));
+        nextNode.setNodeName(NodeEnum.PROGRAM_REVIEW.getName());
         nextNode.setStatus(2);
         // 设置处理结果：0-待处理 1-通过 2-驳回 3-转审
         nextNode.setHandlerResult(0);
@@ -769,18 +757,18 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private List<AuditRecordsVo> checkPartnerNode(List<AuditRecordsVo> latestNodes, Software software) {
-        boolean node3 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NODE_NAME_MAP.get(3)));
-        boolean node7 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NODE_NAME_MAP.get(7)));
+        boolean node3 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.TESTING_PHASE.name()));
+        boolean node7 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.name()));
         if (!node3) {
             AuditRecordsVo auditRecordsVo = new AuditRecordsVo();
-            auditRecordsVo.setNodeName(NODE_NAME_MAP.get(3));
+            auditRecordsVo.setNodeName(NodeEnum.TESTING_PHASE.name());
             auditRecordsVo.setHandler(software.getUserUuid());
             auditRecordsVo.setStatus(3);
             latestNodes.add(auditRecordsVo);
         }
         if (!node7) {
             AuditRecordsVo auditRecordsVo = new AuditRecordsVo();
-            auditRecordsVo.setNodeName(NODE_NAME_MAP.get(7));
+            auditRecordsVo.setNodeName(NodeEnum.CERTIFICATE_CONFIRMATION.name());
             auditRecordsVo.setHandler(software.getUserUuid());
             auditRecordsVo.setStatus(7);
             latestNodes.add(auditRecordsVo);
