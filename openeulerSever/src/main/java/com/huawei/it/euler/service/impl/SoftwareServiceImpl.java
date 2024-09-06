@@ -653,13 +653,11 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(item.getAuthenticationStatus());
             }
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
-            LOGGER.info(" id:{}, reviewRole:{}, roleList: {}",item.getId(),item.getReviewRole(),roleList);
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
             }
 
             String operation = getOperation(item.getStatus(), item.getCpuVendor());
-            LOGGER.info(" id:{}, status:{}, operation: {}",item.getId(),item.getStatus(),operation);
             item.setOperation(operation);
         });
     }
