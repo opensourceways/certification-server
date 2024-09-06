@@ -18,15 +18,8 @@ import java.util.List;
 @Repository
 public interface ApprovalPathNodeMapper {
 
-    ApprovalPathNode findNodeByIcIdAndStatus(@Param("icId") Integer icId, @Param("status") Integer status);
-
-    List<ApprovalPathNode> findNodeByIcId(Integer icId);
-
-    List<ApprovalPathNode> findDefaultNode();
-
     List<ApprovalPathNode> findNodeByAsId(@Param("asId") Integer asId);
 
     ApprovalPathNode findNodeByAsIdAndStatus(@Param("asId") Integer asId, @Param("status") Integer status);
 
-    List<Integer> findUserNodes(@Param("asId") Integer asId, @Param("roleList") List<Integer> roleList);
 }
