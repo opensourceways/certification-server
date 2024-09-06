@@ -600,6 +600,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         currentSoftwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
+            }else {
+                item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
         });
         currentSoftwareList.forEach(item -> {
