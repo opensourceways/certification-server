@@ -651,6 +651,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
+            }else {
+                item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {

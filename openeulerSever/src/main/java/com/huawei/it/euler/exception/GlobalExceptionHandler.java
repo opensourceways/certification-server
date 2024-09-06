@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = IllegalArgumentException.class)
     public JsonResponse<String> handler(IllegalArgumentException exception, HttpServletRequest request) {
         log.error("URL: {}, IllegalArgumentException, errorMessage: {}",
-                request.getRequestURL(), exception.getMessage());
+                request.getRequestURL(), exception);
         return JsonResponse.failed(ERROR_MESSAGE);
     }
 
