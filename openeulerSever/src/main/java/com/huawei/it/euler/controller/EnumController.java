@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.huawei.it.euler.model.enumeration.CenterEnum;
+import com.huawei.it.euler.model.enumeration.NodeEnum;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +29,11 @@ public class EnumController {
 
     @GetMapping("/centers")
     public List<CenterEnum> getAllCenterEnums() {
-        return CenterEnum.getAllEnums();
+        return CenterEnum.getAllCenters();
+    }
+
+    @GetMapping("/nodes")
+    public List<NodeEnum> getAllNodeEnums() {
+        return NodeEnum.getAllNodes();
     }
 }
