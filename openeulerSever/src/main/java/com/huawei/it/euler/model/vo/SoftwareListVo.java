@@ -67,7 +67,7 @@ public class SoftwareListVo {
      */
     private String testOrganization;
 
-    @JsonIgnore
+
     private Integer testOrgId;
     /**
      * 申请时间
