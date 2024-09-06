@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.extension.EmailConfig;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
@@ -20,7 +22,6 @@ import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.entity.*;
 import com.huawei.it.euler.model.enumeration.IntelTestEnum;
 import com.huawei.it.euler.model.enumeration.ProtocolEnum;
-import com.huawei.it.euler.model.enumeration.RoleEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.ApprovalPathNodeService;
 import com.huawei.it.euler.service.ApprovalScenarioService;
@@ -60,14 +61,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private static final String FILE_TYPE_TEST_REPORT = "testReport";
 
-    public static final HashSet<String> PARTNER_ROLE = new HashSet<>(
-            Arrays.asList(RoleEnum.USER.getRole(), RoleEnum.OSV_USER.getRole()));
-
     @Autowired
     private SoftwareMapper softwareMapper;
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired
     private CompanyMapper companyMapper;
@@ -80,9 +75,6 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private ApprovalPathNodeService approvalPathNodeService;
-
-    @Autowired
-    private RoleMapper roleMapper;
 
     @Autowired
     private CertificateGenerationUtils certificateGenerationUtils;
@@ -100,9 +92,6 @@ public class SoftwareServiceImpl implements SoftwareService {
     private CompatibleDataMapper compatibleDataMapper;
 
     @Autowired
-    private EncryptUtils encryptUtils;
-
-    @Autowired
     private LogUtils logUtils;
 
     @Autowired
@@ -110,6 +99,9 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private EmailConfig emailConfig;
+
+    @Autowired
+    private AccountService accountService;
 
     static {
         NODE_NAME_MAP.put(1, "测评申请");
@@ -123,14 +115,8 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public Software findById(Integer id, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+    public Software findById(Integer id, String uuid) {
         Software software = softwareMapper.findById(id);
-        List<String> roles = getRoles(userUuid);
-        if (software == null ||
-                (PARTNER_ROLE.containsAll(roles) && !Objects.equals(userUuid, software.getUserUuid()))) {
-            throw new ParamException("该用户无权访问当前信息");
-        }
         String jsonHashRatePlatform = software.getJsonHashRatePlatform();
         JSONArray jsonArray = JSON.parseArray(jsonHashRatePlatform);
         List<ComputingPlatformVo> computingPlatformVos = new ArrayList<>();
@@ -150,7 +136,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     @Transactional
-    public JsonResponse<String> updateSoftware(SoftwareVo software, String cookieUuid, HttpServletRequest request)
+    public JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request)
             throws IOException {
         Software softwareDb = softwareMapper.findById(software.getId());
         if (softwareDb.getStatus() != 6) {
@@ -167,7 +153,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setSoftwareId(software.getId());
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
-        JsonResponse<String> processJsonRep = processReview(processVo, cookieUuid, request);
+        JsonResponse<String> processJsonRep = processReview(processVo, uuid, request);
         if (!Objects.equals(processJsonRep.getCode(), JsonResponse.SUCCESS_STATUS)) {
             return processJsonRep;
         }
@@ -228,20 +214,15 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public void insertSoftware(Software software, String cookieUuid, HttpServletRequest request)
+    public void insertSoftware(Software software, String uuid, HttpServletRequest request)
             throws InputException, IOException {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        EulerUser user = userMapper.findByUuid(userUuid);
-        if (Objects.equals(user.getUseable(), 0)) {
-            throw new InputException("您已注销账号！无法申请技术测评");
-        }
-        CompanyVo companyVo = companyService.findCompanyByUserUuid(userUuid);
+        CompanyVo companyVo = companyService.findCompanyByUserUuid(uuid);
         if (companyVo == null || !Objects.equals(companyVo.getStatus(), CompanyStatusConstant.COMPANY_PASSED)) {
             throw new InputException("申请兼容性测评服务需要完成企业实名认证");
         }
         // 校验是否签署协议
         Protocol protocol = protocolMapper.selectProtocolDesc(
-                ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), userUuid);
+                ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
         if (protocol == null || Objects.equals(protocol.getStatus(), 0)) {
             throw new InputException("申请兼容性测评服务需要签署技术测评协议");
         }
@@ -250,11 +231,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 设置软件信息表当前节点状态 1-认证申请
         software.setStatus(1);
         // reviewer为当前节点处理人
-        software.setReviewer(userUuid);
+        software.setReviewer(uuid);
         Date date = new Date();
         software.setApplicationTime(date);
         software.setUpdateTime(date);
-        software.setUserUuid(userUuid);
+        software.setUserUuid(uuid);
         software.setProductName(software.getProductName().trim());
         software.setProductFunctionDesc(software.getProductFunctionDesc().trim());
         software.setUsageScenesDesc(software.getUsageScenesDesc().trim());
@@ -278,18 +259,18 @@ public class SoftwareServiceImpl implements SoftwareService {
             processVo.setSoftwareId(software.getId());
             processVo.setHandlerResult(1);
             processVo.setTransferredComments("通过");
-            processReview(processVo, cookieUuid, request);
+            processReview(processVo, uuid, request);
             return;
         }
         // 设置节点表当前信息 1-认证申请
-        setCurNode(userUuid, id);
+        setCurNode(uuid, id);
         // 设置节点表下一个节点状态 2-方案审核
         Node nextNode = new Node();
         setNextNode(software, nextNode, approvalPath);
         // 更新软件信息表
         updateSoftwareStatusAndReviewer(id, nextNode.getHandler(), 2, new Date(), "");
         // 发送邮件通知
-        sendEmail(software, user);
+        sendEmail(software, uuid);
     }
 
     private void setCurNode(String userUuid, Integer softwareId) {
@@ -338,10 +319,10 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public JsonResponse<String> processReview(ProcessVo vo, String cookieUuid, HttpServletRequest request) throws IOException {
+    public JsonResponse<String> processReview(ProcessVo vo, String uuid, HttpServletRequest request) throws IOException {
         Node latestNode = new Node();
         Software software = new Software();
-        JsonResponse<String> jsonResponse = checkProcessData(vo, latestNode, software, cookieUuid);
+        JsonResponse<String> jsonResponse = checkProcessData(vo, latestNode, software, uuid);
         if (jsonResponse.getCode() == 400) {
             return jsonResponse;
         }
@@ -367,8 +348,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         if (nextNodeNameForNumber == 9) {
             // 证书签发节点已通过，需要生成证书
-            String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-            logUtils.insertAuditLog(request, userUuid, "certificate", "generate", "generate certificate");
+            logUtils.insertAuditLog(request, uuid, "certificate", "generate", "generate certificate");
             generateCertificate(vo.getSoftwareId());
         }
         // 更新软件信息表
@@ -483,7 +463,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         nodeMapper.updateNodeById(latestNode);
     }
 
-    private JsonResponse<String> checkProcessData(ProcessVo vo, Node latestNode, Software software, String cookieUuid) {
+    private JsonResponse<String> checkProcessData(ProcessVo vo, Node latestNode, Software software, String uuid) {
         Integer handlerResult = vo.getHandlerResult();
         if (StringUtils.isBlank(vo.getTransferredComments()) ||
                 (handlerResult == 3 && StringUtils.isBlank(vo.getTransferredUser()))) {
@@ -522,12 +502,11 @@ public class SoftwareServiceImpl implements SoftwareService {
             return JsonResponse.failedResult("审批流程结束");
         }
         // 校验当前用户是否是该节点的审核人
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
         if (handlerResult == 3) {
             if (vo.getTransferredUser().equals(uuid)) {
                 return JsonResponse.failedResult("转审人不能为自己");
             }
-            boolean isApprove = checkPermission(vo, cookieUuid);
+            boolean isApprove = checkPermission(vo, uuid);
             if (!isApprove) {
                 return JsonResponse.failedResult("该成员无权限审核");
             }
@@ -544,8 +523,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
-    private boolean checkPermission(ProcessVo vo, String cookieUuid) {
-        List<SimpleUserVo> simpleUserVos = transferredUserList(vo.getSoftwareId(), cookieUuid);
+    private boolean checkPermission(ProcessVo vo, String uuid) {
+        List<SimpleUserVo> simpleUserVos = transferredUserList(vo.getSoftwareId(), uuid);
         boolean isApprove = false;
         for (SimpleUserVo simpleUserVo : simpleUserVos) {
             if (Objects.equals(simpleUserVo.getUuid(), vo.getTransferredUser())) {
@@ -556,42 +535,39 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<SimpleUserVo> transferredUserList(Integer softwareId, String cookieUuid) {
+    public List<SimpleUserVo> transferredUserList(Integer softwareId, String uuid) {
         Software software = softwareMapper.findById(softwareId);
         ApprovalPathNode approvalPathNode =
                 approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), software.getStatus());
         if (ObjectUtils.isEmpty(approvalPathNode)) {
             return new ArrayList<>();
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(approvalPathNode.getRoleId());
-        List<EulerUser> users = userMapper.findByUserId(userIdList);
-        List<SimpleUserVo> userVos = users.stream().map(item -> {
+        List<UserInfo> userInfoList = accountService.getUserInfoList(approvalPathNode.getRoleId());
+        List<SimpleUserVo> userVos = userInfoList.stream().map(item -> {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
             BeanUtils.copyProperties(item, simpleUserVo);
             return simpleUserVo;
-        }).collect(Collectors.toList());
+        }).toList();
         // 转审人不能为自己
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
         return userVos.stream().filter(item -> !item.getUuid().equals(uuid)).collect(Collectors.toList());
     }
 
     @Override
-    public List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+    public List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(userUuid);
+        Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(uuid);
         if (ObjectUtils.isEmpty(company)) {
             return new ArrayList<>();
         }
         // 通过所属公司名获取全部认证列表
         selectSoftware.setCompanyName(company.getCompanyName());
         List<SoftwareListVo> getAllSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
-        processFields(getAllSoftwareList, userUuid);
+        processFields(getAllSoftwareList, uuid);
         // 通过uuid直接查询该用户下所有认证列表
-        selectSoftware.setApplicant(userUuid);
+        selectSoftware.setApplicant(uuid);
         List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
-        processFields(currentSoftwareList, userUuid);
+        processFields(currentSoftwareList, uuid);
         if (CollectionUtil.isNotEmpty(selectSoftwareVo.getSelectMyApplication())) {
             return currentSoftwareList;
         }
@@ -637,11 +613,10 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+    public List<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        selectSoftware.setApplicant(userMapper.findByUuid(userUuid).getUuid());
+        selectSoftware.setApplicant(uuid);
         List<SoftwareListVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(selectSoftware);
         reviewSoftwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
@@ -651,7 +626,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         reviewSoftwareList.forEach(item -> {
             String status = item.getStatus();
             String cpuVendor = item.getCpuVendor();
-            if (userUuid.equals(item.getReviewerUuid())) {
+            if (uuid.equals(item.getReviewerUuid())) {
                 switch (status) {
                     case "测试阶段":
                         if (IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {
@@ -691,12 +666,9 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
-                                                         IPage<AuditRecordsVo> page, HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+                                                         IPage<AuditRecordsVo> page, String uuid) {
         Software software = softwareMapper.findById(softwareId);
-        List<String> roles = getRoles(uuid);
-        if (PARTNER_ROLE.containsAll(roles)) {
+        if (accountService.isPartner(uuid)) {
             if (software != null && !Objects.equals(uuid, software.getUserUuid())) {
                 throw new ParamException("无权限查询该测评申请审核信息");
             }
@@ -705,12 +677,9 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public CertificateInfoVo certificateInfo(Integer softwareId, HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public CertificateInfoVo certificateInfo(Integer softwareId, String uuid) {
         Software software = softwareMapper.findById(softwareId);
-        List<String> roles = getRoles(uuid);
-        if (PARTNER_ROLE.containsAll(roles)) {
+        if (accountService.isPartner(uuid)) {
             if (software != null && !Objects.equals(uuid, software.getUserUuid())) {
                 throw new ParamException("无权限查询该测评申请证书信息");
             }
@@ -745,14 +714,14 @@ public class SoftwareServiceImpl implements SoftwareService {
                     auditRecordsVo.setNodeName(item.getApprovalNodeName());
                     auditRecordsVo.setStatus(item.getSoftwareStatus());
                     return auditRecordsVo;
-                }).collect(Collectors.toList());
+                }).toList();
         // 组合数据
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
         filterLatestNodes.parallelStream().forEach(item -> {
-            EulerUser user = userMapper.findByUuid(item.getHandler());
-            if (user != null && StringUtils.isNoneBlank(user.getUsername())) {
-                item.setHandlerName(user.getUsername());
+            UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+            if (userInfo != null && StringUtils.isNoneBlank(userInfo.getUserName())) {
+                item.setHandlerName(userInfo.getUserName());
             } else {
                 item.setHandlerName(item.getHandler());
             }
@@ -827,14 +796,12 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
-                                       HttpServletRequest request) throws InputException, TestReportExceedMaxAmountException {
+                                       String uuid) throws InputException, TestReportExceedMaxAmountException {
         Software software = softwareMapper.findById(softwareId);
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
         if (!uuid.equals(software.getReviewer())) {
             return JsonResponse.failed("不是当前处理人");
         }
-        FileModel fileModel = fileUtils.uploadFile(file, softwareId, fileTypeCode, fileType, request);
+        FileModel fileModel = fileUtils.uploadFile(file, softwareId, fileTypeCode, fileType, uuid);
         Map<String, Object> param = Maps.newHashMap();
         param.put("softwareId", softwareId);
         param.put("fileType", fileType);
@@ -858,15 +825,12 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<AttachmentsVo> getAttachmentsNames(Integer softwareId, String fileType, HttpServletRequest request) {
+    public List<AttachmentsVo> getAttachmentsNames(Integer softwareId, String fileType, String uuid) {
         Software software = softwareMapper.findById(softwareId);
         if (software == null) {
             throw new ParamException("无权限获取该测评申请文件");
         }
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        List<String> roles = getRoles(uuid);
-        if (PARTNER_ROLE.containsAll(roles) && !Objects.equals(software.getUserUuid(), uuid)) {
+        if (accountService.isPartner(uuid) && !Objects.equals(software.getUserUuid(), uuid)) {
             throw new ParamException("无权限获取该测评申请文件");
         }
         Map<String, Object> param = Maps.newHashMap();
@@ -876,14 +840,11 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public void downloadAttachments(String fileId, HttpServletResponse response, HttpServletRequest request)
+    public void downloadAttachments(String fileId, HttpServletResponse response, String uuid)
             throws UnsupportedEncodingException, InputException {
         Attachments attachments = softwareMapper.downloadAttachments(fileId);
         // 如果登录账号为伙伴侧角色，需判断是否越权
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        List<String> roles = getRoles(uuid);
-        if (PARTNER_ROLE.containsAll(roles)) {
+        if (accountService.isPartner(uuid)) {
             if (attachments.getSoftwareId() != null) {
                 int softwareId = Integer.parseInt(attachments.getSoftwareId());
                 Software software = softwareMapper.findById(softwareId);
@@ -908,7 +869,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public void deleteAttachments(String fileId, HttpServletRequest request) {
+    public void deleteAttachments(String fileId, String uuid) {
         Attachments attachments = softwareMapper.downloadAttachments(fileId);
         if (attachments == null) {
             throw new ParamException("未找到当前文件");
@@ -919,13 +880,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!isSignFile && !isTestReportFile) {
             throw new ParamException("无权限删除当前文件");
         }
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
         String fileOwnerUuid = attachments.getUuid();
         if (fileOwnerUuid == null) {
             throw new ParamException("无权限删除当前文件");
         }
-        if (!Objects.equals(userUuid, fileOwnerUuid)) {
+        if (!Objects.equals(uuid, fileOwnerUuid)) {
             throw new ParamException("无权限删除当前文件");
         }
         Software software = softwareMapper.findById(Integer.parseInt(attachments.getSoftwareId()));
@@ -943,14 +902,14 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public void previewCertificate(Integer softwareId, HttpServletResponse response)
-            throws InputException, IOException {
+            throws IOException {
         GenerateCertificate certificate = softwareMapper.generateCertificate(softwareId);
         certificateGenerationUtils.previewCertificate(certificate, response);
     }
 
     @Override
     public void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response)
-            throws InputException, IOException {
+            throws IOException {
         GenerateCertificate certificate = softwareMapper.generateCertificate(certificateConfirmVo.getSoftwareId());
         certificate.setProductVersion(certificateConfirmVo.getProductVersion());
         certificate.setOsName(certificateConfirmVo.getOsName());
@@ -961,21 +920,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         certificateGenerationUtils.previewCertificate(certificate, response);
     }
 
-    public List<String> getRoles(String userUuid) {
-        EulerUser user = userMapper.findByUuid(userUuid);
-        if (user == null) {
-            throw new ParamException("请登录");
-        }
-        List<RoleVo> roleVos = roleMapper.findRoleInfoByUserId(user.getId());
-        return roleVos.stream().map(RoleVo::getRole).collect(Collectors.toList());
-    }
-
     /**
      * send test apply to innovation center
      *
      * @param software test info
      */
-    private void sendEmail(Software software, EulerUser applyUser) {
+    private void sendEmail(Software software, String uuid) {
         ApprovalScenario approvalScenario = approvalScenarioService.findById(software.getAsId());
         if (approvalScenario == null) {
             return;
@@ -983,12 +933,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(8);
-        List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
+        List<UserInfo> userInfoList = accountService.getUserInfoList(8);
         List<String> receiverList = new ArrayList<>();
-        for (EulerUser eulerUser : eulerUserList) {
-            if (!StringUtils.isEmpty(eulerUser.getMail())) {
-                receiverList.add(eulerUser.getMail());
+        for (UserInfo userInfo : userInfoList) {
+            if (!StringUtils.isEmpty(userInfo.getEmail())) {
+                receiverList.add(userInfo.getEmail());
             }
         }
 
@@ -1017,9 +966,11 @@ public class SoftwareServiceImpl implements SoftwareService {
 
         replaceMap.put("jsonHashRatePlatform", StringUtils.join(platformString, "<br>"));
         replaceMap.put("productType", software.getProductType());
-        replaceMap.put("userName", applyUser.getUsername());
-        replaceMap.put("userEmail", applyUser.getMail());
-        replaceMap.put("userPhone", applyUser.getTelephone());
+
+        UserInfo userInfo = accountService.getUserInfo(uuid);
+        replaceMap.put("userName", userInfo.getUserName());
+        replaceMap.put("userEmail", userInfo.getEmail());
+        replaceMap.put("userPhone", userInfo.getPhone());
         String content = emailConfig.getIntelNoticeEmailContent(replaceMap);
         emailConfig.sendMail(receiverList, subject, content, new ArrayList<>());
     }

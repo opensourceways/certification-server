@@ -25,13 +25,38 @@
         where ur.user_id = #{userId}
     </select>
 
-    <insert id="insertDefaultRole" parameterType="java.lang.Integer">
-        insert into user_role_mapping_t (user_id, role_id, update_time)
-        values (#{userId}, 1, NOW())
+    <select id="findByUuid" parameterType="java.lang.String" resultType="java.lang.String">
+        select r.role
+        from role_t r
+                 left join user_role_mapping_t ur on r.id = ur.role_id
+        where ur.uuid = #{uuid}
+    </select>
+
+    <select id="findRoleInfoByUuid" parameterType="java.lang.String" resultType="com.huawei.it.euler.ddd.domain.account.Role">
+        select r.id as id, r.role as role, r.role_name as roleName
+        from role_t r
+                 left join user_role_mapping_t ur on r.id = ur.role_id
+        where ur.uuid = #{uuid}
+    </select>
+
+    <insert id="insertRef" parameterType="com.huawei.it.euler.ddd.domain.account.RoleRelationship">
+        insert into user_role_mapping_t (uuid, role_id, update_time)
+        values (#{uuid}, #{roleId}, NOW())
+    </insert>
+
+    <insert id="insertDefaultRole" parameterType="java.lang.String">
+        insert into user_role_mapping_t (uuid, role_id, update_time)
+        values (#{uuid}, 1, NOW())
     </insert>
 
     <select id="findUserByRole" parameterType="java.lang.Integer" resultType="java.lang.Integer">
         select user_id
+        from user_role_mapping_t
+        where role_id = #{roleId}
+    </select>
+
+    <select id="findUuidByRole" parameterType="java.lang.Integer" resultType="java.lang.String">
+        select uuid
         from user_role_mapping_t
         where role_id = #{roleId}
     </select>
