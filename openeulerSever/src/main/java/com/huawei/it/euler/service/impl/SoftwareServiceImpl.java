@@ -653,13 +653,11 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(item.getAuthenticationStatus());
             }
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
-            LOGGER.info(" id:{}, reviewRole:{}, roleList: {}",item.getId(),item.getReviewRole(),roleList);
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
             }
 
             String operation = getOperation(item.getStatus(), item.getCpuVendor());
-            LOGGER.info(" id:{}, status:{}, operation: {}",item.getId(),item.getStatus(),operation);
             item.setOperation(operation);
         });
     }
@@ -971,7 +969,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(8, software.getTestOrgId());
+        List<Integer> userIdList = roleMapper.findUserByRole(8, null);
         List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
         List<String> receiverList = new ArrayList<>();
         for (EulerUser eulerUser : eulerUserList) {
