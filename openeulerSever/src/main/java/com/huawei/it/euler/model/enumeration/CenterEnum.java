@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
@@ -44,6 +47,7 @@ public enum CenterEnum {
         this.id = id;
         this.name = name;
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(CenterEnum.class);
 
     private static final Map<Integer, CenterEnum> CENTER_ENUM_MAP = new HashMap<>();
 
@@ -53,21 +57,23 @@ public enum CenterEnum {
         }
     }
 
-    public static CenterEnum findById(int id) {
+    public static String findById(int id) {
         CenterEnum centerEnum = CENTER_ENUM_MAP.get(id);
         if (centerEnum == null) {
-            throw new IllegalArgumentException("Invalid Status id: " + id);
+            LOGGER.error("Invalid Status id: {}", id);
+            return String.valueOf(id);
         }
-        return centerEnum;
+        return centerEnum.getName();
     }
 
-    public static CenterEnum findByName(String name) {
+    public static Integer findByName(String name) {
         for (CenterEnum centerEnum : values()) {
             if (centerEnum.getName().equals(name)) {
-                return centerEnum;
+                return centerEnum.getId();
             }
         }
-        throw new IllegalArgumentException("Invalid Status name: " + name);
+        LOGGER.error("Invalid Status name: {}", name);
+        return null;
     }
 
     public static List<CenterEnum> getAllCenters() {

@@ -53,23 +53,23 @@ public enum NodeEnum {
     }
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeEnum.class);
 
-    private static final Map<Integer, NodeEnum> CENTER_ENUM_MAP = new HashMap<>();
+    private static final Map<Integer, NodeEnum> NODE_ENUM_MAP = new HashMap<>();
 
     static {
         for (NodeEnum nodeEnum : values()) {
-            CENTER_ENUM_MAP.put(nodeEnum.getId(), nodeEnum);
+            NODE_ENUM_MAP.put(nodeEnum.getId(), nodeEnum);
         }
     }
 
     public static String findById(int id) {
-        for (NodeEnum nodeEnum : values()) {
-            if (nodeEnum.getId() == id) {
-                return nodeEnum.getName();
-            }
+        NodeEnum nodeEnum = NODE_ENUM_MAP.get(id);
+        if (nodeEnum == null) {
+            LOGGER.error("Invalid Status id: {}", id);
+            return String.valueOf(id);
         }
-        LOGGER.error("Invalid Status id: {}", id);
-        return String.valueOf(id);
+        return nodeEnum.getName();
     }
+
 
     public static String findByName(String name) {
         for (NodeEnum nodeEnum : values()) {
