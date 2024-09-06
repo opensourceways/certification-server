@@ -4,19 +4,21 @@
 
 package com.huawei.it.euler.service;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.vo.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 /**
  * 软件认证
@@ -69,19 +71,19 @@ public interface SoftwareService {
      * 查询兼容性认证申请列表
      *
      * @param selectSoftwareVo 筛选条件
-     * @param cookieUuid uuid
+     * @param userUuid uuid
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid);
+    List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid);
 
     /**
      * 华为侧查询兼容性认证申请列表
      *
      * @param selectSoftwareVo 筛选条件
-     * @param cookieUuid uuid
+     * @param userUuid uuid
      * @return 列表
      */
-    List<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid);
+    PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, Integer userUuid);
 
     /**
      * 认证审核记录
