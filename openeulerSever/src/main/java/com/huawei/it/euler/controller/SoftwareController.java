@@ -108,7 +108,7 @@ public class SoftwareController {
     @PostMapping("/software/testingPhase")
     @PreAuthorize("hasAnyRole( 'user', 'openatom_intel',  'admin')")
     public JsonResponse<String> testingPhase(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws Exception {
+        throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
         return softwareService.testingPhase(processVo, userUuid);
@@ -120,10 +120,10 @@ public class SoftwareController {
     @PostMapping("/software/reportReview")
     @PreAuthorize("hasAnyRole( 'euler_ic',  'admin')")
     public JsonResponse<String> reportReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws Exception {
+        throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
-        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_REVIEW.getId());
+        return softwareService.commonProcess(processVo, userUuid, NodeEnum.REPORT_REVIEW.getId());
     }
 
     /**
@@ -132,10 +132,10 @@ public class SoftwareController {
     @PostMapping("/software/reportReReview")
     @PreAuthorize("hasAnyRole( 'euler_ic',  'admin')")
     public JsonResponse<String> reportReReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws Exception {
+        throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
-        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_RE_REVIEW.getId());
+        return softwareService.commonProcess(processVo, userUuid, NodeEnum.REPORT_RE_REVIEW.getId());
     }
 
     /**
@@ -147,8 +147,8 @@ public class SoftwareController {
      */
     @PostMapping("/software/certificateReview")
     @PreAuthorize("hasAnyRole('flag_store')")
-    public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software, HttpServletRequest request)
-        throws IOException {
+    public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software,
+        HttpServletRequest request) throws IOException {
         String cookieUuid = UserUtils.getCookieUuid(request);
         return softwareService.updateSoftware(software, cookieUuid, request);
     }
@@ -158,11 +158,11 @@ public class SoftwareController {
      */
     @PostMapping("/software/certificateConfirmation")
     @PreAuthorize("hasAnyRole( 'user',  'admin')")
-    public JsonResponse<String> certificateConfirmation(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws Exception {
+    public JsonResponse<String> certificateConfirmation(@RequestBody @Validated ProcessVo processVo,
+        HttpServletRequest request) throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
-        return softwareService.commonProcess(processVo, userUuid,NodeEnum.REPORT_RE_REVIEW.getId());
+        return softwareService.commonProcess(processVo, userUuid, NodeEnum.REPORT_RE_REVIEW.getId());
     }
 
     /**
@@ -170,8 +170,8 @@ public class SoftwareController {
      */
     @PostMapping("/software/certificateIssuance")
     @PreAuthorize("hasAnyRole( 'user',  'admin')")
-    public JsonResponse<String> certificateIssuance(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws Exception {
+    public JsonResponse<String> certificateIssuance(@RequestBody @Validated ProcessVo processVo,
+        HttpServletRequest request) throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);
         Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
         return softwareService.certificateIssuance(processVo, userUuid);
@@ -220,7 +220,8 @@ public class SoftwareController {
     public JsonResponse<Map<String, Object>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
         HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
-        List<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, cookieUuid);
+        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+        List<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, userUuid);
         softwareList.forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
@@ -246,11 +247,13 @@ public class SoftwareController {
      */
     @PostMapping("/software/reviewSoftwareList")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<Map<String, Object>>
+    public JsonResponse<PageResult<SoftwareListVo>>
         getReviewSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
-        List<SoftwareListVo> reviewSoftwareList = softwareService.getReviewSoftwareList(selectSoftwareVo, cookieUuid);
-        reviewSoftwareList.forEach(softwareListVo -> {
+        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+        PageResult<SoftwareListVo> reviewSoftwareList =
+            softwareService.getReviewSoftwareList(selectSoftwareVo, userUuid);
+        reviewSoftwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
             softwareListVo.setHashratePlatformList(platformVos);
@@ -259,11 +262,7 @@ public class SoftwareController {
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
         });
-        Map<String, Object> hashMap = Maps.newHashMap();
-        hashMap.put("list", ListPageUtils.getListPage(reviewSoftwareList, selectSoftwareVo.getPageNum(),
-            selectSoftwareVo.getPageSize()));
-        hashMap.put("total", reviewSoftwareList.size());
-        return JsonResponse.success(hashMap);
+        return JsonResponse.success(reviewSoftwareList);
     }
 
     /**

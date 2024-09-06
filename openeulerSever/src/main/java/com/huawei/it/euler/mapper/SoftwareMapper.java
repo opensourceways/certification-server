@@ -72,7 +72,10 @@ public interface SoftwareMapper {
      * @param selectSoftware 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getReviewSoftwareList(SelectSoftware selectSoftware);
+    List<SoftwareListVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+        @Param("software") SelectSoftware selectSoftware);
+
+    Long countReviewSoftwareList(@Param("software") SelectSoftware selectSoftware);
 
     /**
      * 审核节点记录
