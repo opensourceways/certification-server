@@ -5,12 +5,12 @@
 package com.huawei.it.euler.service;
 
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.model.vo.ApprovalDataVo;
 import com.huawei.it.euler.model.vo.CompatibleDataSearchVo;
 import com.huawei.it.euler.model.vo.ExcelInfoVo;
 import com.huawei.it.euler.model.vo.FileDataVo;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,37 +34,35 @@ public interface CompatibleDataService {
      * 上传兼容性数据表格
      *
      * @param file 文件
-     * @param request request
+     * @param uuid uuid
      * @return JsonResponse
      */
-    JsonResponse<ExcelInfoVo> uploadTemplate(MultipartFile file, HttpServletRequest request) throws InputException;
+    JsonResponse<ExcelInfoVo> uploadTemplate(MultipartFile file, String uuid) throws InputException;
 
     /**
      * 读取兼容性数据表格
      *
-     * @param response response
-     * @param request request
+     * @param loginUser 登录用户信息
      * @param fileId 文件id
      * @return JsonResponse
      */
-    JsonResponse<FileDataVo> readCompatibleData(HttpServletResponse response, HttpServletRequest request,
-                                                String fileId) throws InputException, IllegalAccessException;
+    JsonResponse<FileDataVo> readCompatibleData(UserInfo loginUser, String fileId) throws InputException, IllegalAccessException;
 
     /**
      * 分页筛选返回数据列表
      *
      * @param searchVo 筛选条件
-     * @param cookieUuid uuid
+     * @param uuid uuid
      * @return JsonResponse
      */
-    JsonResponse<Map<String, Object>> findDataList(CompatibleDataSearchVo searchVo, String cookieUuid);
+    JsonResponse<Map<String, Object>> findDataList(CompatibleDataSearchVo searchVo, String uuid);
 
     /**
      * 华为侧审核
      *
      * @param vo 审核结果
-     * @param cookieUuid uuid
+     * @param uuid uuid
      * @return JsonResponse
      */
-    JsonResponse<String> approvalCompatibleData(ApprovalDataVo vo, String cookieUuid);
+    JsonResponse<String> approvalCompatibleData(ApprovalDataVo vo, String uuid);
 }
