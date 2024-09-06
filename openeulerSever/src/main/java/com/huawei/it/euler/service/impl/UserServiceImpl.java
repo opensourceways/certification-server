@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
         userMapper.insertUser(user);
         EulerUser eulerUser = userMapper.findByUuid(user.getUuid());
         // 新注册用户设置默认角色
-        roleMapper.insertDefaultRole(eulerUser.getId());
+        roleMapper.insertDefaultRole(String.valueOf(eulerUser.getId()));
     }
 
     @Override
