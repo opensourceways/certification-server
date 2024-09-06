@@ -230,6 +230,7 @@ public class SoftwareController {
             platformVos.stream().map(ComputingPlatformVo::getPlatformName)
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
+            softwareListVo.setStatus(NodeEnum.findById(Integer.parseInt(softwareListVo.getStatus())));
         });
         Map<String, Object> hashMap = Maps.newHashMap();
         hashMap.put("list",
@@ -261,6 +262,7 @@ public class SoftwareController {
             platformVos.stream().map(ComputingPlatformVo::getPlatformName)
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
+            softwareListVo.setStatus(NodeEnum.findById(Integer.parseInt(softwareListVo.getStatus())));
         });
         return JsonResponse.success(reviewSoftwareList);
     }
