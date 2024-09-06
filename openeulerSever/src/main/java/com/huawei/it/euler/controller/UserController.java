@@ -5,25 +5,24 @@
 package com.huawei.it.euler.controller;
 
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.ProtocolService;
+import com.huawei.it.euler.ddd.domain.account.Role;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.domain.account.UserInfoService;
+import com.huawei.it.euler.ddd.service.AccountService;
+import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.model.constant.StringConstant;
-import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.enumeration.ProtocolEnum;
 import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.EulerUserVo;
-import com.huawei.it.euler.model.vo.RoleVo;
 import com.huawei.it.euler.model.vo.UserInfoVo;
-import com.huawei.it.euler.service.RegionService;
-import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.service.impl.CompanyServiceImpl;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
 import com.huawei.it.euler.util.StringPropertyUtils;
-import com.huawei.it.euler.util.UserUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +31,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -44,11 +42,6 @@ import java.util.stream.Collectors;
 @RestController
 @Validated
 public class UserController {
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private RegionService regionService;
 
     @Autowired
     private CompanyServiceImpl companyService;
@@ -58,6 +51,15 @@ public class UserController {
 
     @Autowired
     private LogUtils logUtils;
+
+    @Autowired
+    private AccountService accountService;
+
+    @Autowired
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private ProtocolService protocolService;
 
     /**
      * 通过uuid查询个人信息
@@ -69,15 +71,16 @@ public class UserController {
     @PreAuthorize("hasRole('china_region')")
     public JsonResponse<EulerUserVo> findUserByUserUuid(
             @RequestParam("uuid") @NotBlank(message = "用户uuid不能为空") String uuid) {
-        EulerUser user = userService.findByUuid(uuid);
+        UserInfo loginUser = userInfoService.getUser(uuid);
         EulerUserVo userVo = new EulerUserVo();
-        if (user != null) {
-            String telPhone = companyService.reduceSensitivity(user.getTelephone(), StringConstant.TLE_PHONE);
-            user.setTelephone(telPhone);
-            String mail = companyService.reduceSensitivity(user.getMail(), StringConstant.MAIL);
-            user.setMail(mail);
-            BeanUtils.copyProperties(user, userVo);
-            List<String> userRoles = userService.getUserRoles(user.getId());
+        if (loginUser != null) {
+            String telPhone = companyService.reduceSensitivity(loginUser.getPhone(), StringConstant.TLE_PHONE);
+            userVo.setTelephone(telPhone);
+            String mail = companyService.reduceSensitivity(loginUser.getEmail(), StringConstant.MAIL);
+            userVo.setMail(mail);
+            userVo.setUsername(loginUser.getUserName());
+            BeanUtils.copyProperties(loginUser, userVo);
+            List<String> userRoles = loginUser.getRoleList().stream().map(Role::getRole).toList();
             userVo.setRoles(userRoles);
         }
         return JsonResponse.success(userVo);
@@ -90,30 +93,26 @@ public class UserController {
      * @return JsonResponse
      */
     @GetMapping("/user/getUserInfo")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
-    public JsonResponse<UserInfoVo> getUserInfo(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        if (StringUtils.isEmpty(uuid)) {
-            return JsonResponse.failed("请先登录");
-        }
-        EulerUser user = userService.findByUuid(uuid);
+    @PreAuthorize("hasAnyRole('ROLE_user', 'user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    public JsonResponse<UserInfoVo> getUserInfo(HttpServletRequest request) throws NoLoginException {
+        UserInfo loginUser = accountService.getLoginUser(request);
         UserInfoVo vo = new UserInfoVo();
-        if (user != null) {
-            String telephone = user.getTelephone();
+        if (loginUser != null) {
+            String telephone = loginUser.getPhone();
             telephone = encryptUtils.isEncrypted(telephone)
                     ? StringPropertyUtils.reducePhoneSensitivity(encryptUtils.aesDecrypt(telephone))
                     : StringPropertyUtils.reducePhoneSensitivity(telephone);
-            String mail = user.getMail();
+            String mail = loginUser.getEmail();
             mail = encryptUtils.isEncrypted(mail)
                     ? StringPropertyUtils.reduceEmailSensitivity(encryptUtils.aesDecrypt(mail))
                     : StringPropertyUtils.reduceEmailSensitivity(mail);
-            user.setTelephone(telephone);
-            user.setMail(mail);
-            BeanUtils.copyProperties(user, vo);
-            List<RoleVo> roleVos = userService.getUserRoleInfo(user.getId());
-            vo.setRoles(roleVos.stream().map(RoleVo::getRole).collect(Collectors.toList()));
-            vo.setRoleNames(roleVos.stream().map(RoleVo::getRoleName).collect(Collectors.toList()));
+            vo.setTelephone(telephone);
+            vo.setMail(mail);
+            vo.setUsername(loginUser.getUserName());
+            BeanUtils.copyProperties(loginUser, vo);
+            List<Role> roleList = loginUser.getRoleList();
+            vo.setRoles(roleList.stream().map(Role::getRole).collect(Collectors.toList()));
+            vo.setRoleNames(roleList.stream().map(Role::getRoleName).collect(Collectors.toList()));
         }
         return JsonResponse.success(vo);
     }
@@ -126,72 +125,11 @@ public class UserController {
      */
     @GetMapping("/user/isNeedCompanyAuthentication")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
-    public JsonResponse<Boolean> isNeedCompanyAuthentication(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<Boolean> isNeedCompanyAuthentication(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         CompanyVo companyVo = companyService.findCompanyByUserUuid(uuid);
         boolean isNeedCompanyAuthentication = companyVo != null && companyVo.getStatus() == 1;
         return JsonResponse.success(isNeedCompanyAuthentication);
-    }
-
-    /**
-     * 修改个人信息
-     *
-     * @param userVo userVo
-     * @param request request
-     * @return JsonResponse
-     */
-    @PostMapping("/user/modifyUserInfo")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
-    @Transactional
-    public JsonResponse<String> modifyUserInfo(@RequestBody @Valid EulerUserVo userVo, HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
-        if (!Objects.equals(userVo.getUuid(), uuid)) {
-            return JsonResponse.failedResult("无法修改该账号信息");
-        }
-        EulerUser eulerUser = userService.findByUuid(uuid);
-        if (eulerUser == null) {
-            return JsonResponse.failedResult("未查询到该账号信息");
-        }
-        String mail = eulerUser.getMail();
-        mail = StringPropertyUtils.reduceEmailSensitivity(
-                encryptUtils.isEncrypted(mail) ? encryptUtils.aesDecrypt(mail) : mail);
-        if (StringUtils.isNotBlank(mail) && !mail.equals(userVo.getMail())) {
-            return JsonResponse.failedResult("不允许修改注册账号");
-        }
-        // 校验省市区
-        if (StringUtils.isNotBlank(userVo.getProvince())) {
-            List<String> allProvince = regionService.findAllProvince();
-            boolean boolProvince = allProvince.stream().anyMatch(item -> item.equals(userVo.getProvince()));
-            if (!boolProvince) {
-                return JsonResponse.failedResult("非法的省份");
-            }
-        }
-        if (StringUtils.isNotBlank(userVo.getCity())) {
-            List<String> cityByProvince = regionService.findCityByProvince(userVo.getProvince());
-            boolean boolCity = cityByProvince.stream().anyMatch(item -> item.equals(userVo.getCity()));
-            if (!boolCity) {
-                return JsonResponse.failedResult("非法的市区");
-            }
-        }
-        userVo.setMail(encryptUtils.aesEncrypt(userVo.getMail()));
-        userService.updateUser(userVo);
-        logUtils.insertAuditLog(request, uuid, "user info", "modify", "modify user info");
-        return JsonResponse.success();
-    }
-
-    /**
-     * 注销个人信息
-     *
-     * @param request request
-     * @return JsonResponse
-     */
-    @DeleteMapping("/user/deregisterUser")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
-    public JsonResponse<String> deregisterUser(HttpServletRequest request) {
-        return JsonResponse.failed("注销功能暂停!");
-//        return userService.deregisterUser(request);
     }
 
     /**
@@ -203,11 +141,10 @@ public class UserController {
     @PutMapping("/user/signPrivacyAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> signPrivacyAgreement(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<String> signPrivacyAgreement(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "privacy agreement", "sign", "sign privacy agreement");
-        return userService.signAgreement(ProtocolEnum.PRIVACY_POLICY.getProtocolType(), uuid);
+        return protocolService.signAgreement(ProtocolEnum.PRIVACY_POLICY.getProtocolType(), uuid);
     }
 
     /**
@@ -219,11 +156,10 @@ public class UserController {
     @PutMapping("/user/cancelPrivacyAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> cancelPrivacyAgreement(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<String> cancelPrivacyAgreement(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "privacy agreement", "cancel", "cancel privacy agreement");
-        return userService.cancelAgreement(ProtocolEnum.PRIVACY_POLICY.getProtocolType(), uuid);
+        return protocolService.cancelAgreement(ProtocolEnum.PRIVACY_POLICY.getProtocolType(), uuid);
     }
 
     /**
@@ -235,11 +171,10 @@ public class UserController {
     @PutMapping("/user/signTechnicalAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> signTechnicalAgreement(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<String> signTechnicalAgreement(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "technical agreement", "sign", "sign technical agreement");
-        return userService.signAgreement(ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
+        return protocolService.signAgreement(ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
     }
 
     /**
@@ -251,11 +186,10 @@ public class UserController {
     @PutMapping("/user/cancelTechnicalAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> cancelTechnicalAgreement(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<String> cancelTechnicalAgreement(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "technical agreement", "cancel", "cancel technical agreement");
-        return userService.cancelAgreement(ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
+        return protocolService.cancelAgreement(ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
     }
 
     /**
@@ -267,11 +201,10 @@ public class UserController {
     @PutMapping("/user/signCompatibilityAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> signCompatibilityAgreement(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<String> signCompatibilityAgreement(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "compatibility agreement", "sign", "sign compatibility agreement");
-        return userService.signAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
+        return protocolService.signAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
     }
 
     /**
@@ -283,10 +216,9 @@ public class UserController {
     @PutMapping("/user/cancelCompatibilityAgreement")
     @PreAuthorize("hasAnyRole('user', 'OSV_user')")
     @Transactional
-    public JsonResponse<String> cancelCompatibilityAgreement(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public JsonResponse<String> cancelCompatibilityAgreement(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "compatibility agreement", "cancel", "cancel compatibility agreement");
-        return userService.cancelAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
+        return protocolService.cancelAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
     }
 }
