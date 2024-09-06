@@ -39,7 +39,7 @@
     </select>
 
     <select id="findRoleInfoByUuid" parameterType="java.lang.String" resultType="com.huawei.it.euler.ddd.domain.account.Role">
-        select r.id as id, r.role as role, r.role_name as roleName
+        select r.id as id, r.role as role, r.role_name as roleName, ur.data_scope as dataScope
         from role_t r
                  left join user_role_mapping_t ur on r.id = ur.role_id
         where ur.uuid = #{uuid}
@@ -59,7 +59,7 @@
         SELECT user_id
         FROM user_role_mapping_t
         WHERE role_id = #{roleId}
-          AND (data_scope = #{softwareId} OR data_scope = 0)
+          AND (data_scope = #{dataScope} OR data_scope = 0)
     </select>
 
     <select id="findRoleByUserId" resultType="com.huawei.it.euler.model.vo.RoleVo">
