@@ -37,7 +37,7 @@
         <result column="test_organization" property="testOrganization"/>
         <result column="test_org_id" property="testOrgId"/>
         <result column="application_time" property="applicationTime"/>
-        <result column="node_name" property="status"/>
+        <result column="status" property="status"/>
         <result column="reviewer" property="reviewerUuid"/>
         <result column="review_role" property="reviewRole"/>
         <result column="username" property="applicant"/>
@@ -233,7 +233,6 @@
     <select id="countReviewSoftwareList" resultType="java.lang.Long">
         select COUNT(*) from software_t AS s
         left join user_t AS u on s.reviewer = u.uuid
-        left join node_name_t AS n on s.status = n.id
         <include refid="whereReviewSoftwareList"/>
     </select>
 
@@ -241,11 +240,10 @@
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
-        s.hashrate_platform, s.test_organization,s.test_org_id, s.application_time,n.node_name,u.username as
+        s.hashrate_platform, s.test_organization,s.test_org_id, s.application_time,s.status,u.username as
         reviewername,s.authentication_status,s.cpu_vendor
         from software_t AS s
         left join user_t AS u on s.reviewer = u.uuid
-        left join node_name_t AS n on s.status = n.id
         <include refid="whereReviewSoftwareList"/>
         order by s.update_time DESC
         LIMIT #{offset}, #{pageSize}

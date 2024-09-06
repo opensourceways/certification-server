@@ -4,6 +4,11 @@
 
 package com.huawei.it.euler.model.enumeration;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
@@ -17,7 +22,7 @@ import lombok.Getter;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum NodeEnum {
     // 申请评测
-    APPLY(1, "申请评测"),
+    APPLY(1, "认证申请"),
     // 方案审核
     PROGRAM_REVIEW(2, "方案审核"),
     // 测试阶段
@@ -33,7 +38,7 @@ public enum NodeEnum {
     // 证书签发
     CERTIFICATE_ISSUANCE(8, "证书签发"),
     // 完成
-    FINISHED(9, "完成"),;
+    FINISHED(9, "已完成"),;
 
     private final Integer id; // id
 
@@ -42,6 +47,14 @@ public enum NodeEnum {
     NodeEnum(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    private static final Map<Integer, NodeEnum> CENTER_ENUM_MAP = new HashMap<>();
+
+    static {
+        for (NodeEnum nodeEnum : values()) {
+            CENTER_ENUM_MAP.put(nodeEnum.getId(), nodeEnum);
+        }
     }
 
     public static NodeEnum findById(int id) {
@@ -60,5 +73,9 @@ public enum NodeEnum {
             }
         }
         throw new IllegalArgumentException("Invalid Status name: " + name);
+    }
+
+    public static List<NodeEnum> getAllNodes() {
+        return Arrays.asList(values());
     }
 }

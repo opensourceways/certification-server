@@ -70,7 +70,7 @@ public enum CenterEnum {
         throw new IllegalArgumentException("Invalid Status name: " + name);
     }
 
-    public static List<CenterEnum> getAllEnums() {
+    public static List<CenterEnum> getAllCenters() {
         return Arrays.asList(values());
     }
 }
