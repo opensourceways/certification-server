@@ -237,7 +237,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setProductFunctionDesc(software.getProductFunctionDesc().trim());
         software.setUsageScenesDesc(software.getUsageScenesDesc().trim());
         software.setProductVersion(software.getProductVersion().trim());
-        software.setTestOrgId(CenterEnum.findByName(software.getTestOrganization()).getId());
+        software.setTestOrgId(CenterEnum.findByName(software.getTestOrganization()));
         // 将算力平台和服务器类型list转为json字符串
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
@@ -431,7 +431,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                     nextNodeNumber = software.getStatus() - 1;
                 }
                 software.setStatus(nextNodeNumber);
-                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()).getName() + "已驳回");
+                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 getHandler(nextNodeNumber, software);
                 break;
             case 3:
@@ -519,7 +519,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private void addNextNode(Software software) {
         Node node = new Node();
-        node.setNodeName(NodeEnum.findById(software.getStatus()).getName());
+        node.setNodeName(NodeEnum.findById(software.getStatus()));
         node.setSoftwareId(software.getId());
         node.setHandlerResult(0);
         node.setStatus(software.getStatus());
@@ -587,6 +587,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         currentSoftwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
+            }else {
+                item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
         });
         currentSoftwareList.forEach(item -> {
@@ -638,15 +640,15 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
+            } else {
+                item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
-            log.info(" id:{}, reviewRole:{}, roleList: {}",item.getId(),item.getReviewRole(),roleList);
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
             }
 
             String operation = getOperation(item.getStatus(), item.getCpuVendor());
-            log.info(" id:{}, status:{}, operation: {}",item.getId(),item.getStatus(),operation);
             item.setOperation(operation);
         });
     }
@@ -743,9 +745,10 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private List<AuditRecordsVo> checkPartnerNode(List<AuditRecordsVo> latestNodes, Software software) {
-        boolean node3 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.TESTING_PHASE.getName()));
-        boolean node7 =
-            latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.getName()));
+        boolean node3 =
+            latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.TESTING_PHASE.getName()));
+        boolean node7 = latestNodes.stream()
+            .anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.getName()));
         if (!node3) {
             AuditRecordsVo auditRecordsVo = new AuditRecordsVo();
             auditRecordsVo.setNodeName(NodeEnum.TESTING_PHASE.getName());

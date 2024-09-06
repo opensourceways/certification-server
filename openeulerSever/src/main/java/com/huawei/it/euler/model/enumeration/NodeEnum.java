@@ -4,6 +4,14 @@
 
 package com.huawei.it.euler.model.enumeration;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
@@ -17,7 +25,7 @@ import lombok.Getter;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum NodeEnum {
     // 申请评测
-    APPLY(1, "申请评测"),
+    APPLY(1, "认证申请"),
     // 方案审核
     PROGRAM_REVIEW(2, "方案审核"),
     // 测试阶段
@@ -33,7 +41,7 @@ public enum NodeEnum {
     // 证书签发
     CERTIFICATE_ISSUANCE(8, "证书签发"),
     // 完成
-    FINISHED(9, "完成"),;
+    FINISHED(9, "已完成"),;
 
     private final Integer id; // id
 
@@ -43,22 +51,37 @@ public enum NodeEnum {
         this.id = id;
         this.name = name;
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeEnum.class);
 
-    public static NodeEnum findById(int id) {
+    private static final Map<Integer, NodeEnum> NODE_ENUM_MAP = new HashMap<>();
+
+    static {
         for (NodeEnum nodeEnum : values()) {
-            if (nodeEnum.getId() == id) {
-                return nodeEnum;
-            }
+            NODE_ENUM_MAP.put(nodeEnum.getId(), nodeEnum);
         }
-        throw new IllegalArgumentException("Invalid Status id: " + id);
     }
 
-    public static NodeEnum findByName(String name) {
-        for (NodeEnum centerEnum : values()) {
-            if (centerEnum.getName().equals(name)) {
-                return centerEnum;
+    public static String findById(int id) {
+        NodeEnum nodeEnum = NODE_ENUM_MAP.get(id);
+        if (nodeEnum == null) {
+            LOGGER.error("Invalid Status id: {}", id);
+            return String.valueOf(id);
+        }
+        return nodeEnum.getName();
+    }
+
+
+    public static String findByName(String name) {
+        for (NodeEnum nodeEnum : values()) {
+            if (nodeEnum.getName().equals(name)) {
+                return String.valueOf(nodeEnum.getId());
             }
         }
-        throw new IllegalArgumentException("Invalid Status name: " + name);
+        LOGGER.error("Invalid Status name: {}", name);
+        return name;
+    }
+
+    public static List<NodeEnum> getAllNodes() {
+        return Arrays.asList(values());
     }
 }

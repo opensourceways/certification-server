@@ -31,7 +31,7 @@
         select id, software_id, node_name, handler, status, handler_time,handler_result, transferred_comments, update_time
         from node_t
         where software_id = #{softwareId}
-          and handler_result = 2
+          and handler_result = 1
           and status = #{status}
         order by update_time desc
         limit 1

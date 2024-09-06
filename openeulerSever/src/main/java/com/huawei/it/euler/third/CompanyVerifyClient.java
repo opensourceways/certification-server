@@ -6,6 +6,8 @@ package com.huawei.it.euler.third;
 
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -28,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class CompanyVerifyClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyVerifyClient.class);
 
     @Value("${verifyCompany.appKey}")
     private String verifyCompanyAppCode;
@@ -59,9 +63,14 @@ public class CompanyVerifyClient {
         }
         String body = responseEntity.getBody();
         JSONObject bodyJson = JSONObject.parseObject(body);
-        bodyJson = JSONObject.parseObject(bodyJson.getString("data"));
+        bodyJson = bodyJson.getJSONObject("data");
         String message = bodyJson.getString("result");
-        return "1".equals(message);
+        if ("1".equals(message)) {
+            return true;
+        }else {
+            LOGGER.error("companyName: {}, creditNo: {}, legalPerson: {}", companyName, creditNo, legalPerson);
+            return false;
+        }
     }
 
     @Recover
