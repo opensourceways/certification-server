@@ -653,7 +653,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
-            }else {
+            } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
@@ -764,9 +764,10 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private List<AuditRecordsVo> checkPartnerNode(List<AuditRecordsVo> latestNodes, Software software) {
-        boolean node3 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.TESTING_PHASE.getName()));
-        boolean node7 =
-            latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.getName()));
+        boolean node3 =
+            latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.TESTING_PHASE.getName()));
+        boolean node7 = latestNodes.stream()
+            .anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.getName()));
         if (!node3) {
             AuditRecordsVo auditRecordsVo = new AuditRecordsVo();
             auditRecordsVo.setNodeName(NodeEnum.TESTING_PHASE.getName());
