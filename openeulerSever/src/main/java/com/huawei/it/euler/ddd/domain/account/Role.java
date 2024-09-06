@@ -10,4 +10,5 @@ public class Role {
 
     private String roleName;
 
+    private Integer dataScope;
 }

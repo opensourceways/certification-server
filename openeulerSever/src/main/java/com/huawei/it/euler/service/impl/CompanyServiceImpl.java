@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -43,11 +45,9 @@ import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.CompanyMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
-import com.huawei.it.euler.mapper.UserMapper;
 import com.huawei.it.euler.model.constant.StringConstant;
 import com.huawei.it.euler.model.entity.Attachments;
 import com.huawei.it.euler.model.entity.Company;
-import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.entity.FileModel;
 import com.huawei.it.euler.model.vo.CompanyAuditVo;
 import com.huawei.it.euler.model.vo.CompanyVo;
@@ -59,7 +59,6 @@ import com.huawei.it.euler.third.CompanyVerifyClient;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.StringPropertyUtils;
-import com.huawei.it.euler.util.UserUtils;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.core.exception.ConnectionException;
@@ -71,7 +70,6 @@ import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseRequest;
 import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseResponse;
 import com.huaweicloud.sdk.ocr.v1.region.OcrRegion;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -131,9 +129,6 @@ public class CompanyServiceImpl implements CompanyService {
     private SoftwareMapper softwareMapper;
 
     @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
@@ -149,16 +144,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private CompanyVerifyClient companyVerifyClient;
 
+    @Autowired
+    private AccountService accountService;
+
     private static CloseableHttpClient client = null;
 
     @Transactional
     @Override
-    public JsonResponse<String> registerCompany(CompanyVo companyVo, String cookieUuid) throws InputException {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        EulerUser user = userMapper.findByUuid(userUuid);
-        if (Objects.equals(user.getUseable(), 0)) {
-            throw new InputException("您已注销账号！无法进行企业实名认证");
-        }
+    public JsonResponse<String> registerCompany(CompanyVo companyVo, String uuid) {
         Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
         if (companyByCreditCode != null) {
             return JsonResponse.failed("当前公司已认证");
@@ -169,14 +162,14 @@ public class CompanyServiceImpl implements CompanyService {
         company.setUpdateTime(currentTime);
         company.setApplyTime(currentTime);
         company.setApprovalComment(StringUtils.EMPTY);
-        company.setUserUuid(userUuid);
+        company.setUserUuid(uuid);
         if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(),
             company.getLegalPerson())) {
             return JsonResponse.failed(COMPANY_VERIFY_FAILED);
         }
         company.setIsCheckedPass(true);
         company.setStatus(0);
-        Company existCompany = companyMapper.findCompanyByUserUuid(userUuid);
+        Company existCompany = companyMapper.findCompanyByUserUuid(uuid);
         company.setCompanyMail(encryptUtils.aesEncrypt(company.getCompanyMail()));
         if (existCompany != null) {
             Integer status = existCompany.getStatus();
@@ -194,8 +187,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanyVo findCompanyByCurrentUser(String cookieUuid) {
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public CompanyVo findCompanyByCurrentUser(String uuid) {
         Company company = companyMapper.findCompanyByUserUuid(uuid);
         CompanyVo companyVo = new CompanyVo();
         if (company != null) {
@@ -208,8 +200,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public String findCompanyNameByCurrentUser(String cookieUuid) {
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
+    public String findCompanyNameByCurrentUser(String uuid) {
         return companyMapper.findCompanyNameByUserUuid(uuid);
     }
 
@@ -284,8 +275,8 @@ public class CompanyServiceImpl implements CompanyService {
     private void sendEmailNotification(CompanyAuditVo companyAuditVo) {
         client = createIgnoreSSLHttpClient();
         Company company = companyMapper.findCompanyByUserUuid(companyAuditVo.getUserUuid());
-        EulerUser user = userMapper.findByUuid(company.getUserUuid());
-        if (user.getTelephone() == null) {
+        UserInfo userInfo = accountService.getUserInfo(company.getUserUuid());
+        if (userInfo.getPhone() == null) {
             log.warn("telephone is null.");
             return;
         }
@@ -295,7 +286,7 @@ public class CompanyServiceImpl implements CompanyService {
         String statusCallBack = "";
         String signature = "";
         String body =
-            buildRequestBody(senderId, user.getTelephone(), templateId, templateParas, statusCallBack, signature);
+            buildRequestBody(senderId, userInfo.getPhone(), templateId, templateParas, statusCallBack, signature);
         if (body.isEmpty()) {
             log.warn("body is null.");
             return;
@@ -322,17 +313,17 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public JsonResponse<FileModel> uploadLogo(MultipartFile file, HttpServletRequest request) throws InputException {
-        FileModel fileModel = fileUtils.uploadFile(file, null, 2, "logo", request);
+    public JsonResponse<FileModel> uploadLogo(MultipartFile file, String uuid) throws InputException {
+        FileModel fileModel = fileUtils.uploadFile(file, null, 2, "logo", uuid);
         softwareMapper.insertAttachment(fileModel);
         fileModel.setFilePath(null);
         return JsonResponse.success(fileModel);
     }
 
     @Override
-    public JsonResponse<Map<String, Object>> uploadLicense(MultipartFile file, HttpServletRequest request)
+    public JsonResponse<Map<String, Object>> uploadLicense(MultipartFile file, String uuid)
         throws InputException, IOException {
-        FileModel fileModel = fileUtils.uploadFile(file, null, 2, "license", request);
+        FileModel fileModel = fileUtils.uploadFile(file, null, 2, "license", uuid);
         softwareMapper.insertAttachment(fileModel);
         LicenseInfoVo licenseInfoVo = getLicenseInfo(getLicenseTextInfo(file));
         fileModel.setFilePath(null);
@@ -432,7 +423,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void preview(String fileId, HttpServletRequest request, HttpServletResponse response) throws InputException {
+    public void preview(String fileId, String uuid, HttpServletResponse response) throws InputException {
         Attachments attachments = softwareMapper.downloadAttachments(fileId);
         if (attachments == null) {
             throw new ParamException("无权限预览当前文件");
@@ -441,8 +432,6 @@ public class CompanyServiceImpl implements CompanyService {
         if (!Objects.equals(fileType, FILE_TYPE_LOGO) && !Objects.equals(fileType, FILE_TYPE_LICENSE)) {
             throw new ParamException("无权限预览当前文件");
         }
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String uuid = encryptUtils.aesDecrypt(cookieUuid);
         if (!userService.isAttachmentPermission(uuid, attachments)) {
             throw new ParamException("无权限预览当前文件");
         }
@@ -450,9 +439,9 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void download(String fileId, HttpServletRequest request, HttpServletResponse response)
+    public void download(String fileId, String uuid, HttpServletResponse response)
         throws UnsupportedEncodingException, InputException {
-        softwareService.downloadAttachments(fileId, response, request);
+        softwareService.downloadAttachments(fileId, response, uuid);
     }
 
     public String reduceSensitivity(String str, String strType) {
