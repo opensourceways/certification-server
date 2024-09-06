@@ -40,7 +40,9 @@
         SELECT user_id
         FROM user_role_mapping_t
         WHERE role_id = #{roleId}
-          AND (data_scope = #{softwareId} OR data_scope = 0)
+          <if test="dataScope != null">
+              AND (data_scope = #{dataScope} OR data_scope = 0)
+          </if>
     </select>
 
     <select id="findRoleByUserId" resultType="com.huawei.it.euler.model.vo.RoleVo">
