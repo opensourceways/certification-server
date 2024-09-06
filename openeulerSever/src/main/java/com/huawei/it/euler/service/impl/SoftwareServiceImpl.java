@@ -969,7 +969,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        List<Integer> userIdList = roleMapper.findUserByRole(8, software.getTestOrgId());
+        List<Integer> userIdList = roleMapper.findUserByRole(8, null);
         List<EulerUser> eulerUserList = userMapper.findByUserId(userIdList);
         List<String> receiverList = new ArrayList<>();
         for (EulerUser eulerUser : eulerUserList) {
