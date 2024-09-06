@@ -157,7 +157,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setSoftwareId(software.getId());
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
-        JsonResponse<String> processJsonRep = commonProcess(processVo, Integer.valueOf(userUuid),NodeEnum.CERTIFICATE_REVIEW.getId());
+        JsonResponse<String> processJsonRep =
+            commonProcess(processVo, Integer.valueOf(userUuid), NodeEnum.CERTIFICATE_REVIEW.getId());
         if (!Objects.equals(processJsonRep.getCode(), JsonResponse.SUCCESS_STATUS)) {
             return processJsonRep;
         }
@@ -218,8 +219,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public void insertSoftware(Software software, String cookieUuid, HttpServletRequest request)
-        throws InputException {
+    public void insertSoftware(Software software, String cookieUuid, HttpServletRequest request) throws InputException {
         String userUuid = encryptUtils.aesDecrypt(cookieUuid);
         EulerUser user = userMapper.findByUuid(userUuid);
         if (Objects.equals(user.getUseable(), 0)) {
@@ -278,6 +278,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 设置节点表下一个节点状态 2-方案审核
         Node nextNode = new Node();
         setNextNode(software, nextNode, approvalPath);
+        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
         software.setReviewer(nextNode.getHandler());
         software.setReviewRole(approvalPath.get(0).getRoleId());
         // 更新软件信息表
@@ -331,7 +332,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
-    public JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid,Integer nodeStatus) {
+    public JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid, Integer nodeStatus) {
         Software software = checkCommonProcess(vo, Uuid);
         if (!Objects.equals(software.getStatus(), nodeStatus)) {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
@@ -366,7 +367,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareMapper.updateSoftware(software);
         return JsonResponse.success();
     }
-    
+
     public JsonResponse<String> reportReview(ProcessVo vo, Integer Uuid) {
         Software software = checkCommonProcess(vo, Uuid);
         if (!Objects.equals(software.getStatus(), NodeEnum.REPORT_REVIEW.getId())) {
@@ -414,9 +415,9 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         updateCurNode(vo);
         getNextNode(vo, software);
-        if (software.getStatus() < NodeEnum.FINISHED.getId()){
+        if (software.getStatus() < NodeEnum.FINISHED.getId()) {
             addNextNode(software);
-        }else if (software.getStatus().equals(NodeEnum.FINISHED.getId())){
+        } else if (software.getStatus().equals(NodeEnum.FINISHED.getId())) {
             generateCertificate(vo.getSoftwareId());
         }
         softwareMapper.updateSoftware(software);
@@ -456,7 +457,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private Software getHandler(int nextNodeNameForNumber, Software software) {
         if (nextNodeNameForNumber == NodeEnum.APPLY.getId()
-                || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
+            || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
             software.setReviewer(software.getUserUuid());
             software.setReviewRole(RoleEnum.USER.getRoleId());
             return software;
@@ -468,7 +469,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             return software;
         }
         ApprovalPathNode approvalPathNode =
-                approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
+            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
         if (nextNodeNameForNumber == 3) {
             software.setReviewer(approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid());
             software.setReviewRole(approvalPathNode == null ? RoleEnum.USER.getRoleId() : approvalPathNode.getRoleId());
@@ -571,8 +572,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
+    public List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(userUuid);
@@ -632,16 +632,19 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String cookieUuid) {
-        Integer userUuid = Integer.valueOf(encryptUtils.aesDecrypt(cookieUuid));
+    public PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, Integer userUuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         selectSoftware.setDataScope(userService.getUserAllDateScope(userUuid));
-        List<SoftwareListVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(selectSoftware);
+        int pageSize = selectSoftwareVo.getPageSize();
+        int pageNum = selectSoftwareVo.getPageNum();
+        int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
+        List<SoftwareListVo> reviewSoftwareList =
+            softwareMapper.getReviewSoftwareList(offset, pageSize, selectSoftware);
+        Long total = softwareMapper.countReviewSoftwareList(selectSoftware);
         Map<Integer, List<Integer>> roleMap = userService.getUserAllRole(userUuid);
         updateSoftwareListStatus(reviewSoftwareList, roleMap);
-
-        return reviewSoftwareList;
+        return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
     }
 
     private void updateSoftwareListStatus(List<SoftwareListVo> softwareList, Map<Integer, List<Integer>> roleMap) {
@@ -758,7 +761,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private List<AuditRecordsVo> checkPartnerNode(List<AuditRecordsVo> latestNodes, Software software) {
         boolean node3 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.TESTING_PHASE.name()));
-        boolean node7 = latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.name()));
+        boolean node7 =
+            latestNodes.stream().anyMatch(item -> item.getNodeName().equals(NodeEnum.CERTIFICATE_CONFIRMATION.name()));
         if (!node3) {
             AuditRecordsVo auditRecordsVo = new AuditRecordsVo();
             auditRecordsVo.setNodeName(NodeEnum.TESTING_PHASE.name());
