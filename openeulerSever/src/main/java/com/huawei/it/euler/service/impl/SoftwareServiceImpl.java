@@ -443,7 +443,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                     nextNodeNumber = software.getStatus() - 1;
                 }
                 software.setStatus(nextNodeNumber);
-                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()).getName() + "已驳回");
+                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 getHandler(nextNodeNumber, software);
                 break;
             case 3:
@@ -531,7 +531,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private void addNextNode(Software software) {
         Node node = new Node();
-        node.setNodeName(NodeEnum.findById(software.getStatus()).getName());
+        node.setNodeName(NodeEnum.findById(software.getStatus()));
         node.setSoftwareId(software.getId());
         node.setHandlerResult(0);
         node.setStatus(software.getStatus());
