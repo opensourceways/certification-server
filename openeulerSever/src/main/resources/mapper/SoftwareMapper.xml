@@ -15,7 +15,7 @@
         <id column="hashrate_platform" property="jsonHashRatePlatform"/>
         <id column="product_type" property="productType"/>
         <id column="test_organization" property="testOrganization"/>
-        <id column="test_org_id" property="testOrgId" />
+        <id column="test_org_id" property="testOrgId"/>
         <id column="status" property="status"/>
         <id column="update_time" property="updateTime"/>
         <id column="application_time" property="applicationTime"/>
@@ -35,11 +35,11 @@
         <result column="os_version" property="osVersion"/>
         <result column="hashrate_platform" property="hashratePlatform"/>
         <result column="test_organization" property="testOrganization"/>
-        <result column="test_org_id" property="testOrgId" />
+        <result column="test_org_id" property="testOrgId"/>
         <result column="application_time" property="applicationTime"/>
         <result column="node_name" property="status"/>
         <result column="reviewer" property="reviewerUuid"/>
-        <result column="review_role" property="reviewRole" />
+        <result column="review_role" property="reviewRole"/>
         <result column="username" property="applicant"/>
         <result column="reviewername" property="reviewer"/>
         <result column="authentication_status" property="authenticationStatus"/>
@@ -95,6 +95,41 @@
         filename, fileid, software_id, update_time, file_path, file_type, uuid
     </sql>
 
+    <sql id="whereReviewSoftwareList">
+        <where>
+            <if test="software.status != null and software.status.size() > 0">
+                and s.status in (select id from node_name_t where node_name in
+                <foreach collection="software.status" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>)
+            </if>
+            <if test="software.testOrganization != null and software.testOrganization.size() > 0">
+                and test_organization in
+                <foreach collection="software.testOrganization" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="software.dataScope != null and software.dataScope != 'ALL'">
+                and test_org_id IN
+                <foreach item="item" index="index" collection="software.dataScope.split(',')" open="(" separator=","
+                         close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="software.productType != null and software.productType.size() > 0">
+                and
+                <foreach collection="software.productType" item="item" open="(" separator="or" close=")">
+                    instr(product_type, #{item})
+                </foreach>
+            </if>
+            <if test="software.productName != null and software.productName != ''">
+                and concat(lower(product_name), lower(company_name)) like
+                lower(concat('%/',#{software.productName},'%')) escape
+                '/'
+            </if>
+        </where>
+    </sql>
+
     <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
         <include refid="baseFields"/>
@@ -112,7 +147,8 @@
             and os_name = #{osName}
         </if>
         <if test="keyword != null and keyword != ''">
-            and (lower(company_name) like lower(concat('%/',#{keyword},'%')) escape '/' || lower(product_name) like lower(concat('%/',#{keyword},'%')) escape '/')
+            and (lower(company_name) like lower(concat('%/',#{keyword},'%')) escape '/' || lower(product_name) like
+            lower(concat('%/',#{keyword},'%')) escape '/')
         </if>
     </select>
 
@@ -194,7 +230,14 @@
         order by s.update_time DESC
     </select>
 
-    <select id="getReviewSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
+    <select id="countReviewSoftwareList" resultType="java.lang.Long">
+        select COUNT(*) from software_t AS s
+        left join user_t AS u on s.reviewer = u.uuid
+        left join node_name_t AS n on s.status = n.id
+        <include refid="whereReviewSoftwareList"/>
+    </select>
+
+    <select id="getReviewSoftwareList"
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
@@ -203,37 +246,9 @@
         from software_t AS s
         left join user_t AS u on s.reviewer = u.uuid
         left join node_name_t AS n on s.status = n.id
-        <where>
-            <if test="status != null and status.size() > 0">
-                and s.status in (select id from node_name_t where node_name in
-                <foreach collection="status" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>)
-            </if>
-            <if test="testOrganization != null and testOrganization.size() > 0">
-                and test_organization in
-                <foreach collection="testOrganization" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="dataScope != null and dataScope != 'ALL'">
-                and test_org_id IN
-                <foreach item="item" index="index" collection="dataScope.split(',')" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="productType != null and productType.size() > 0">
-                and
-                <foreach collection="productType" item="item" open="(" separator="or" close=")">
-                    instr(product_type, #{item})
-                </foreach>
-            </if>
-            <if test="productName != null and productName != ''">
-                and concat(lower(product_name), lower(company_name)) like lower(concat('%/',#{productName},'%')) escape
-                '/'
-            </if>
-        </where>
+        <include refid="whereReviewSoftwareList"/>
         order by s.update_time DESC
+        LIMIT #{offset}, #{pageSize}
     </select>
 
     <select id="getAuditRecordsList" parameterType="java.lang.Integer"
@@ -295,7 +310,8 @@
           and file_type = 'sign'
     </update>
 
-    <select id="getAttachmentsNames" parameterType="com.huawei.it.euler.model.query.AttachmentQuery" resultMap="AttachmentsVoMap">
+    <select id="getAttachmentsNames" parameterType="com.huawei.it.euler.model.query.AttachmentQuery"
+            resultMap="AttachmentsVoMap">
         select filename, fileid
         from attachments_t
         where software_id = #{softwareId}
