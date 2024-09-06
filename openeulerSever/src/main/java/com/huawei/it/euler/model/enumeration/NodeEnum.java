@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
@@ -48,6 +51,7 @@ public enum NodeEnum {
         this.id = id;
         this.name = name;
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeEnum.class);
 
     private static final Map<Integer, NodeEnum> CENTER_ENUM_MAP = new HashMap<>();
 
@@ -57,22 +61,24 @@ public enum NodeEnum {
         }
     }
 
-    public static NodeEnum findById(int id) {
+    public static String findById(int id) {
         for (NodeEnum nodeEnum : values()) {
             if (nodeEnum.getId() == id) {
-                return nodeEnum;
+                return nodeEnum.getName();
             }
         }
-        throw new IllegalArgumentException("Invalid Status id: " + id);
+        LOGGER.error("Invalid Status id: {}", id);
+        return String.valueOf(id);
     }
 
-    public static NodeEnum findByName(String name) {
-        for (NodeEnum centerEnum : values()) {
-            if (centerEnum.getName().equals(name)) {
-                return centerEnum;
+    public static String findByName(String name) {
+        for (NodeEnum nodeEnum : values()) {
+            if (nodeEnum.getName().equals(name)) {
+                return String.valueOf(nodeEnum.getId());
             }
         }
-        throw new IllegalArgumentException("Invalid Status name: " + name);
+        LOGGER.error("Invalid Status name: {}", name);
+        return name;
     }
 
     public static List<NodeEnum> getAllNodes() {
