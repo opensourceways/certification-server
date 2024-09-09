@@ -581,18 +581,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         // 通过所属公司名获取全部认证列表
         selectSoftware.setCompanyName(company.getCompanyName());
-        List<SoftwareListVo> getAllSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
-        processFields(getAllSoftwareList, userUuid);
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(userUuid);
         List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
         processFields(currentSoftwareList, userUuid);
-        if (CollectionUtil.isNotEmpty(selectSoftwareVo.getSelectMyApplication())) {
-            return currentSoftwareList;
-        }
-        // 排序，将全部列表中所属当前用户的认证信息放置最前面
-        getAllSoftwareList.removeAll(currentSoftwareList);
-        currentSoftwareList.addAll(getAllSoftwareList);
         return currentSoftwareList;
     }
 

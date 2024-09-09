@@ -159,10 +159,6 @@ public class CompanyServiceImpl implements CompanyService {
         if (Objects.equals(user.getUseable(), 0)) {
             throw new InputException("您已注销账号！无法进行企业实名认证");
         }
-        Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
-        if (companyByCreditCode != null) {
-            return JsonResponse.failed("当前公司已认证");
-        }
         Company company = new Company();
         BeanUtils.copyProperties(companyVo, company);
         Date currentTime = new Date();
