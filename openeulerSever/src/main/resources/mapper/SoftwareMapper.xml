@@ -220,7 +220,8 @@
                 and lower(product_name) like lower(concat('%/',#{productName},'%')) escape '/'
             </if>
         </where>
-        order by s.update_time DESC
+        order by IF(user_uuid = #{applicant}, 0, 1)
+        ,s.update_time DESC
     </select>
 
     <select id="countReviewSoftwareList" resultType="java.lang.Long">
