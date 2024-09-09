@@ -7,7 +7,6 @@ package com.huawei.it.euler.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.security.LockCacheConfig;
 import com.huawei.it.euler.exception.InputException;
@@ -29,7 +27,6 @@ import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
 import com.huawei.it.euler.util.EncryptUtils;
-import com.huawei.it.euler.util.ListPageUtils;
 import com.huawei.it.euler.util.UserUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -217,12 +214,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user')")
-    public JsonResponse<Map<String, Object>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
+    public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
         HttpServletRequest request) {
         String cookieUuid = UserUtils.getCookieUuid(request);
         String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        List<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, userUuid);
-        softwareList.forEach(softwareListVo -> {
+        PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, userUuid);
+        softwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
             softwareListVo.setHashratePlatformList(platformVos);
@@ -231,11 +228,7 @@ public class SoftwareController {
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
         });
-        Map<String, Object> hashMap = Maps.newHashMap();
-        hashMap.put("list",
-            ListPageUtils.getListPage(softwareList, selectSoftwareVo.getPageNum(), selectSoftwareVo.getPageSize()));
-        hashMap.put("total", softwareList.size());
-        return JsonResponse.success(hashMap);
+        return JsonResponse.success(softwareList);
     }
 
     /**
