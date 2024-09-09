@@ -225,6 +225,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         software.setCompanyName(companyVo.getCompanyName());
         software.setCompanyId(companyVo.getId());
+        software.setCompanyCode(companyVo.getCompanyCode());
         // 设置软件信息表当前节点状态 1-认证申请
         software.setStatus(1);
         // reviewer为当前节点处理人
@@ -559,28 +560,24 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
+    public PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(uuid);
         if (ObjectUtils.isEmpty(company)) {
-            return new ArrayList<>();
+            return new PageResult<>();
         }
+        int pageSize = selectSoftwareVo.getPageSize();
+        int pageNum = selectSoftwareVo.getPageNum();
+        int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
         // 通过所属公司名获取全部认证列表
         selectSoftware.setCompanyName(company.getCompanyName());
-        List<SoftwareListVo> getAllSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
-        processFields(getAllSoftwareList, uuid);
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(uuid);
-        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
+        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize,selectSoftware);
+        Long total = softwareMapper.countSoftwareList(selectSoftware);
         processFields(currentSoftwareList, uuid);
-        if (CollectionUtil.isNotEmpty(selectSoftwareVo.getSelectMyApplication())) {
-            return currentSoftwareList;
-        }
-        // 排序，将全部列表中所属当前用户的认证信息放置最前面
-        getAllSoftwareList.removeAll(currentSoftwareList);
-        currentSoftwareList.addAll(getAllSoftwareList);
-        return currentSoftwareList;
+        return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
     }
 
     private void processFields(List<SoftwareListVo> currentSoftwareList, String userUuid) {

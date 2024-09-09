@@ -7,7 +7,6 @@ package com.huawei.it.euler.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Map;
 
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.NoLoginException;
@@ -21,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.security.LockCacheConfig;
 import com.huawei.it.euler.exception.InputException;
@@ -212,11 +210,11 @@ public class SoftwareController {
      */
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user')")
-    public JsonResponse<Map<String, Object>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
+    public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        List<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, uuid);
-        softwareList.forEach(softwareListVo -> {
+        PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, uuid);
+        softwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
             softwareListVo.setHashratePlatformList(platformVos);
@@ -225,11 +223,7 @@ public class SoftwareController {
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
         });
-        Map<String, Object> hashMap = Maps.newHashMap();
-        hashMap.put("list",
-            ListPageUtils.getListPage(softwareList, selectSoftwareVo.getPageNum(), selectSoftwareVo.getPageSize()));
-        hashMap.put("total", softwareList.size());
-        return JsonResponse.success(hashMap);
+        return JsonResponse.success(softwareList);
     }
 
     /**

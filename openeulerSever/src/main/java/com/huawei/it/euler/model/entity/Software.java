@@ -96,6 +96,9 @@ public class Software {
     @JsonIgnore
     private String userUuid;
 
+    @JsonIgnore
+    private Integer companyCode;
+
     private List<String> platforms;
 
     @JsonIgnore
