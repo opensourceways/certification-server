@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -193,20 +194,22 @@ public class AccountService {
 
     public UserInfo getUserInfo(String uuid){
         UserInfo userInfo = userInfoService.getUser(uuid);
-        if (userInfo == null){
+        if (userInfo == null) {
             userInfo = oidcAuthService.getUserInfo(uuid);
-            userInfoService.saveUser(userInfo);
+            if (userInfo != null) {
+                userInfoService.saveUser(userInfo);
+            }
         }
         return userInfo;
     }
 
     public List<UserInfo> getUserInfoList(List<String> uuidList){
-        return uuidList.stream().map(this::getUserInfo).toList();
+        return uuidList.stream().map(this::getUserInfo).filter(Objects::nonNull).toList();
     }
 
     public List<UserInfo> getUserInfoList(int roleId){
         List<String> uuidList = roleService.getUuidListByRoleId(roleId);
-        return uuidList.stream().map(this::getUserInfo).toList();
+        return uuidList.stream().map(this::getUserInfo).filter(Objects::nonNull).toList();
     }
 
     public boolean isPartner(String uuid){
