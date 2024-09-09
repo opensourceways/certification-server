@@ -64,8 +64,10 @@ public interface SoftwareMapper {
      * @param selectSoftware 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(SelectSoftware selectSoftware);
+    List<SoftwareListVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+                                         @Param("software")SelectSoftware selectSoftware);
 
+    Long countSoftwareList(@Param("software") SelectSoftware selectSoftware);
     /**
      * 华为侧查询兼容性认证申请列表
      *
