@@ -17,6 +17,7 @@
         <result column="user_uuid" property="userUuid"/>
         <result column="company_mail" property="companyMail"/>
         <result column="is_checked_pass" property="isCheckedPass"/>
+        <result column="company_code" property="companyCode" />
     </resultMap>
 
     <resultMap id="UserCompanyResultMap" type="com.huawei.it.euler.model.vo.UserCompanyVo">
@@ -29,17 +30,17 @@
     <sql id="allFields">
         id, user_id, status, logo, region, license, company_name, credit_code, address, legal_person,
         registration_capital, registration_date, expiration_date, approval_comment, update_time, apply_time,
-         logo_name, license_name, user_uuid, company_mail, is_checked_pass
+         logo_name, license_name, user_uuid, company_mail, is_checked_pass,company_code
     </sql>
 
     <insert id="insertCompany" parameterType="com.huawei.it.euler.model.entity.Company">
         insert into company_t (user_id, status, logo, region, license, company_name, credit_code, address, legal_person,
                                registration_capital, registration_date, expiration_date, approval_comment, update_time,
-                               apply_time,  logo_name, license_name, user_uuid, company_mail, is_checked_pass)
+                               apply_time,  logo_name, license_name, user_uuid, company_mail, is_checked_pass,company_code)
         values (#{userId}, #{status}, #{logo}, #{region}, #{license}, #{companyName}, #{creditCode}, #{address},
                 #{legalPerson}, #{registrationCapital}, #{registrationDate}, #{expirationDate}, #{approvalComment},
                 #{updateTime}, #{applyTime}, #{logoName}, #{licenseName}, #{userUuid}, #{companyMail},
-                #{isCheckedPass})
+                #{isCheckedPass},#{companyCode})
     </insert>
 
     <update id="updateCompany" parameterType="com.huawei.it.euler.model.entity.Company">
@@ -106,6 +107,11 @@
         select <include refid="allFields"></include>
         from company_t
         where credit_code = #{code} and status = 1
+    </select>
+
+    <select id="countCompany" resultType="java.lang.Integer">
+        select COUNT(*)
+        from company_t
     </select>
 
 </mapper>
