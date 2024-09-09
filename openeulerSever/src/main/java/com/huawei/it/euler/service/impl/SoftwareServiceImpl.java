@@ -237,6 +237,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         software.setCompanyName(companyVo.getCompanyName());
         software.setCompanyId(companyVo.getId());
+        software.setCompanyCode(companyVo.getCompanyCode());
         // 设置软件信息表当前节点状态 1-认证申请
         software.setStatus(1);
         // reviewer为当前节点处理人

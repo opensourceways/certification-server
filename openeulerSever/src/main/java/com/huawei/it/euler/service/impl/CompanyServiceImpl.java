@@ -100,6 +100,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
+    private static final Integer COMPANY_INIT_NUM = 10000;
+
     @Value("${sns.templateId}")
     private String templateId;
 
@@ -160,6 +162,13 @@ public class CompanyServiceImpl implements CompanyService {
             throw new InputException("您已注销账号！无法进行企业实名认证");
         }
         Company company = new Company();
+        Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
+        if (companyByCreditCode != null) {
+            company.setCompanyCode(company.getCompanyCode());
+        }else{
+            company.setCompanyCode(COMPANY_INIT_NUM + companyMapper.countCompany());
+        }
+
         BeanUtils.copyProperties(companyVo, company);
         Date currentTime = new Date();
         company.setUpdateTime(currentTime);
