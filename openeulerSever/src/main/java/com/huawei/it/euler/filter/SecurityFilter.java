@@ -46,6 +46,8 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        LOGGER.debug("url : {}", request.getRequestURL());
+        LOGGER.info("url : {}", request.getRequestURL());
         String shortUri = RequestUtils.getShortUri(request);
         // 校验referer
         int checkReferer = checkReferer(request, shortUri);
