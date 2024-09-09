@@ -74,7 +74,7 @@ public interface SoftwareService {
      * @param userUuid uuid
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid);
+    PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid);
 
     /**
      * 华为侧查询兼容性认证申请列表

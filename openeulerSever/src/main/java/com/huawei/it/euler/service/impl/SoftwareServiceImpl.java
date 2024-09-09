@@ -572,20 +572,24 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid) {
+    public PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(userUuid);
         if (ObjectUtils.isEmpty(company)) {
-            return new ArrayList<>();
+            return new PageResult<>();
         }
+        int pageSize = selectSoftwareVo.getPageSize();
+        int pageNum = selectSoftwareVo.getPageNum();
+        int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
         // 通过所属公司名获取全部认证列表
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(userUuid);
-        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(selectSoftware);
+        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize,selectSoftware);
+        Long total = softwareMapper.countSoftwareList(selectSoftware);
         processFields(currentSoftwareList, userUuid);
-        return currentSoftwareList;
+        return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
     }
 
     private void processFields(List<SoftwareListVo> currentSoftwareList, String userUuid) {
