@@ -1,5 +1,6 @@
 package com.huawei.it.euler.ddd.infrastructure.oidc;
 
+import cn.hutool.http.HttpStatus;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
@@ -59,9 +60,12 @@ public class OidcAuthService {
         OidcResponse userInfoRes = oidcClient.getUserInfoByManagerToken(uuid, managerToken);
         log.info("get manager token by user");
         log.info(JSONObject.toJSONString(userInfoRes));
-        UserInfo byManagerTokenUser = userInfoFactory.createByManagerTokenUser(userInfoRes.getData());
-        byManagerTokenUser.setUuid(uuid);
-        return byManagerTokenUser;
+        if (HttpStatus.HTTP_OK == userInfoRes.getCode()){
+            UserInfo byManagerTokenUser = userInfoFactory.createByManagerTokenUser(userInfoRes.getData());
+            byManagerTokenUser.setUuid(uuid);
+            return byManagerTokenUser;
+        }
+       return null;
     }
 
     public String getLoginUrl(){
