@@ -4,25 +4,26 @@
 
     <resultMap id="BaseResultMap" type="com.huawei.it.euler.model.entity.Software">
         <id column="id" property="id"/>
-        <id column="company_id" property="companyId"/>
-        <id column="company_name" property="companyName"/>
-        <id column="product_name" property="productName"/>
-        <id column="product_function_desc" property="productFunctionDesc"/>
-        <id column="usage_scenes_desc" property="usageScenesDesc"/>
-        <id column="product_version" property="productVersion"/>
-        <id column="os_name" property="osName"/>
-        <id column="os_version" property="osVersion"/>
-        <id column="hashrate_platform" property="jsonHashRatePlatform"/>
-        <id column="product_type" property="productType"/>
-        <id column="test_organization" property="testOrganization"/>
-        <id column="test_org_id" property="testOrgId"/>
-        <id column="status" property="status"/>
-        <id column="update_time" property="updateTime"/>
-        <id column="application_time" property="applicationTime"/>
-        <id column="user_uuid" property="userUuid"/>
+        <result column="company_id" property="companyId"/>
+        <result column="company_name" property="companyName"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_function_desc" property="productFunctionDesc"/>
+        <result column="usage_scenes_desc" property="usageScenesDesc"/>
+        <result column="product_version" property="productVersion"/>
+        <result column="os_name" property="osName"/>
+        <result column="os_version" property="osVersion"/>
+        <result column="hashrate_platform" property="jsonHashRatePlatform"/>
+        <result column="product_type" property="productType"/>
+        <result column="test_organization" property="testOrganization"/>
+        <result column="test_org_id" property="testOrgId"/>
+        <result column="status" property="status"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="application_time" property="applicationTime"/>
+        <result column="user_uuid" property="userUuid"/>
         <result column="cpu_vendor" property="cpuVendor"/>
         <result column="as_id" property="asId"/>
         <result column="review_role" property="reviewRole"/>
+        <result column="company_code" property="companyCode"/>
     </resultMap>
 
     <resultMap id="softwareMap" type="com.huawei.it.euler.model.vo.SoftwareListVo">
@@ -81,7 +82,7 @@
     <sql id="baseFields">
         id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
         hashrate_platform, server_type, product_type, test_organization,test_org_id, status, update_time, application_time,
-        reviewer,review_role, user_uuid, cpu_vendor, as_id
+        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code
     </sql>
 
     <sql id="insertFields">
