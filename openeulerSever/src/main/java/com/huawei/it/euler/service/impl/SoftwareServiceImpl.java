@@ -11,8 +11,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.service.AccountService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +25,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.extension.EmailConfig;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
@@ -37,7 +37,9 @@ import com.huawei.it.euler.model.enumeration.*;
 import com.huawei.it.euler.model.query.AttachmentQuery;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.*;
-import com.huawei.it.euler.util.*;
+import com.huawei.it.euler.util.CertificateGenerationUtils;
+import com.huawei.it.euler.util.FileUtils;
+import com.huawei.it.euler.util.ListPageUtils;
 
 import cn.hutool.core.collection.CollectionUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -327,7 +329,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo,  Uuid);
+        updateCurNode(vo,  uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -350,7 +352,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (CollectionUtil.isEmpty(attachmentsVos)) {
             return JsonResponse.failed("未上传测试报告");
         }
-        updateCurNode(vo, Uuid);
+        updateCurNode(vo, uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -367,7 +369,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             log.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException("审批人员错误");
         }
-        updateCurNode(vo, Uuid);
+        updateCurNode(vo, uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -389,7 +391,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failed("未上传签名");
             }
         }
-        updateCurNode(vo, Uuid);
+        updateCurNode(vo, uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -402,7 +404,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo, Uuid);
+        updateCurNode(vo, uuid);
         getNextNode(vo, software);
         if (software.getStatus() < NodeEnum.FINISHED.getId()) {
             addNextNode(software);
@@ -509,10 +511,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         return softwareInDb;
     }
 
-    private void updateCurNode(ProcessVo vo, Integer Uuid) {
+    private void updateCurNode(ProcessVo vo, String Uuid) {
         // 当前节点更新
         Node latestNode = nodeMapper.findLatestNodeById(vo.getSoftwareId());
-        latestNode.setHandler(String.valueOf(Uuid));
+        latestNode.setHandler(Uuid);
         latestNode.setHandlerResult(vo.getHandlerResult());
         latestNode.setTransferredComments(vo.getTransferredComments());
         latestNode.setHandlerTime(new Date());
@@ -567,7 +569,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
         int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
-        Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(userUuid);
+        Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(uuid);
         if (ObjectUtils.isEmpty(company)) {
             return new PageResult<>(Collections.emptyList(), 0L, pageNum, pageSize);
         }
@@ -685,7 +687,19 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请审核信息");
         }
-        return softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
+        IPage<AuditRecordsVo> iPage = softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
+         iPage.getRecords().forEach(item -> {
+             if (StringUtils.isEmpty(item.getHandler())) {
+                 return;
+             }
+             UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+             if (StringUtils.isNoneBlank(userInfo.getNickName())) {
+                 item.setHandlerName(userInfo.getNickName());
+             } else {
+                 item.setHandlerName(userInfo.getUserName());
+             }
+         });
+        return iPage;
     }
 
     @Override
@@ -731,11 +745,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
         filterLatestNodes.parallelStream().forEach(item -> {
-            EulerUser user = userMapper.findByUuid(item.getHandler());
-            if (user != null && StringUtils.isNoneBlank(user.getUsername())) {
-                item.setHandlerName(user.getUsername());
+            UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+            if (StringUtils.isNoneBlank(userInfo.getNickName())) {
+                item.setHandlerName(userInfo.getNickName());
             } else {
-                item.setHandlerName(item.getHandler());
+                item.setHandlerName(userInfo.getUserName());
             }
         });
         return filterLatestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus))
