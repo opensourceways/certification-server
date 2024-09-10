@@ -365,7 +365,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        if (!Objects.equals(Integer.valueOf(software.getReviewer()), uuid)) {
+        if (!Objects.equals(software.getReviewer(), uuid)) {
             log.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException("审批人员错误");
         }
@@ -447,6 +447,9 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private Software getHandler(int nextNodeNameForNumber, Software software) {
+        if (nextNodeNameForNumber == NodeEnum.FINISHED.getId()) {
+            return software;
+        }
         if (nextNodeNameForNumber == NodeEnum.APPLY.getId()
             || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
             software.setReviewer(software.getUserUuid());
