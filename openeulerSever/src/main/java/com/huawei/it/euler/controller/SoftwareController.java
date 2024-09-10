@@ -154,7 +154,7 @@ public class SoftwareController {
     public JsonResponse<String> certificateConfirmation(@RequestBody @Validated ProcessVo processVo,
         HttpServletRequest request) throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId());
+        return softwareService.commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_CONFIRMATION.getId());
     }
 
     /**
