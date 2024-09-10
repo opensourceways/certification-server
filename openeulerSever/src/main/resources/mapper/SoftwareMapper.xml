@@ -40,10 +40,9 @@
         <result column="status" property="status"/>
         <result column="reviewer" property="reviewerUuid"/>
         <result column="review_role" property="reviewRole"/>
-        <result column="username" property="applicant"/>
-        <result column="reviewername" property="reviewer"/>
         <result column="authentication_status" property="authenticationStatus"/>
         <result column="cpu_vendor" property="cpuVendor"/>
+        <result column="user_uuid" property="applicant"/>
         <result column="as_id" property="asId"/>
     </resultMap>
 
@@ -213,8 +212,6 @@
 
     <select id="countSoftwareList" resultType="java.lang.Long">
         select COUNT(*) from software_t AS s
-        left join user_t AS u on s.user_uuid = u.uuid
-        left join user_t AS u2 on s.reviewer = u2.uuid
         <include refid="whereSoftwareList"/>
     </select>
 
@@ -222,10 +219,8 @@
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
-        s.cpu_vendor, s.status, u2.username as reviewername, u.username
+        s.cpu_vendor, s.status,  s.user_uuid
         from software_t AS s
-        left join user_t AS u on s.user_uuid = u.uuid
-        left join user_t AS u2 on s.reviewer = u2.uuid
         <include refid="whereSoftwareList"/>
         order by IF(user_uuid = #{software.applicant}, 0, 1)
         ,s.update_time DESC
@@ -234,7 +229,6 @@
 
     <select id="countReviewSoftwareList" resultType="java.lang.Long">
         select COUNT(*) from software_t AS s
-        left join user_t AS u on s.reviewer = u.uuid
         <include refid="whereReviewSoftwareList"/>
     </select>
 
@@ -242,10 +236,9 @@
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
-        s.hashrate_platform, s.test_organization,s.test_org_id, s.application_time,s.status,u.username as
-        reviewername,s.authentication_status,s.cpu_vendor
+        s.hashrate_platform, s.test_organization,s.test_org_id,
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor
         from software_t AS s
-        left join user_t AS u on s.reviewer = u.uuid
         <include refid="whereReviewSoftwareList"/>
         order by s.update_time DESC
         LIMIT #{offset}, #{pageSize}
