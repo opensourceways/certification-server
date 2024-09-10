@@ -39,7 +39,7 @@
         <result column="test_org_id" property="testOrgId"/>
         <result column="application_time" property="applicationTime"/>
         <result column="status" property="status"/>
-        <result column="reviewer" property="reviewerUuid"/>
+        <result column="reviewer" property="reviewer"/>
         <result column="review_role" property="reviewRole"/>
         <result column="authentication_status" property="authenticationStatus"/>
         <result column="cpu_vendor" property="cpuVendor"/>
