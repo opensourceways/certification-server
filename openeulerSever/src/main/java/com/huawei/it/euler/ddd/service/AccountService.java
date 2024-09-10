@@ -204,6 +204,9 @@ public class AccountService {
     }
 
     public String getUserName(String uuid){
+        if (StringUtils.isBlank(uuid)) {
+            return null;
+        }
         UserInfo userInfo = getUserInfo(uuid);
         if (userInfo == null) {
             return null;

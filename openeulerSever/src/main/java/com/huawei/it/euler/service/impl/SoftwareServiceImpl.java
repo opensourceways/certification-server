@@ -152,8 +152,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setSoftwareId(software.getId());
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
-        JsonResponse<String> processJsonRep =
-            commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
+        JsonResponse<String> processJsonRep = commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
         if (!Objects.equals(processJsonRep.getCode(), JsonResponse.SUCCESS_STATUS)) {
             return processJsonRep;
         }
@@ -329,7 +328,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo,  uuid);
+        updateCurNode(vo, uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -573,7 +572,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(uuid);
-        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize,selectSoftware);
+        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countSoftwareList(selectSoftware);
         processFields(currentSoftwareList, uuid);
         return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
@@ -583,12 +582,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         currentSoftwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
-            }else {
+            } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
-            if (StringUtils.isNotEmpty(item.getReviewerUuid())) {
                 item.setReviewer(accountService.getUserName(item.getReviewerUuid()));
-            }
+
             item.setApplicant(accountService.getUserName(item.getApplicant()));
         });
         currentSoftwareList.forEach(item -> {
@@ -643,9 +641,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
-            if (StringUtils.isNotEmpty(item.getReviewerUuid())) {
+
                 item.setReviewer(accountService.getUserName(item.getReviewerUuid()));
-            }
+
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
@@ -780,8 +778,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 // 筛选时间最大的数据
                 auditRecordsVo = recordsMap.get(nodeName).stream()
-                    .sorted(Comparator.comparing(AuditRecordsVo::getHandlerTime).reversed())
-                    .toList().get(0);
+                    .sorted(Comparator.comparing(AuditRecordsVo::getHandlerTime).reversed()).toList().get(0);
             }
             latestNodes.add(auditRecordsVo);
         }
@@ -813,7 +810,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
-                                       String uuid) throws InputException, TestReportExceedMaxAmountException {
+        String uuid) throws InputException, TestReportExceedMaxAmountException {
         Software software = softwareMapper.findById(softwareId);
         if (!uuid.equals(software.getReviewer())) {
             return JsonResponse.failed("不是当前处理人");
@@ -858,7 +855,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public void downloadAttachments(String fileId, HttpServletResponse response, String uuid)
-            throws UnsupportedEncodingException, InputException {
+        throws UnsupportedEncodingException, InputException {
         Attachments attachments = softwareMapper.downloadAttachments(fileId);
         if (!userService.isAttachmentPermission(uuid, attachments)) {
             throw new ParamException("无权限下载当前文件");
@@ -907,15 +904,14 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public void previewCertificate(Integer softwareId, HttpServletResponse response)
-            throws IOException {
+    public void previewCertificate(Integer softwareId, HttpServletResponse response) throws IOException {
         GenerateCertificate certificate = softwareMapper.generateCertificate(softwareId);
         certificateGenerationUtils.previewCertificate(certificate, response);
     }
 
     @Override
     public void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response)
-            throws IOException {
+        throws IOException {
         GenerateCertificate certificate = softwareMapper.generateCertificate(certificateConfirmVo.getSoftwareId());
         certificate.setProductVersion(certificateConfirmVo.getProductVersion());
         certificate.setOsName(certificateConfirmVo.getOsName());

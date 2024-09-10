@@ -4,7 +4,10 @@
 
 package com.huawei.it.euler.service.impl;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.huawei.it.euler.exception.ParamException;
+import com.huawei.it.euler.mapper.CompanyMapper;
 import com.huawei.it.euler.mapper.RoleMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.mapper.UserMapper;
 import com.huawei.it.euler.model.entity.Attachments;
+import com.huawei.it.euler.model.entity.Company;
 import com.huawei.it.euler.model.entity.EulerUser;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
@@ -45,6 +50,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private SoftwareMapper softwareMapper;
+
+    @Autowired
+    private CompanyMapper companyMapper;
 
     @Override
     public String getUserAuthorityInfo(Integer userId) {
@@ -111,6 +119,10 @@ public class UserServiceImpl implements UserService {
         if (Objects.equals(userUuid, Integer.valueOf(software.getUserUuid()))) {
             return true;
         } else {
+            Company company = companyMapper.findCompanyByUserUuid(String.valueOf(userUuid));
+            if (company != null){
+                return company.getCompanyCode().equals(software.getCompanyCode());
+            }
             Set<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, null).stream().map(RoleVo::getDataScope)
                 .filter(Objects::nonNull).collect(Collectors.toSet());
             if (dateScope.contains(0)) {
