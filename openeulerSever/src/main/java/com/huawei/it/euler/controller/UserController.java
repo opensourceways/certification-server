@@ -101,6 +101,7 @@ public class UserController {
         UserInfo loginUser = accountService.getLoginUser(request);
         UserInfoVo vo = new UserInfoVo();
         if (loginUser != null) {
+            BeanUtils.copyProperties(loginUser, vo);
             String telephone = loginUser.getPhone();
             telephone = encryptUtils.isEncrypted(telephone)
                     ? StringPropertyUtils.reducePhoneSensitivity(encryptUtils.aesDecrypt(telephone))
@@ -112,7 +113,6 @@ public class UserController {
             vo.setTelephone(telephone);
             vo.setMail(mail);
             vo.setUsername(loginUser.getUserName());
-            BeanUtils.copyProperties(loginUser, vo);
             List<Role> roleList = loginUser.getRoleList();
             vo.setRoles(roleList.stream().map(Role::getRole).collect(Collectors.toList()));
             vo.setRoleNames(roleList.stream().map(Role::getRoleName).collect(Collectors.toList()));
