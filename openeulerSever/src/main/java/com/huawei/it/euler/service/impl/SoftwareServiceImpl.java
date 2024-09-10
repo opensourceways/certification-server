@@ -339,7 +339,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo);
+        updateCurNode(vo,  Uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -362,7 +362,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (CollectionUtil.isEmpty(attachmentsVos)) {
             return JsonResponse.failed("未上传测试报告");
         }
-        updateCurNode(vo);
+        updateCurNode(vo, Uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -379,7 +379,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), Uuid);
             throw new ParamException("审批人员错误");
         }
-        updateCurNode(vo);
+        updateCurNode(vo, Uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -401,7 +401,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failed("未上传签名");
             }
         }
-        updateCurNode(vo);
+        updateCurNode(vo, Uuid);
         getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
@@ -414,7 +414,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo);
+        updateCurNode(vo, Uuid);
         getNextNode(vo, software);
         if (software.getStatus() < NodeEnum.FINISHED.getId()) {
             addNextNode(software);
@@ -521,9 +521,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         return softwareInDb;
     }
 
-    private void updateCurNode(ProcessVo vo) {
+    private void updateCurNode(ProcessVo vo, Integer Uuid) {
         // 当前节点更新
         Node latestNode = nodeMapper.findLatestNodeById(vo.getSoftwareId());
+        latestNode.setHandler(String.valueOf(Uuid));
         latestNode.setHandlerResult(vo.getHandlerResult());
         latestNode.setTransferredComments(vo.getTransferredComments());
         latestNode.setHandlerTime(new Date());
@@ -576,13 +577,13 @@ public class SoftwareServiceImpl implements SoftwareService {
     public PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(userUuid);
-        if (ObjectUtils.isEmpty(company)) {
-            return new PageResult<>();
-        }
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
         int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
+        Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(userUuid);
+        if (ObjectUtils.isEmpty(company)) {
+            return new PageResult<>(Collections.emptyList(), 0L, pageNum, pageSize);
+        }
         // 通过所属公司名获取全部认证列表
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表

@@ -91,7 +91,7 @@ public class SoftwareController {
      * program_review 方案审核
      */
     @PostMapping("/software/programReview")
-    @PreAuthorize("hasAnyRole( 'program_review', 'openatom_intel',  'admin')")
+    @PreAuthorize("hasAnyRole( 'euler_ic' , 'openatom_intel',  'admin')")
     public JsonResponse<String> programReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String cookieUuid = UserUtils.getCookieUuid(request);

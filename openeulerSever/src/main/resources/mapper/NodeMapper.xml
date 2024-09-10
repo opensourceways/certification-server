@@ -41,7 +41,8 @@
         update node_t
         set handler_result = #{handlerResult},
             transferred_comments = #{transferredComments},
-            handler_time = #{handlerTime}
+            handler_time = #{handlerTime},
+            handler = #{handler}
         where id = #{id}
     </update>
 
