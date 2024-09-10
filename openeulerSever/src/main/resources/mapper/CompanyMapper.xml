@@ -106,7 +106,7 @@
     <select id="findCompanyByCreditCode" resultMap="BaseResultMap">
         select <include refid="allFields"></include>
         from company_t
-        where credit_code = #{code} and status = 1
+        where credit_code = #{code}
     </select>
 
     <select id="countCompany" resultType="java.lang.Integer">

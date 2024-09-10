@@ -162,14 +162,13 @@ public class CompanyServiceImpl implements CompanyService {
             throw new InputException("您已注销账号！无法进行企业实名认证");
         }
         Company company = new Company();
+        BeanUtils.copyProperties(companyVo, company);
         Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
         if (companyByCreditCode != null) {
-            company.setCompanyCode(company.getCompanyCode());
+            company.setCompanyCode(companyByCreditCode.getCompanyCode());
         }else{
             company.setCompanyCode(COMPANY_INIT_NUM + companyMapper.countCompany());
         }
-
-        BeanUtils.copyProperties(companyVo, company);
         Date currentTime = new Date();
         company.setUpdateTime(currentTime);
         company.setApplyTime(currentTime);
