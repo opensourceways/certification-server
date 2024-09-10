@@ -18,6 +18,8 @@ import java.util.Map;
 public class UserInfoVo {
     private String username;
 
+    private String nickName;
+    
     private String telephone;
 
     private String mail;
