@@ -689,15 +689,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         IPage<AuditRecordsVo> iPage = softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
          iPage.getRecords().forEach(item -> {
-             if (StringUtils.isEmpty(item.getHandler())) {
-                 return;
-             }
-             UserInfo userInfo = accountService.getUserInfo(item.getHandler());
-             if (StringUtils.isNoneBlank(userInfo.getNickName())) {
-                 item.setHandlerName(userInfo.getNickName());
-             } else {
-                 item.setHandlerName(userInfo.getUserName());
-             }
+             item.setHandlerName(accountService.getUserName(item.getHandler()));
          });
         return iPage;
     }
@@ -745,12 +737,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
         filterLatestNodes.parallelStream().forEach(item -> {
-            UserInfo userInfo = accountService.getUserInfo(item.getHandler());
-            if (StringUtils.isNoneBlank(userInfo.getNickName())) {
-                item.setHandlerName(userInfo.getNickName());
-            } else {
-                item.setHandlerName(userInfo.getUserName());
-            }
+            item.setHandlerName(accountService.getUserName(item.getHandler()));
         });
         return filterLatestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus))
             .collect(Collectors.toList());
