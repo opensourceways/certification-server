@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
+import com.huawei.it.euler.ddd.service.AccountService;
+import com.huawei.it.euler.exception.NoLoginException;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +29,7 @@ import com.huawei.it.euler.model.vo.CompanySearchVo;
 import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.UserCompanyVo;
 import com.huawei.it.euler.service.CompanyService;
-import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
-import com.huawei.it.euler.util.UserUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,10 +52,10 @@ public class CompanyController {
     private CompanyService companyService;
 
     @Autowired
-    private LogUtils logUtils;
+    private AccountService accountService;
 
     @Autowired
-    private EncryptUtils encryptUtils;
+    private LogUtils logUtils;
 
     /**
      * 提交企业实名认证信息
@@ -67,9 +67,9 @@ public class CompanyController {
     @PostMapping("/companies")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<String> registerCompany(@Validated({CompanyVo.companyAuthentication.class})
-        @RequestBody CompanyVo companyVo, HttpServletRequest request) throws InputException {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        return companyService.registerCompany(companyVo, cookieUuid);
+        @RequestBody CompanyVo companyVo, HttpServletRequest request) throws InputException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return companyService.registerCompany(companyVo, uuid);
     }
 
     /**
@@ -80,9 +80,9 @@ public class CompanyController {
      */
     @GetMapping("/companies/company/currentUser")
     @PreAuthorize("hasRole('user')")
-    public JsonResponse<CompanyVo> findCompanyByCurrentUser(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        return JsonResponse.success(companyService.findCompanyByCurrentUser(cookieUuid));
+    public JsonResponse<CompanyVo> findCompanyByCurrentUser(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return JsonResponse.success(companyService.findCompanyByCurrentUser(uuid));
     }
 
     /**
@@ -93,9 +93,9 @@ public class CompanyController {
      */
     @GetMapping("/companies/company/getCurrentUserCompanyName")
     @PreAuthorize("hasRole('user')")
-    public JsonResponse<String> findCompanyNameByCurrentUser(HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String companyName = companyService.findCompanyNameByCurrentUser(cookieUuid);
+    public JsonResponse<String> findCompanyNameByCurrentUser(HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        String companyName = companyService.findCompanyNameByCurrentUser(uuid);
         if (StringUtils.isEmpty(companyName)) {
             return JsonResponse.failed(COMPANY_NOT_EXIST);
         }
@@ -139,10 +139,9 @@ public class CompanyController {
      */
     @PostMapping("/companies/company/audit")
     @PreAuthorize("hasRole('china_region')")
-    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo,HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        logUtils.insertAuditLog(request, userUuid, "company", "company audit", "company audit:" + companyAuditVo.getResult());
+    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo,HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        logUtils.insertAuditLog(request, uuid, "company", "company audit", "company audit:" + companyAuditVo.getResult());
         return companyService.approveCompany(companyAuditVo);
     }
 
@@ -156,8 +155,9 @@ public class CompanyController {
     @PostMapping("/companies/uploadLogo")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<FileModel> uploadLogo(@RequestParam("file")
-        @NotNull(message = "模板文件不能为空") MultipartFile file, HttpServletRequest request) throws InputException {
-        return companyService.uploadLogo(file, request);
+        @NotNull(message = "模板文件不能为空") MultipartFile file, HttpServletRequest request) throws InputException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return companyService.uploadLogo(file, uuid);
     }
 
     /**
@@ -170,8 +170,9 @@ public class CompanyController {
     @PostMapping("/companies/uploadLicense")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<Map<String, Object>> uploadLicense(@RequestParam("file") @NotNull(message = "模板文件不能为空")
-        MultipartFile file, HttpServletRequest request) throws InputException, IOException {
-        return companyService.uploadLicense(file, request);
+        MultipartFile file, HttpServletRequest request) throws InputException, IOException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return companyService.uploadLicense(file, uuid);
     }
 
     /**
@@ -185,8 +186,9 @@ public class CompanyController {
     @PreAuthorize("hasAnyRole('user', 'china_region', 'OSV_user', 'admin')")
     public void previewImage(@RequestParam("fileId") @NotBlank(message = "附件id不能为空")
         @Length(max = 50, message = "附件id超出范围") String fileId, HttpServletResponse response,
-        HttpServletRequest request) throws InputException {
-        companyService.preview(fileId, request, response);
+        HttpServletRequest request) throws InputException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        companyService.preview(fileId, uuid, response);
     }
 
     /**
@@ -200,7 +202,8 @@ public class CompanyController {
     @PreAuthorize("hasAnyRole('user', 'china_region', 'OSV_user', 'admin')")
     public void downloadLogo(@RequestParam("fileId") @NotBlank(message = "附件id不能为空")
         @Length(max = 50, message = "附件id超出范围") String fileId, HttpServletResponse response,
-        HttpServletRequest request) throws InputException, UnsupportedEncodingException {
-        companyService.download(fileId, request, response);
+        HttpServletRequest request) throws InputException, UnsupportedEncodingException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        companyService.download(fileId, uuid, response);
     }
 }

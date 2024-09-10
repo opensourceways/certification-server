@@ -30,60 +30,60 @@ public interface SoftwareService {
      * 根据id查询软件认证信息
      *
      * @param id 软件id
-     * @param cookieUuid uuid
+     * @param uuid uuid
      * @return 软件信息
      */
-    Software findById(Integer id, String cookieUuid);
+    Software findById(Integer id, String uuid);
 
     /**
      * 更新软件信息
      *
      * @param software 软件信息
-     * @param cookieUuid uuid
+     * @param uuid uuid
      * @param request request
      * @return
      */
-    JsonResponse<String> updateSoftware(SoftwareVo software, String cookieUuid, HttpServletRequest request)
+    JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request)
         throws IOException;
 
     /**
      * 新增软件信息
      *
      * @param software 软件信息
-     * @param cookieUuid uuid
+     * @param uuid uuid
      * @param request request
      */
-    void insertSoftware(Software software, String cookieUuid, HttpServletRequest request)
+    void insertSoftware(Software software, String uuid, HttpServletRequest request)
         throws InputException, IOException;
 
-    JsonResponse<String> commonProcess(ProcessVo vo, Integer Uuid, Integer nodeStatus);
+    JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
 
     /**
      * 获取转审人员列表
      *
      * @param softwareId 软件id
-     * @param cookieUuid uuid
+     * @param uuid uuid
      * @return 转审人员列表
      */
-    List<SimpleUserVo> transferredUserList(Integer softwareId, String cookieUuid);
+    List<SimpleUserVo> transferredUserList(Integer softwareId, String uuid);
 
     /**
      * 查询兼容性认证申请列表
      *
      * @param selectSoftwareVo 筛选条件
-     * @param userUuid uuid
+     * @param uuid uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String userUuid);
+    PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
 
     /**
      * 华为侧查询兼容性认证申请列表
      *
      * @param selectSoftwareVo 筛选条件
-     * @param userUuid uuid
+     * @param uuid uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, Integer userUuid);
+    PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
 
     /**
      * 认证审核记录
@@ -99,28 +99,29 @@ public interface SoftwareService {
      * @param softwareId 软件id
      * @param nodeName 审核节点名称
      * @param page 分页信息
-     * @param request request
+     * @param uuid uuid
      * @return 列表
      */
-    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName, IPage<AuditRecordsVo> page,
-        HttpServletRequest request);
+    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
+                                                  IPage<AuditRecordsVo> page, String uuid);
 
     /**
      * 证书信息确认查询
      *
      * @param softwareId 软件id
-     * @param request request
+     * @param uuid uuid
      * @return 证书信息
      */
-    CertificateInfoVo certificateInfo(Integer softwareId, HttpServletRequest request);
+    CertificateInfoVo certificateInfo(Integer softwareId, String uuid);
 
     /**
      * 查询审批流节点信息
      *
      * @param softwareId 软件id
+     * @param uuid uuid
      * @return 列表
      */
-    List<AuditRecordsVo> getNodeList(Integer softwareId, HttpServletRequest request);
+    List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid);
 
     /**
      * 上传文件
@@ -129,31 +130,31 @@ public interface SoftwareService {
      * @param softwareId 软件id
      * @param fileTypeCode 文件类型编码
      * @param fileType 文件类型
-     * @param request request
+     * @param uuid uuid
      * @return JsonResponse
      */
-    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
-        HttpServletRequest request) throws InputException, TestReportExceedMaxAmountException;
+    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode,
+                                String fileType, String uuid) throws InputException, TestReportExceedMaxAmountException;
 
     /**
      * 查询上传文件名称
      *
      * @param softwareId 软件id
      * @param fileType 文件类型
-     * @param request request
+     * @param uuid uuid
      * @return 文件信息
      */
-    List<AttachmentsVo> getAttachmentsNames(Integer softwareId, String fileType, HttpServletRequest request);
+    List<AttachmentsVo> getAttachmentsNames(Integer softwareId, String fileType, String uuid);
 
     /**
      * 文件下载
      *
      * @param fileId 文件id
-     * @param request request
+     * @param uuid uuid
      * @param response response
      */
-    void downloadAttachments(String fileId, HttpServletResponse response, HttpServletRequest request)
-        throws UnsupportedEncodingException, InputException;
+    void downloadAttachments(String fileId, HttpServletResponse response, String uuid)
+            throws UnsupportedEncodingException, InputException;
 
     /**
      * 文件预览
@@ -167,9 +168,9 @@ public interface SoftwareService {
      * 附件删除
      *
      * @param fileId 文件id
-     * @param request request
+     * @param uuid uuid
      */
-    void deleteAttachments(String fileId, HttpServletRequest request);
+    void deleteAttachments(String fileId, String uuid);
 
     /**
      * 证书生成
