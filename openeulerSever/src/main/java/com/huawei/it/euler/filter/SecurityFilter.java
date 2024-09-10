@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.filter;
 
+import com.huawei.it.euler.ddd.domain.account.WhiteListService;
 import com.huawei.it.euler.util.FilterUtils;
 import com.huawei.it.euler.util.RequestUtils;
 import jakarta.servlet.FilterChain;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,15 +40,14 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Value("${referer.value}")
     private String refererCheck;
 
-    @Value("${url.whitelist}")
-    private String refererUrlWhitelist;
-
-    @Value("${url.whitelist}")
-    private String originUrlWhitelist;
+    @Autowired
+    private WhiteListService whiteListService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        LOGGER.debug("url : {}", request.getRequestURL());
+        LOGGER.info("url : {}", request.getRequestURL());
         String shortUri = RequestUtils.getShortUri(request);
         // 校验referer
         int checkReferer = checkReferer(request, shortUri);
@@ -69,12 +70,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         String referer = httpRequest.getHeader("Referer");
         // get请求和白名单不校验referer
         boolean isVerifyReferer = "GET".equals(httpRequest.getMethod());
-        String[] refererWhitelist = refererUrlWhitelist.split(",");
-        for (String exclusionURL : refererWhitelist) {
-            if (shortUri.matches(exclusionURL.replaceAll("\\*", "\\.\\*"))) {
-                isVerifyReferer = true;
-                break;
-            }
+        if (!isVerifyReferer){
+            isVerifyReferer = whiteListService.isWriteUrl(shortUri);
         }
         boolean isRefererInclude = true;
         if (!isVerifyReferer) {
@@ -96,12 +93,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         String origin = httpRequest.getHeader("Origin");
         // get请求和白名单不校验origin
         boolean isVerifyOrigin = "GET".equals(httpRequest.getMethod());
-        String[] originWhitelist = originUrlWhitelist.split(",");
-        for (String exclusionURL : originWhitelist) {
-            if (shortUri.matches(exclusionURL.replaceAll("\\*", "\\.\\*"))) {
-                isVerifyOrigin = true;
-                break;
-            }
+        if (!isVerifyOrigin){
+            isVerifyOrigin = whiteListService.isWriteUrl(shortUri);
         }
         if (isVerifyOrigin) {
             return HttpStatus.OK.value();
