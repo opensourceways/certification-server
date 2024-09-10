@@ -4,10 +4,11 @@
 
 package com.huawei.it.euler.model.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Data;
 
 /**
  * SoftwareListVo
@@ -67,25 +68,35 @@ public class SoftwareListVo {
      */
     private String testOrganization;
 
-
+    /**
+     * 测试机构ID
+     */
     private Integer testOrgId;
+
     /**
      * 申请时间
      */
     private String applicationTime;
 
     /**
-     * 申请人
+     * 申请人ID
      */
     private String applicant;
 
     /**
-     * 审核人
+     * 申请人姓名
+     */
+    private String applicantName;
+
+    /**
+     * 审核人ID
      */
     private String reviewer;
 
-    @JsonIgnore
-    private String reviewerUuid;
+    /**
+     * 审核人姓名
+     */
+    private String reviewerName;
 
     @JsonIgnore
     private Integer reviewRole;

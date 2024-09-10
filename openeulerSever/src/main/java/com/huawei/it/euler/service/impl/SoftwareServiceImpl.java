@@ -585,12 +585,11 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
-                item.setReviewer(accountService.getUserName(item.getReviewerUuid()));
-
-            item.setApplicant(accountService.getUserName(item.getApplicant()));
+            item.setReviewerName(accountService.getUserName(item.getReviewer()));
+            item.setApplicantName(accountService.getUserName(item.getApplicant()));
         });
         currentSoftwareList.forEach(item -> {
-            if (userUuid.equals(item.getReviewerUuid())) {
+            if (userUuid.equals(item.getReviewer())) {
                 String status = item.getStatus();
                 String cpuVendor = item.getCpuVendor();
                 switch (status) {
@@ -641,9 +640,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
-
-                item.setReviewer(accountService.getUserName(item.getReviewerUuid()));
-
+            item.setReviewerName(accountService.getUserName(item.getReviewer()));
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
@@ -688,9 +685,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException("无权限查询该测评申请审核信息");
         }
         IPage<AuditRecordsVo> iPage = softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
-         iPage.getRecords().forEach(item -> {
-             item.setHandlerName(accountService.getUserName(item.getHandler()));
-         });
+        iPage.getRecords().forEach(item -> {
+            item.setHandlerName(accountService.getUserName(item.getHandler()));
+        });
         return iPage;
     }
 
