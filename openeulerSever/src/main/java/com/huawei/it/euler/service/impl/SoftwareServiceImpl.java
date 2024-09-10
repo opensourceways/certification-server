@@ -640,7 +640,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
-            item.setApplicant(accountService.getUserName(item.getReviewer()));
+            if (StringUtils.isNotEmpty(item.getReviewerUuid())) {
+                item.setReviewer(accountService.getUserName(item.getReviewerUuid()));
+            }
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
