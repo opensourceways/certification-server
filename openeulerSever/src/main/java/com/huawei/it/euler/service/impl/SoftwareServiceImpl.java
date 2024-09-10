@@ -461,7 +461,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         ApprovalPathNode approvalPathNode =
             approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
-        if (nextNodeNameForNumber == 3) {
+        if (nextNodeNameForNumber == NodeEnum.TESTING_PHASE.getId()) {
             software.setReviewer(approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid());
             software.setReviewRole(approvalPathNode == null ? RoleEnum.USER.getRoleId() : approvalPathNode.getRoleId());
         } else {
@@ -469,13 +469,6 @@ public class SoftwareServiceImpl implements SoftwareService {
             software.setReviewRole(approvalPathNode.getRoleId());
         }
         return software;
-    }
-
-    private void updateLatestNode(Integer handlerResult, Node latestNode, String transferredComments, Date date) {
-        latestNode.setHandlerResult(handlerResult);
-        latestNode.setTransferredComments(transferredComments);
-        latestNode.setHandlerTime(date);
-        nodeMapper.updateNodeById(latestNode);
     }
 
     private Software checkCommonProcess(ProcessVo vo, String uuid) {
@@ -590,6 +583,10 @@ public class SoftwareServiceImpl implements SoftwareService {
             }else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
+            if (StringUtils.isNotEmpty(item.getReviewerUuid())) {
+                item.setReviewer(accountService.getUserName(item.getReviewerUuid()));
+            }
+            item.setApplicant(accountService.getUserName(item.getApplicant()));
         });
         currentSoftwareList.forEach(item -> {
             if (userUuid.equals(item.getReviewerUuid())) {
@@ -643,11 +640,11 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
+            item.setApplicant(accountService.getUserName(item.getReviewer()));
             List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
             if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
                 return;
             }
-
             String operation = getOperation(item.getStatus(), item.getCpuVendor());
             item.setOperation(operation);
         });
