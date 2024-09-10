@@ -203,6 +203,18 @@ public class AccountService {
         return userInfo;
     }
 
+    public String getUserName(String uuid){
+        UserInfo userInfo = getUserInfo(uuid);
+        if (userInfo == null) {
+            return null;
+        }
+        if (StringUtils.isNotBlank(userInfo.getNickName())) {
+            return userInfo.getNickName();
+        }else {
+            return userInfo.getUserName();
+        }
+    }
+
     public List<UserInfo> getUserInfoList(List<String> uuidList){
         return uuidList.stream().map(this::getUserInfo).filter(Objects::nonNull).toList();
     }
