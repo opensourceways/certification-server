@@ -125,7 +125,7 @@ public class SoftwareController {
      * reportReview 报告复审
      */
     @PostMapping("/software/reportReReview")
-    @PreAuthorize("hasAnyRole( 'euler_ic',  'admin')")
+    @PreAuthorize("hasAnyRole( 'report_review',  'admin')")
     public JsonResponse<String> reportReReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
@@ -162,7 +162,7 @@ public class SoftwareController {
      * certificateConfirmation 证书签发
      */
     @PostMapping("/software/certificateIssuance")
-    @PreAuthorize("hasAnyRole( 'user',  'admin')")
+    @PreAuthorize("hasAnyRole( 'certificate_issuance',  'admin')")
     public JsonResponse<String> certificateIssuance(@RequestBody @Validated ProcessVo processVo,
         HttpServletRequest request) throws Exception {
         String uuid = accountService.getLoginUuid(request);
