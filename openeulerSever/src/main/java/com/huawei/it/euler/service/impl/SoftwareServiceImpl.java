@@ -687,7 +687,19 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请审核信息");
         }
-        return softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
+        IPage<AuditRecordsVo> iPage = softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
+         iPage.getRecords().forEach(item -> {
+             if (StringUtils.isEmpty(item.getHandler())) {
+                 return;
+             }
+             UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+             if (StringUtils.isNoneBlank(userInfo.getNickName())) {
+                 item.setHandlerName(userInfo.getNickName());
+             } else {
+                 item.setHandlerName(userInfo.getUserName());
+             }
+         });
+        return iPage;
     }
 
     @Override
@@ -733,11 +745,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
         filterLatestNodes.parallelStream().forEach(item -> {
-            EulerUser user = userMapper.findByUuid(item.getHandler());
-            if (user != null && StringUtils.isNoneBlank(user.getUsername())) {
-                item.setHandlerName(user.getUsername());
+            UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+            if (StringUtils.isNoneBlank(userInfo.getNickName())) {
+                item.setHandlerName(userInfo.getNickName());
             } else {
-                item.setHandlerName(item.getHandler());
+                item.setHandlerName(userInfo.getUserName());
             }
         });
         return filterLatestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus))
