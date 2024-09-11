@@ -51,8 +51,7 @@ public class CsrfFilter extends OncePerRequestFilter {
         String loginUuid = "0";
         try {
             loginUuid = accountService.getLoginUuid(request);
-        } catch (NoLoginException e) {
-            log.error(e.getMessage());
+        } catch (NoLoginException ignored) {
         }
 
         String token = xsrfService.refreshToken(loginUuid);

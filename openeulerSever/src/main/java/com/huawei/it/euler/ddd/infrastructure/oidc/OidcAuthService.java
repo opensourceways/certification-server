@@ -30,6 +30,11 @@ public class OidcAuthService {
         if (refreshResult == null){
             throw new NoLoginException();
         }
+
+        if (HttpStatus.HTTP_OK != refreshResult.getCode()){
+            throw new NoLoginException();
+        }
+
         JSONObject dataJSONObject = JSON.parseObject(refreshResult.getData());
         if (dataJSONObject == null) {
             throw new NoLoginException();
