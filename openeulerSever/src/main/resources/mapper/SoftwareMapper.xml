@@ -220,7 +220,7 @@
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
-        s.cpu_vendor, s.status,  s.user_uuid
+        s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id
         from software_t AS s
         <include refid="whereSoftwareList"/>
         order by IF(user_uuid = #{software.applicant}, 0, 1)

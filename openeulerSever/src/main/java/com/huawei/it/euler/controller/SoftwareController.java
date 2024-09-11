@@ -102,7 +102,7 @@ public class SoftwareController {
      * program_review 测试阶段
      */
     @PostMapping("/software/testingPhase")
-    @PreAuthorize("hasAnyRole( 'user', 'openatom_intel',  'admin')")
+    @PreAuthorize("hasAnyRole( 'user', 'euler_ic','openatom_intel',  'admin')")
     public JsonResponse<String> testingPhase(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
