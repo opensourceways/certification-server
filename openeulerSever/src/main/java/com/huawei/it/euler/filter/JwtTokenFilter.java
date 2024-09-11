@@ -53,15 +53,20 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         boolean isLogin = accountService.isLogin(request, response);
+        LOGGER.info("url : {}, login check: {}", request.getRequestURL(), isLogin);
         if (!isLogin) {
             cookieConfig.cleanCookie(request,response);
             chain.doFilter(request, response);
             return;
         }
 
+        LOGGER.info("url : {}, refreshLogin begin", request.getRequestURL());
         accountService.refreshLogin(request);
+        LOGGER.info("url : {}, refreshLogin end", request.getRequestURL());
 
+        LOGGER.info("url : {}, setAuthentication begin", request.getRequestURL());
         accountService.setAuthentication(request);
+        LOGGER.info("url : {}, setAuthentication end", request.getRequestURL());
 
         chain.doFilter(request, response);
     }
