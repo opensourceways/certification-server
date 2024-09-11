@@ -113,7 +113,7 @@ public class AccountService {
         } catch (Exception ignored) {
         }
 
-        return isLoginLocal && isLoginRemote;
+        return isLoginRemote;
     }
 
     public void refreshLogin(HttpServletRequest request) {
