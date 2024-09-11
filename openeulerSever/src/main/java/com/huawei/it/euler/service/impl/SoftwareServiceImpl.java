@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,6 @@ import com.huawei.it.euler.util.ListPageUtils;
 import cn.hutool.core.collection.CollectionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * SoftwareServiceImpl
@@ -53,8 +54,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Transactional
-@Slf4j
 public class SoftwareServiceImpl implements SoftwareService {
+
+    private static  final Logger LOGGER = LoggerFactory.getLogger(SoftwareServiceImpl.class);
 
     private static final String FILE_TYPE_SIGN = "sign";
 
@@ -325,7 +327,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public JsonResponse<String> commonProcess(ProcessVo vo, String uuid, Integer nodeStatus) {
         Software software = checkCommonProcess(vo, uuid);
         if (!Objects.equals(software.getStatus(), nodeStatus)) {
-            log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
         updateCurNode(vo, uuid);
@@ -338,7 +340,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public JsonResponse<String> testingPhase(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid);
         if (!Objects.equals(software.getStatus(), NodeEnum.TESTING_PHASE.getId())) {
-            log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
         if (vo.getHandlerResult() != 1) {
@@ -361,11 +363,11 @@ public class SoftwareServiceImpl implements SoftwareService {
     public JsonResponse<String> reportReview(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid);
         if (!Objects.equals(software.getStatus(), NodeEnum.REPORT_REVIEW.getId())) {
-            log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
         if (!Objects.equals(software.getReviewer(), uuid)) {
-            log.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
+            LOGGER.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException("审批人员错误");
         }
         updateCurNode(vo, uuid);
@@ -378,7 +380,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public JsonResponse<String> certificateConfirmation(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid);
         if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_CONFIRMATION.getId())) {
-            log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
         updateCurNode(vo, uuid);
@@ -391,7 +393,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public JsonResponse<String> certificateIssuance(ProcessVo vo, String uuid) throws IOException {
         Software software = checkCommonProcess(vo, uuid);
         if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_ISSUANCE.getId())) {
-            log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
         updateCurNode(vo, uuid);
@@ -467,30 +469,30 @@ public class SoftwareServiceImpl implements SoftwareService {
     private Software checkCommonProcess(ProcessVo vo, String uuid) {
         Integer handlerResult = vo.getHandlerResult();
         if (handlerResult < 1 || handlerResult > 3) {
-            log.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
+            LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
             throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
         }
         if (StringUtils.isBlank(vo.getTransferredComments())
             || (handlerResult == 3 && StringUtils.isBlank(vo.getTransferredUser()))) {
-            log.error("非法的审核参数:{}", vo.getSoftwareId());
+            LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
             throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
         }
         Software softwareInDb = softwareMapper.findById(vo.getSoftwareId());
         if (softwareInDb == null) {
-            log.error("审核条目不存在:{}", vo.getSoftwareId());
+            LOGGER.error("审核条目不存在:{}", vo.getSoftwareId());
             throw new ParamException("审核条目不存在:" + vo.getSoftwareId());
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
-            log.error("非法的审核人:{}", uuid);
+            LOGGER.error("非法的审核人:{}", uuid);
             throw new ParamException("非法的审核人:" + uuid);
         }
         if (handlerResult == 3) {
             if (vo.getTransferredUser().equals(uuid)) {
-                log.error("转审人不能为自己:{}", uuid);
+                LOGGER.error("转审人不能为自己:{}", uuid);
                 throw new ParamException("转审人不能为自己:" + uuid);
             }
             if (!userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()), softwareInDb)) {
-                log.error("转审人没有权限:{}", Integer.valueOf(vo.getTransferredUser()));
+                LOGGER.error("转审人没有权限:{}", Integer.valueOf(vo.getTransferredUser()));
                 throw new ParamException("转审人没有权限:{}" + Integer.valueOf(vo.getTransferredUser()));
             }
         }
