@@ -25,10 +25,16 @@
         <jackson-version>2.15.2</jackson-version>
         <log4j-version>2.18.0</log4j-version>
         <httpcore-version>4.4.16</httpcore-version>
+        <spring.version>6.1.10</spring.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
@@ -315,6 +321,22 @@
             <version>3.2.5</version>
             <scope>system</scope>
         </dependency>
+            <!-- Spring Test -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- JUnit 4 -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.2</version>
+                <scope>test</scope>
+            </dependency>
+
     </dependencies>
 
     <build>
