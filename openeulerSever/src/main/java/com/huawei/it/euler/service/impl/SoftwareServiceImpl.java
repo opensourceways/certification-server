@@ -381,15 +381,6 @@ public class SoftwareServiceImpl implements SoftwareService {
             log.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        if (vo.getHandlerResult() == 1) {
-            AttachmentQuery attachmentQuery = new AttachmentQuery();
-            attachmentQuery.setSoftwareId(software.getId());
-            attachmentQuery.setFileType("sign");
-            List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
-            if (CollectionUtil.isEmpty(attachmentsVos)) {
-                return JsonResponse.failed("未上传签名");
-            }
-        }
         updateCurNode(vo, uuid);
         getNextNode(vo, software);
         addNextNode(software);
