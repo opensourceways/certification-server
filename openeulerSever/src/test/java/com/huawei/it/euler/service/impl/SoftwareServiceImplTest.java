@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
 
 import java.util.List;
 
@@ -17,13 +22,18 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.huawei.it.euler.exception.ParamException;
+import com.huawei.it.euler.mapper.NodeMapper;
 import com.huawei.it.euler.mapper.ProtocolMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
+import com.huawei.it.euler.model.entity.Node;
 import com.huawei.it.euler.model.entity.Protocol;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.ErrorCodes;
+import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
+import com.huawei.it.euler.model.vo.ProcessVo;
+import com.huawei.it.euler.service.ApprovalPathNodeService;
 import com.huawei.it.euler.service.CompanyService;
 import com.huawei.it.euler.service.UserService;
 
@@ -48,6 +58,12 @@ class SoftwareServiceImplTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ProtocolMapper protocolMapper;
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private NodeMapper nodeMapper;
+
+    @Mock(answer =Answers.RETURNS_DEEP_STUBS)
+    private ApprovalPathNodeService approvalPathNodeService;
+
     @InjectMocks
     private SoftwareServiceImpl softwareServiceImpl;
 
@@ -55,12 +71,14 @@ class SoftwareServiceImplTest {
     @DisplayName("根据id查询软件成功")
     void testFindByIdSuccess() {
         Software software = initTestSoftware();
+
         // setup
         Mockito.when(userService.isUserPermission(any(), any())).thenReturn(true);
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
 
         // run
         Software result = softwareServiceImpl.findById(USER_ID, USER_UUID);
+
         // verify
         Assertions.assertEquals(software, result);
     }
@@ -81,25 +99,61 @@ class SoftwareServiceImplTest {
 
     @Test
     @DisplayName("测评流程申请成功")
-    void createSoftwareSuccess() throws Exception {
+    void testCreateSoftwareSuccess() throws Exception {
         Software software = initTestSoftware();
 
         // setup
         Mockito.when(companyService.findCompanyByUserUuid(any())).thenReturn(initResultCompany());
         Mockito.when(protocolMapper.selectProtocolDesc(anyInt(), any())).thenReturn(initResultProtocol());
+        Mockito.when(softwareMapper.insertSoftware(any())).thenReturn(initResultSoftware().getId());
 
         // run
-        softwareServiceImpl.createSoftware(software,USER_UUID);
+        Integer id = softwareServiceImpl.createSoftware(software, USER_UUID);
 
         // verify
-
+        Assertions.assertEquals(ErrorCodes.UNAUTHORIZED.getMessage(), id);
     }
 
     @Test
-    void commonProcess() {}
+    @DisplayName("测评通用流程成功")
+    void testCommonProcess() {
+        ProcessVo processVo = new ProcessVo();
+        Node node = new Node();
+
+        //setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
+        Mockito.when(userService.isUserDataScopeByRole(anyInt(),any())).thenReturn(true);
+        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn();
+        doNothing().when(nodeMapper).updateNodeById(any());
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn();
+        Mockito.when(approvalPathNodeService.findANodeByAsIdAndSoftwareStatus());
+        doNothing().when(nodeMapper).insertNode(any());
+        doNothing().when(softwareMapper).updateSoftware(any());
+
+        //run
+        softwareServiceImpl.commonProcess(processVo, USER_UUID, NodeEnum.PROGRAM_REVIEW.getId());
+
+        //verify
+    }
 
     @Test
-    void testingPhase() {}
+    void testTestingPhase() {
+        ProcessVo processVo = new ProcessVo();
+        Node node = new Node();
+
+        //setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
+        Mockito.when(userService.isUserDataScopeByRole(anyInt(),any())).thenReturn(true);
+        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn();
+        doNothing().when(nodeMapper).updateNodeById(any());
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn();
+        Mockito.when(approvalPathNodeService.findANodeByAsIdAndSoftwareStatus());
+        doNothing().when(nodeMapper).insertNode(any());
+        doNothing().when(softwareMapper).updateSoftware(any());
+
+        //run
+        softwareServiceImpl.testingPhase(processVo, USER_UUID);
+    }
 
     private Software initTestSoftware() {
         Software software = new Software();
