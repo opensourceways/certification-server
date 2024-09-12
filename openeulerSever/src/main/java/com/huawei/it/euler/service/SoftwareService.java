@@ -51,9 +51,8 @@ public interface SoftwareService {
      *
      * @param software 软件信息
      * @param uuid uuid
-     * @param request request
      */
-    void insertSoftware(Software software, String uuid, HttpServletRequest request)
+    Integer createSoftware(Software software, String uuid)
         throws InputException, IOException;
 
     JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
