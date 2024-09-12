@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        boolean isLogin = accountService.isLogin(request, response);
-        if (!isLogin) {
+        String sessionId = accountService.isLogin(request, response);
+        if (StringUtils.isEmpty(sessionId)) {
             cookieConfig.cleanCookie(request,response);
             chain.doFilter(request, response);
             return;
@@ -60,7 +61,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         accountService.refreshLogin(request);
 
-        accountService.setAuthentication(request);
+        accountService.setAuthentication(sessionId);
 
         chain.doFilter(request, response);
     }
