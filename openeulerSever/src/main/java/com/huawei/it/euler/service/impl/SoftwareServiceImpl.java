@@ -474,7 +474,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
         }
         if (StringUtils.isBlank(vo.getTransferredComments())
-            || (handlerResult == 3 && StringUtils.isBlank(vo.getTransferredUser()))) {
+            || (handlerResult.equals(HandlerResultEnum.TRANSFER.getId()) && StringUtils.isBlank(vo.getTransferredUser()))) {
             LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
             throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
         }
@@ -487,7 +487,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("非法的审核人:{}", uuid);
             throw new ParamException("非法的审核人:" + uuid);
         }
-        if (handlerResult == 3) {
+        if (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())) {
             if (vo.getTransferredUser().equals(uuid)) {
                 LOGGER.error("转审人不能为自己:{}", uuid);
                 throw new ParamException("转审人不能为自己:" + uuid);
@@ -526,17 +526,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         node.setUpdateTime(new Date());
         node.setHandler(software.getReviewer());
         nodeMapper.insertNode(node);
-    }
-
-    private boolean checkPermission(ProcessVo vo, String uuid) {
-        List<SimpleUserVo> simpleUserVos = transferredUserList(vo.getSoftwareId(), uuid);
-        boolean isApprove = false;
-        for (SimpleUserVo simpleUserVo : simpleUserVos) {
-            if (Objects.equals(simpleUserVo.getUuid(), vo.getTransferredUser())) {
-                isApprove = true;
-            }
-        }
-        return isApprove;
     }
 
     @Override
