@@ -25,6 +25,7 @@ import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.NodeMapper;
 import com.huawei.it.euler.mapper.ProtocolMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
+import com.huawei.it.euler.model.entity.ApprovalPathNode;
 import com.huawei.it.euler.model.entity.Node;
 import com.huawei.it.euler.model.entity.Protocol;
 import com.huawei.it.euler.model.entity.Software;
@@ -119,14 +120,15 @@ class SoftwareServiceImplTest {
     void testCommonProcess() {
         ProcessVo processVo = new ProcessVo();
         Node node = new Node();
+        ApprovalPathNode approvalPathNode = new ApprovalPathNode();
 
         //setup
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
         Mockito.when(userService.isUserDataScopeByRole(anyInt(),any())).thenReturn(true);
-        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn();
+        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn(node);
         doNothing().when(nodeMapper).updateNodeById(any());
-        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn();
-        Mockito.when(approvalPathNodeService.findANodeByAsIdAndSoftwareStatus());
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn(node);
+        Mockito.when(approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(anyInt(),anyInt())).thenReturn(approvalPathNode);
         doNothing().when(nodeMapper).insertNode(any());
         doNothing().when(softwareMapper).updateSoftware(any());
 
@@ -140,14 +142,15 @@ class SoftwareServiceImplTest {
     void testTestingPhase() {
         ProcessVo processVo = new ProcessVo();
         Node node = new Node();
+        ApprovalPathNode approvalPathNode = new ApprovalPathNode();
 
         //setup
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
         Mockito.when(userService.isUserDataScopeByRole(anyInt(),any())).thenReturn(true);
-        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn();
+        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn(node);
         doNothing().when(nodeMapper).updateNodeById(any());
-        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn();
-        Mockito.when(approvalPathNodeService.findANodeByAsIdAndSoftwareStatus());
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn(node);
+        Mockito.when(approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(anyInt(),anyInt())).thenReturn(approvalPathNode);
         doNothing().when(nodeMapper).insertNode(any());
         doNothing().when(softwareMapper).updateSoftware(any());
 
