@@ -114,7 +114,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public Software findById(Integer id, String uuid) {
         Software software = softwareMapper.findById(id);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
-            throw new ParamException("该用户无权访问当前信息");
+            throw new ParamException(ErrorCodes.UNAUTHORIZED.getMessage());
         }
         String jsonHashRatePlatform = software.getJsonHashRatePlatform();
         JSONArray jsonArray = JSON.parseArray(jsonHashRatePlatform);
@@ -215,22 +215,65 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public void insertSoftware(Software software, String uuid, HttpServletRequest request) throws InputException {
+    public Integer createSoftware(Software software, String uuid) throws InputException {
         CompanyVo companyVo = companyService.findCompanyByUserUuid(uuid);
         if (companyVo == null || !Objects.equals(companyVo.getStatus(), CompanyStatusConstant.COMPANY_PASSED)) {
-            throw new InputException("申请兼容性测评服务需要完成企业实名认证");
+            throw new InputException(ErrorCodes.COMPANY_NOT_APPROVED.getMessage());
         }
         // 校验是否签署协议
         Protocol protocol =
             protocolMapper.selectProtocolDesc(ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
         if (protocol == null || Objects.equals(protocol.getStatus(), 0)) {
-            throw new InputException("申请兼容性测评服务需要签署技术测评协议");
+            throw new InputException(ErrorCodes.PROTOCOL_NOT_SIGNED.getMessage());
         }
+        initSoftware(software, uuid, companyVo);
+        // 获取测评流程
+        List<ApprovalPathNode> approvalPath =
+            approvalScenarioService.findApprovalPath(software.getTestOrganization(), software.getCpuVendor());
+        software.setAsId(approvalPath.get(0).getAsId());
+        Integer softwareId = software.getId();
+        // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
+        if (softwareId == null || softwareId == 0) {
+            softwareMapper.insertSoftware(software);
+            softwareId = software.getId();
+        } else {
+            softwareMapper.recommit(software);
+            // 调用审核接口
+            ProcessVo processVo = new ProcessVo();
+            processVo.setSoftwareId(software.getId());
+            processVo.setHandlerResult(1);
+            processVo.setTransferredComments("通过");
+            commonProcess(processVo, uuid, 1);
+            return software.getId();
+        }
+        // 设置节点表当前信息 1-认证申请
+        setCurNode(uuid, softwareId);
+        // 设置节点表下一个节点状态 2-方案审核
+        Node nextNode = new Node();
+        setNextNode(software, nextNode, approvalPath);
+        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
+        software.setReviewer(nextNode.getHandler());
+        software.setReviewRole(approvalPath.get(0).getRoleId());
+        // 更新软件信息表
+        softwareMapper.updateSoftware(software);
+        // 发送邮件通知
+        sendEmail(software, uuid);
+        return softwareId;
+    }
+
+    /**
+     * 初始化测评流程信息
+     * @param software 需要初始化的测评流程
+     * @param uuid  用户uuid
+     * @param companyVo 用户对应的公司信息
+     * @return 测评流程
+     */
+    private Software initSoftware(Software software, String uuid,CompanyVo companyVo) {
         software.setCompanyName(companyVo.getCompanyName());
         software.setCompanyId(companyVo.getId());
         software.setCompanyCode(companyVo.getCompanyCode());
         // 设置软件信息表当前节点状态 1-认证申请
-        software.setStatus(1);
+        software.setStatus(NodeEnum.APPLY.getId());
         // reviewer为当前节点处理人
         software.setReviewer(uuid);
         Date date = new Date();
@@ -246,37 +289,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
         checkParam(software);
-        // 获取测评流程
-        List<ApprovalPathNode> approvalPath =
-            approvalScenarioService.findApprovalPath(software.getTestOrganization(), software.getCpuVendor());
-        software.setAsId(approvalPath.get(0).getAsId());
-        Integer id = software.getId();
-        // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
-        if (id == null || id == 0) {
-            softwareMapper.insertSoftware(software);
-            id = software.getId();
-        } else {
-            softwareMapper.recommit(software);
-            // 调用审核接口
-            ProcessVo processVo = new ProcessVo();
-            processVo.setSoftwareId(software.getId());
-            processVo.setHandlerResult(1);
-            processVo.setTransferredComments("通过");
-            commonProcess(processVo, uuid, 1);
-            return;
-        }
-        // 设置节点表当前信息 1-认证申请
-        setCurNode(uuid, id);
-        // 设置节点表下一个节点状态 2-方案审核
-        Node nextNode = new Node();
-        setNextNode(software, nextNode, approvalPath);
-        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
-        software.setReviewer(nextNode.getHandler());
-        software.setReviewRole(approvalPath.get(0).getRoleId());
-        // 更新软件信息表
-        softwareMapper.updateSoftware(software);
-        // 发送邮件通知
-        sendEmail(software, uuid);
+        return software;
     }
 
     private void setCurNode(String userUuid, Integer softwareId) {
