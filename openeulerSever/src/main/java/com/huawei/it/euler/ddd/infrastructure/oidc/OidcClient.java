@@ -61,7 +61,7 @@ public class OidcClient {
     private RestTemplate restTemplate;
 
     public String getLoginUrl() {
-        return String.format("%s?response_type=code&scope=openid profile email phone address offline_access&client_id=%s&redirect_uri=%s", authCodeUrl, clientId, redirectUrl);
+        return String.format("%s?response_type=code&scope=openid profile email phone address offline_access&client_id=%s&redirect_uri=%s&loginType=code", authCodeUrl, clientId, redirectUrl);
     }
 
     public String getLogoutUrl() {
