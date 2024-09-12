@@ -71,7 +71,7 @@ public class AccountService {
         response.sendRedirect(oidcAuthService.redirectToIndex());
     }
 
-    public String loginByOidc(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public boolean loginByOidc(HttpServletRequest request, HttpServletResponse response) throws Exception {
         OidcCookie oidcCookie = getOidcCookie(request);
         JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
         String uuid = loginObj.getString("userId");
@@ -88,14 +88,15 @@ public class AccountService {
         }
         logUtils.insertAuditLog(request, uuid, "login", "login in", "user auto login in");
         cookieConfig.writeSessionInCookie(response, sessionId);
+        request.setAttribute("sessionId",sessionId);
 
         String token = xsrfService.refreshToken(uuid);
         cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
         response.addHeader(xsrfService.getResponseHeaderKey(), token);
-        return sessionId;
+        return true;
     }
 
-    public String isLogin(HttpServletRequest request, HttpServletResponse response) {
+    public boolean isLogin(HttpServletRequest request, HttpServletResponse response) {
         String sessionId = null;
         try {
             sessionId = getSessionId(request);
@@ -110,13 +111,13 @@ public class AccountService {
 
         // both no login
         if (StringUtils.isEmpty(sessionId) && oidcCookie == null) {
-            return null;
+            return false;
         }
 
         // local login but remote no login, set local logout
         if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
             logout(request, response);
-            return null;
+            return false;
         }
 
         // local no login but remote login, set local login
@@ -126,7 +127,7 @@ public class AccountService {
             } catch (Exception e) {
                 log.error("login local with remote login error");
                 log.error(e.getMessage());
-                return null;
+                return false;
             }
         }
 
@@ -150,7 +151,7 @@ public class AccountService {
                 if (!StringUtils.isEmpty(sessionId)) {
                     sessionService.clear(sessionId);
                 }
-                sessionId = loginByOidc(request, response);
+               return loginByOidc(request, response);
             }
         } catch (Exception ignored) {
             if (!StringUtils.isEmpty(sessionId)) {
@@ -159,7 +160,7 @@ public class AccountService {
             }
         }
 
-        return sessionId;
+        return StringUtils.isNotEmpty(sessionId);
     }
 
     public void refreshLogin(HttpServletRequest request) {
@@ -184,8 +185,9 @@ public class AccountService {
         }
     }
 
-    public void setAuthentication(String sessionId) {
+    public void setAuthentication(HttpServletRequest request) {
         try {
+            String sessionId = getSessionId(request);
             String loginUuid = sessionService.getUuid(sessionId);
             List<GrantedAuthority> userAuthorities = roleService.getUserAuthorities(loginUuid);
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginUuid, null, userAuthorities);
@@ -203,6 +205,7 @@ public class AccountService {
         } catch (NoLoginException e) {
             throw new NoLoginException();
         }
+
         String uuid;
         try {
             uuid = sessionService.getUuid(sessionId);
@@ -228,6 +231,9 @@ public class AccountService {
 
     private String getSessionId(HttpServletRequest request) throws NoLoginException {
         String sessionId = cookieConfig.getCookie(request,"sessionId");
+        if (StringUtils.isEmpty(sessionId)){
+            sessionId = (String) request.getAttribute("sessionId");
+        }
         if (StringUtils.isEmpty(sessionId)){
             throw new NoLoginException();
         }
