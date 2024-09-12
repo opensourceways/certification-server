@@ -97,9 +97,13 @@ public class AccountService {
 
     public String isLogin(HttpServletRequest request, HttpServletResponse response) {
         String sessionId = null;
-        OidcCookie oidcCookie = null;
         try {
             sessionId = getSessionId(request);
+        } catch (NoLoginException ignored) {
+        }
+
+        OidcCookie oidcCookie = null;
+        try {
             oidcCookie = getOidcCookie(request);
         } catch (NoLoginException ignored) {
         }
