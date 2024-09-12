@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,21 +53,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        boolean isLogin = accountService.isLogin(request, response);
-        LOGGER.info("url : {}, login check: {}", request.getRequestURL(), isLogin);
-        if (!isLogin) {
+        String sessionId = accountService.isLogin(request, response);
+        if (StringUtils.isEmpty(sessionId)) {
             cookieConfig.cleanCookie(request,response);
             chain.doFilter(request, response);
             return;
         }
 
-        LOGGER.info("url : {}, refreshLogin begin", request.getRequestURL());
         accountService.refreshLogin(request);
-        LOGGER.info("url : {}, refreshLogin end", request.getRequestURL());
 
-        LOGGER.info("url : {}, setAuthentication begin", request.getRequestURL());
-        accountService.setAuthentication(request);
-        LOGGER.info("url : {}, setAuthentication end", request.getRequestURL());
+        accountService.setAuthentication(sessionId);
 
         chain.doFilter(request, response);
     }
