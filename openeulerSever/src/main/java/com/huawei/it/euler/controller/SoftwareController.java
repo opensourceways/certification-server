@@ -83,8 +83,8 @@ public class SoftwareController {
     public JsonResponse<String> softwareRegister(@RequestBody @Valid Software software, HttpServletRequest request)
             throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        softwareService.insertSoftware(software, uuid, request);
-        return JsonResponse.success();
+        Integer id = softwareService.createSoftware(software, uuid);
+        return JsonResponse.success(id.toString());
     }
 
     /**
