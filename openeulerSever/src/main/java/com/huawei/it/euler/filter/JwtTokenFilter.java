@@ -52,8 +52,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        String sessionId = accountService.isLogin(request, response);
-        if (StringUtils.isEmpty(sessionId)) {
+        boolean isLogin = accountService.isLogin(request, response);
+        if (!isLogin) {
             cookieConfig.cleanCookie(request,response);
             chain.doFilter(request, response);
             return;
@@ -61,8 +61,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         accountService.refreshLogin(request);
 
-        accountService.setAuthentication(sessionId);
-
+        accountService.setAuthentication(request);
         chain.doFilter(request, response);
     }
 }
