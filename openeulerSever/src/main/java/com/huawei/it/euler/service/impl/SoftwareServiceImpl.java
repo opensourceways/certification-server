@@ -343,10 +343,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo, uuid);
-        getNextNode(vo, software);
-        addNextNode(software);
-        softwareMapper.updateSoftware(software);
+        updateNextSoftware(vo,software, uuid);
         return JsonResponse.success();
     }
 
@@ -366,10 +363,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (CollectionUtil.isEmpty(attachmentsVos)) {
             return JsonResponse.failed("未上传测试报告");
         }
-        updateCurNode(vo, uuid);
-        getNextNode(vo, software);
-        addNextNode(software);
-        softwareMapper.updateSoftware(software);
+        updateNextSoftware(vo,software, uuid);
         return JsonResponse.success();
     }
 
@@ -383,10 +377,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException("审批人员错误");
         }
-        updateCurNode(vo, uuid);
-        getNextNode(vo, software);
-        addNextNode(software);
-        softwareMapper.updateSoftware(software);
+        updateNextSoftware(vo,software, uuid);
         return JsonResponse.success();
     }
 
@@ -396,10 +387,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateCurNode(vo, uuid);
-        getNextNode(vo, software);
-        addNextNode(software);
-        softwareMapper.updateSoftware(software);
+        updateNextSoftware(vo,software, uuid);
         return JsonResponse.success();
     }
 
@@ -510,6 +498,13 @@ public class SoftwareServiceImpl implements SoftwareService {
             }
         }
         return softwareInDb;
+    }
+
+    private void updateNextSoftware(ProcessVo vo,Software software, String uuid) {
+        updateCurNode(vo, uuid);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
     }
 
     private void updateCurNode(ProcessVo vo, String Uuid) {
