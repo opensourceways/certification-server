@@ -62,7 +62,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         accountService.refreshLogin(request);
 
-        accountService.setAuthentication(request);
+        accountService.setAuthentication(sessionId);
 
         chain.doFilter(request, response);
     }
