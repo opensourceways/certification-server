@@ -63,53 +63,96 @@ public class AccountService {
             log.error(e.getMessage());
         }
         cookieConfig.writeSessionInCookie(response, sessionId);
+
         String token = xsrfService.refreshToken(userInfo.getUuid());
         cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
         response.addHeader(xsrfService.getResponseHeaderKey(), token);
+
         response.sendRedirect(oidcAuthService.redirectToIndex());
+    }
+
+    public String loginByOidc(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        OidcCookie oidcCookie = getOidcCookie(request);
+        JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
+        String uuid = loginObj.getString("userId");
+
+        UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
+        userInfoService.saveUser(userInfo);
+
+        String sessionId = sessionService.create();
+        if (loginObj.containsKey("tokenExpireInterval")) {
+            int tokenExpiresIn = loginObj.getInteger("tokenExpireInterval");
+            sessionService.save(sessionId, uuid, tokenExpiresIn);
+        } else {
+            sessionService.save(sessionId, uuid);
+        }
+        logUtils.insertAuditLog(request, uuid, "login", "login in", "user auto login in");
+        cookieConfig.writeSessionInCookie(response, sessionId);
+
+        String token = xsrfService.refreshToken(uuid);
+        cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
+        response.addHeader(xsrfService.getResponseHeaderKey(), token);
+        return sessionId;
     }
 
     public String isLogin(HttpServletRequest request, HttpServletResponse response) {
         String sessionId = null;
-        String loginUuid = null;
+        OidcCookie oidcCookie = null;
         try {
             sessionId = getSessionId(request);
+            oidcCookie = getOidcCookie(request);
+        } catch (NoLoginException ignored) {
+        }
+
+        // both no login
+        if (StringUtils.isEmpty(sessionId) && oidcCookie == null) {
+            return null;
+        }
+
+        // local login but remote no login, set local logout
+        if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
+            logout(request, response);
+            return null;
+        }
+
+        // local no login but remote login, set local login
+        if (StringUtils.isEmpty(sessionId) && oidcCookie != null) {
+            try {
+                return loginByOidc(request, response);
+            } catch (Exception e) {
+                log.error("login local with remote login error");
+                log.error(e.getMessage());
+                return null;
+            }
+        }
+
+        // bot login and check login expire or not and check local user equal remote user or not
+        String loginUuid = null;
+        try {
             boolean isLoginLocal = sessionService.isAuth(sessionId);
-            if (!isLoginLocal){
+            if (isLoginLocal) {
+                loginUuid = getLoginUuid(request);
+            } else {
                 sessionId = null;
             }
-            loginUuid = getLoginUuid(request);
         } catch (NoLoginException ignored) {
         }
 
         try {
-            OidcCookie oidcCookie = getOidcCookie(request);
             JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
 
             String uuid = loginObj.getString("userId");
-            if (!uuid.equals(loginUuid)){
-                if (!StringUtils.isEmpty(sessionId)){
+            if (!uuid.equals(loginUuid)) {
+                if (!StringUtils.isEmpty(sessionId)) {
                     sessionService.clear(sessionId);
                 }
-
-                UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
-                userInfoService.saveUser(userInfo);
-
-                sessionId = sessionService.create();
-                if (loginObj.containsKey("tokenExpireInterval")){
-                    int tokenExpiresIn = loginObj.getInteger("tokenExpireInterval");
-                    sessionService.save(sessionId, uuid, tokenExpiresIn);
-                } else {
-                    sessionService.save(sessionId, uuid);
-                }
-                logUtils.insertAuditLog(request, uuid, "login", "login in", "user login in");
-                cookieConfig.writeSessionInCookie(response, sessionId);
-
-                String token = xsrfService.refreshToken(uuid);
-                cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
-                response.addHeader(xsrfService.getResponseHeaderKey(), token);
+                sessionId = loginByOidc(request, response);
             }
         } catch (Exception ignored) {
+            if (!StringUtils.isEmpty(sessionId)) {
+                logout(request, response);
+                sessionId = null;
+            }
         }
 
         return sessionId;
