@@ -40,7 +40,10 @@ import com.huawei.it.euler.service.UserService;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
+
     private static final String ACCOUNT_INVAILD = "账号或密码错误";
+
+    private static final Integer ALL_PERMISSION = 0;
 
     @Autowired
     private UserMapper userMapper;
@@ -90,7 +93,7 @@ public class UserServiceImpl implements UserService {
     public String getUserAllDateScope(Integer uuid) {
         Set<Integer> dateScope = roleMapper.findRoleByUserId(uuid, null).stream().map(RoleVo::getDataScope)
             .filter(Objects::nonNull).collect(Collectors.toSet());
-        if (dateScope.contains(0)) {
+        if (dateScope.contains(ALL_PERMISSION)) {
             return "ALL";
         } else {
             return String.join(",", dateScope.stream().map(String::valueOf).toArray(String[]::new));
@@ -111,7 +114,7 @@ public class UserServiceImpl implements UserService {
         }
         List<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, software.getReviewRole()).stream().map(RoleVo::getDataScope)
             .filter(Objects::nonNull).toList();
-        return dateScope.contains(0) || dateScope.contains(software.getTestOrgId());
+        return dateScope.contains(ALL_PERMISSION) || dateScope.contains(software.getTestOrgId());
     }
 
     @Override
@@ -125,7 +128,7 @@ public class UserServiceImpl implements UserService {
             }
             Set<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, null).stream().map(RoleVo::getDataScope)
                 .filter(Objects::nonNull).collect(Collectors.toSet());
-            if (dateScope.contains(0)) {
+            if (dateScope.contains(ALL_PERMISSION)) {
                 return true;
             } else {
                 return dateScope.contains(software.getTestOrgId());
