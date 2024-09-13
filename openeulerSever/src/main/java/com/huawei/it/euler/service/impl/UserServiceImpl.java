@@ -41,7 +41,7 @@ import com.huawei.it.euler.service.UserService;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private static final String ACCOUNT_INVAILD = "账号或密码错误";
+    private static final String ACCOUNT_INVALID = "账号或密码错误";
 
     private static final Integer ALL_PERMISSION = 0;
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             userDetails = new User("", "", getUserAuthorities(user.getId()));
         } else {
-            throw new UsernameNotFoundException(ACCOUNT_INVAILD);
+            throw new UsernameNotFoundException(ACCOUNT_INVALID);
         }
         return userDetails;
     }
