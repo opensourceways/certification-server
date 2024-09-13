@@ -604,33 +604,6 @@ public class SoftwareServiceImpl implements SoftwareService {
             item.setReviewerName(accountService.getUserName(item.getReviewer()));
             item.setApplicantName(accountService.getUserName(item.getApplicant()));
         });
-        currentSoftwareList.forEach(item -> {
-            if (userUuid.equals(item.getReviewer())) {
-                String status = item.getStatus();
-                String cpuVendor = item.getCpuVendor();
-                switch (status) {
-                    case "证书确认":
-                        item.setOperation("确认");
-                        break;
-                    case "测试阶段":
-                        if (!IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor)) {
-                            item.setOperation("上传报告");
-                            break;
-                        }
-                        break;
-                    case "已完成":
-                        item.setOperation("查看证书");
-                        break;
-                    case "方案审核已驳回":
-                    case "报告初审已驳回":
-                    case "证书签发已驳回":
-                        item.setOperation("去处理");
-                        break;
-                    default:
-                        break;
-                }
-            }
-        });
     }
 
     @Override
@@ -668,35 +641,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
             item.setReviewerName(accountService.getUserName(item.getReviewer()));
-            List<Integer> roleList = roleMap.getOrDefault(item.getReviewRole(), Collections.emptyList());
-            if (!roleList.contains(item.getTestOrgId()) && !roleList.contains(0)) {
-                return;
-            }
-            String operation = getOperation(item.getStatus(), item.getCpuVendor());
-            item.setOperation(operation);
         });
-    }
-
-    private String getOperation(String status, String cpuVendor) {
-        switch (status) {
-            case "测试阶段":
-                return IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor) ? "上传报告" : null;
-            case "证书初审":
-                return "证书初审";
-            case "已完成":
-                return "查看证书";
-            case "方案审核":
-            case "报告初审":
-            case "报告复审":
-            case "证书签发":
-                return "审核";
-            case "证书确认已驳回":
-            case "证书初审已驳回":
-            case "报告复审已驳回":
-                return "去处理";
-            default:
-                return null;
-        }
     }
 
     @Override
