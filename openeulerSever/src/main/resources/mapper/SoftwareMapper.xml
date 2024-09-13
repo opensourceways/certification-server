@@ -198,7 +198,7 @@
         #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
         #{productType}, #{testOrganization},#{testOrgId}, #{status}, #{updateTime}, #{applicationTime},
         #{reviewer},#{reviewRole},
-        #{userUuid}, #{cpuVendor}, #{asId}),#{companyCode}
+        #{userUuid}, #{cpuVendor}, #{asId},#{companyCode})
     </insert>
 
     <update id="updateSoftware" parameterType="com.huawei.it.euler.model.entity.Software">
