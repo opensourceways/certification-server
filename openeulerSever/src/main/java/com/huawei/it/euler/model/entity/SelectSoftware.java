@@ -31,6 +31,11 @@ public class SelectSoftware {
     private List<String> testOrganization;
 
     /**
+     *  测试机构id
+     */
+    private List<Integer> testOrgId;
+
+    /**
      * 权限范围
      */
     private String dataScope;

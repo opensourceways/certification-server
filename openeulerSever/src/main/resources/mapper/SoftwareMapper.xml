@@ -103,6 +103,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="software.testOrgId != null and software.testOrgId.size() > 0">
+                and test_org_id in
+                <foreach collection="software.testOrgId" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="software.productType != null and software.productType.size() > 0">
                 and
                 <foreach collection="software.productType" item="item" open="(" separator="or" close=")">
@@ -128,6 +134,12 @@
             <if test="software.testOrganization != null and software.testOrganization.size() > 0">
                 and test_organization in
                 <foreach collection="software.testOrganization" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="software.testOrgId != null and software.testOrgId.size() > 0">
+                and test_org_id in
+                <foreach collection="software.testOrgId" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
