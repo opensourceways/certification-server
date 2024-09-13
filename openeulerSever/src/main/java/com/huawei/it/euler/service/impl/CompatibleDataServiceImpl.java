@@ -7,7 +7,7 @@ package com.huawei.it.euler.service.impl;
 import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.domain.account.UserInfoService;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.mapper.CompatibleDataMapper;
 import com.huawei.it.euler.mapper.ProtocolMapper;
@@ -150,7 +150,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
 
     @Autowired
-    private UserInfoService userInfoService;
+    private AccountService accountService;
 
     @Override
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
@@ -317,7 +317,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     public JsonResponse<String> approvalCompatibleData(ApprovalDataVo vo, String uuid) {
-        UserInfo userInfo = userInfoService.getUser(uuid);
+        UserInfo userInfo = accountService.getUserInfo(uuid);
         List<Integer> dataIdList = vo.getDataIdList();
         Integer handlerResult = vo.getHandlerResult();
         List<String> statusList = compatibleDataMapper.getStatus(dataIdList);

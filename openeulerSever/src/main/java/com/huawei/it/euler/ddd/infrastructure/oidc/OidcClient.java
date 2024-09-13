@@ -12,6 +12,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -138,7 +139,12 @@ public class OidcClient {
         log.info("refresh session api " + refreshTokenUrl);
         log.info("refresh session param " + JSONObject.toJSONString(oidcCookie));
         log.info(JSONObject.toJSONString(responseEntity));
-        return JSONObject.parseObject(responseEntity.getBody(),OidcResponse.class);
+        OidcResponse oidcResponse = JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
+        if (oidcResponse != null){
+            List<String> cookieList = responseEntity.getHeaders().get("Set-Cookie");
+            oidcResponse.setCookieList(cookieList);
+        }
+        return oidcResponse;
     }
 
     /**

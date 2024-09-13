@@ -39,6 +39,7 @@ public class OidcAuthService {
         if (dataJSONObject == null) {
             throw new NoLoginException();
         }
+        dataJSONObject.put("cookieList",refreshResult.getCookieList());
         return dataJSONObject;
     }
 
@@ -79,10 +80,6 @@ public class OidcAuthService {
 
     public String getLogoutUrl(){
         return oidcClient.getLogoutUrl();
-    }
-
-    public String toIndex(){
-        return oidcClient.getFrontIndexUrl();
     }
 
     public String redirectToIndex(){

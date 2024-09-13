@@ -8,7 +8,6 @@ import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.account.ProtocolService;
 import com.huawei.it.euler.ddd.domain.account.Role;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.domain.account.UserInfoService;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.model.constant.StringConstant;
@@ -56,9 +55,6 @@ public class UserController {
     private AccountService accountService;
 
     @Autowired
-    private UserInfoService userInfoService;
-
-    @Autowired
     private ProtocolService protocolService;
 
     /**
@@ -71,7 +67,7 @@ public class UserController {
     @PreAuthorize("hasRole('china_region')")
     public JsonResponse<EulerUserVo> findUserByUserUuid(
             @RequestParam("uuid") @NotBlank(message = "用户uuid不能为空") String uuid) {
-        UserInfo loginUser = userInfoService.getUser(uuid);
+        UserInfo loginUser = accountService.getUserInfo(uuid);
         EulerUserVo userVo = new EulerUserVo();
         if (loginUser != null) {
             String telPhone = companyService.reduceSensitivity(loginUser.getPhone(), StringConstant.TLE_PHONE);
@@ -80,7 +76,8 @@ public class UserController {
             userVo.setMail(mail);
             userVo.setUsername(loginUser.getUserName());
             BeanUtils.copyProperties(loginUser, userVo);
-            List<String> userRoles = loginUser.getRoleList().stream().map(Role::getRole).toList();
+            List<Role> userRoleList = accountService.getUserRoleList(uuid);
+            List<String> userRoles = userRoleList.stream().map(Role::getRole).toList();
             userVo.setRoles(userRoles);
         }
         return JsonResponse.success(userVo);
@@ -110,7 +107,7 @@ public class UserController {
             vo.setMail(mail);
             vo.setUsername(loginUser.getUserName());
             BeanUtils.copyProperties(loginUser, vo);
-            List<Role> roleList = loginUser.getRoleList();
+            List<Role> roleList = accountService.getUserRoleList(loginUser.getUuid());
             vo.setRoles(roleList.stream().map(Role::getRole).collect(Collectors.toList()));
             vo.setRoleNames(roleList.stream().map(Role::getRoleName).collect(Collectors.toList()));
         }
