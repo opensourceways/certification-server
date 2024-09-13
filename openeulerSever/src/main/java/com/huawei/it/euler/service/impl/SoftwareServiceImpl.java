@@ -56,7 +56,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @Transactional
 public class SoftwareServiceImpl implements SoftwareService {
 
-    private static  final Logger LOGGER = LoggerFactory.getLogger(SoftwareServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SoftwareServiceImpl.class);
 
     private static final String FILE_TYPE_SIGN = "sign";
 
@@ -263,12 +263,13 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     /**
      * 初始化测评流程信息
+     * 
      * @param software 需要初始化的测评流程
-     * @param uuid  用户uuid
+     * @param uuid 用户uuid
      * @param companyVo 用户对应的公司信息
      * @return 测评流程
      */
-    private Software initSoftware(Software software, String uuid,CompanyVo companyVo) {
+    private Software initSoftware(Software software, String uuid, CompanyVo companyVo) {
         software.setCompanyName(companyVo.getCompanyName());
         software.setCompanyId(companyVo.getId());
         software.setCompanyCode(companyVo.getCompanyCode());
@@ -343,7 +344,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateNextSoftware(vo,software, uuid);
+        updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
 
@@ -363,7 +364,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (CollectionUtil.isEmpty(attachmentsVos)) {
             return JsonResponse.failed("未上传测试报告");
         }
-        updateNextSoftware(vo,software, uuid);
+        updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
 
@@ -377,7 +378,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException("审批人员错误");
         }
-        updateNextSoftware(vo,software, uuid);
+        updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
 
@@ -387,7 +388,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
             throw new ParamException("审批阶段错误");
         }
-        updateNextSoftware(vo,software, uuid);
+        updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
 
@@ -412,20 +413,22 @@ public class SoftwareServiceImpl implements SoftwareService {
         Integer nextNodeNumber = software.getStatus();
         switch (vo.getHandlerResult()) {
             case 1:
-                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor()) && nextNodeNumber == 3) {
-                    nextNodeNumber = 5;
-                } else {
-                    nextNodeNumber = software.getStatus() + 1;
+                // intel取消报告初审
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
+                    && Objects.equals(nextNodeNumber, NodeEnum.TESTING_PHASE.getId())) {
+                    nextNodeNumber++;
                 }
+                nextNodeNumber++;
                 software.setStatus(nextNodeNumber);
                 getHandler(nextNodeNumber, software);
                 break;
             case 2:
-                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor()) && nextNodeNumber == 5) {
-                    nextNodeNumber = 3;
-                } else {
-                    nextNodeNumber = software.getStatus() - 1;
+                // intel取消报告初审
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
+                    && Objects.equals(nextNodeNumber, NodeEnum.REPORT_RE_REVIEW.getId())) {
+                    nextNodeNumber--;
                 }
+                nextNodeNumber--;
                 software.setStatus(nextNodeNumber);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 getHandler(nextNodeNumber, software);
@@ -440,34 +443,25 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private Software getHandler(int nextNodeNameForNumber, Software software) {
-        if (nextNodeNameForNumber == NodeEnum.FINISHED.getId()) {
-            return software;
+        switch (nextNodeNameForNumber) {
+            case 1: // 认证申请
+            case 7: // 证书确认
+                setUserAsReviewer(software);
+                break;
+            case 3: // 审批流程
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
+                    setProgramReviewerAsReviewer(software);
+                } else {
+                    setUserAsReviewer(software);
+                }
+                break;
+            case 4:// 报告初审
+                setProgramReviewerAsReviewer(software);
+                break;
+            default:
+                setApprovalAsReviewer(software, nextNodeNameForNumber);
+                break;
         }
-        if (nextNodeNameForNumber == NodeEnum.TESTING_PHASE.getId()) {
-            if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())){
-                Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
-                software.setReviewer(node.getHandler());
-                software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
-            }else {
-                software.setReviewer(software.getUserUuid());
-                software.setReviewRole(RoleEnum.USER.getRoleId());
-            }
-            return software;
-        }
-        if (nextNodeNameForNumber == NodeEnum.APPLY.getId()
-            || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
-            software.setReviewer(software.getUserUuid());
-            software.setReviewRole(RoleEnum.USER.getRoleId());
-            return software;
-        }
-        if (nextNodeNameForNumber == NodeEnum.REPORT_REVIEW.getId()) {
-            setProgramReviewerAsReviewer(software);
-            return software;
-        }
-        ApprovalPathNode approvalPathNode =
-            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
-        software.setReviewer(approvalPathNode.getUserUuid());
-        software.setReviewRole(approvalPathNode.getRoleId());
         return software;
     }
 
@@ -482,6 +476,13 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
     }
 
+    private void setApprovalAsReviewer(Software software, Integer nextNodeNumber) {
+        ApprovalPathNode approvalPathNode =
+            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNumber);
+        software.setReviewer(approvalPathNode.getUserUuid());
+        software.setReviewRole(approvalPathNode.getRoleId());
+    }
+
     private Software checkCommonProcess(ProcessVo vo, String uuid) {
         Integer handlerResult = vo.getHandlerResult();
         if (handlerResult < 1 || handlerResult > 3) {
@@ -489,7 +490,8 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
         }
         if (StringUtils.isBlank(vo.getTransferredComments())
-            || (handlerResult.equals(HandlerResultEnum.TRANSFER.getId()) && StringUtils.isBlank(vo.getTransferredUser()))) {
+            || (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())
+                && StringUtils.isBlank(vo.getTransferredUser()))) {
             LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
             throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
         }
@@ -515,7 +517,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         return softwareInDb;
     }
 
-    private void updateNextSoftware(ProcessVo vo,Software software, String uuid) {
+    private void updateNextSoftware(ProcessVo vo, Software software, String uuid) {
         updateCurNode(vo, uuid);
         getNextNode(vo, software);
         addNextNode(software);
