@@ -107,6 +107,7 @@
         select <include refid="allFields"></include>
         from company_t
         where credit_code = #{code}
+        limit 1
     </select>
 
     <select id="countCompany" resultType="java.lang.Integer">

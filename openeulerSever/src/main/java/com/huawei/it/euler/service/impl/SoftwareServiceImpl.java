@@ -461,9 +461,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             return software;
         }
         if (nextNodeNameForNumber == NodeEnum.REPORT_REVIEW.getId()) {
-            Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
-            software.setReviewer(node.getHandler());
-            software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
+            setProgramReviewerAsReviewer(software);
             return software;
         }
         ApprovalPathNode approvalPathNode =
@@ -471,6 +469,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewer(approvalPathNode.getUserUuid());
         software.setReviewRole(approvalPathNode.getRoleId());
         return software;
+    }
+
+    private void setUserAsReviewer(Software software) {
+        software.setReviewer(software.getUserUuid());
+        software.setReviewRole(RoleEnum.USER.getRoleId());
+    }
+
+    private void setProgramReviewerAsReviewer(Software software) {
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
+        software.setReviewer(node.getHandler());
+        software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
     }
 
     private Software checkCommonProcess(ProcessVo vo, String uuid) {
