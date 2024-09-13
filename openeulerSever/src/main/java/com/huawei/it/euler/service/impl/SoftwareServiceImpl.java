@@ -485,17 +485,6 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return JsonResponse.failed("未上传测试报告");
             }
         }
-        if (softwareInDb.getStatus() == 7) {
-            if (handlerResult == 1) {
-                Map<String, Object> param = Maps.newHashMap();
-                param.put("softwareId", softwareInDb.getId());
-                param.put("fileType", "sign");
-                List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(param);
-                if (CollectionUtil.isEmpty(attachmentsVos)) {
-                    return JsonResponse.failed("未上传签名");
-                }
-            }
-        }
         BeanUtils.copyProperties(softwareInDb, software);
         // 判断当前流程是否已经结束
         if (software.getStatus() == 9) {
