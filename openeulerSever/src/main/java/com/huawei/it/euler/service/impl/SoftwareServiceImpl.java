@@ -443,6 +443,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (nextNodeNameForNumber == NodeEnum.FINISHED.getId()) {
             return software;
         }
+        if (nextNodeNameForNumber == NodeEnum.TESTING_PHASE.getId()) {
+            if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())){
+                Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
+                software.setReviewer(node.getHandler());
+                software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
+            }else {
+                software.setReviewer(software.getUserUuid());
+                software.setReviewRole(RoleEnum.USER.getRoleId());
+            }
+            return software;
+        }
         if (nextNodeNameForNumber == NodeEnum.APPLY.getId()
             || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
             software.setReviewer(software.getUserUuid());
@@ -457,13 +468,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         ApprovalPathNode approvalPathNode =
             approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
-        if (nextNodeNameForNumber == NodeEnum.TESTING_PHASE.getId()) {
-            software.setReviewer(approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid());
-            software.setReviewRole(approvalPathNode == null ? RoleEnum.USER.getRoleId() : approvalPathNode.getRoleId());
-        } else {
-            software.setReviewer(approvalPathNode.getUserUuid());
-            software.setReviewRole(approvalPathNode.getRoleId());
-        }
+        software.setReviewer(approvalPathNode.getUserUuid());
+        software.setReviewRole(approvalPathNode.getRoleId());
         return software;
     }
 
