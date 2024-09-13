@@ -29,6 +29,7 @@ import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
 
+import cn.hutool.core.date.StopWatch;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -212,7 +213,11 @@ public class SoftwareController {
     public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, uuid);
+        stopWatch.stop();
+        log.info("查询软件列表耗时:{}", stopWatch.getTotalTimeMillis());
         softwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);

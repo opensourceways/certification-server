@@ -44,6 +44,7 @@ import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.ListPageUtils;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.StopWatch;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -573,12 +574,16 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (ObjectUtils.isEmpty(company)) {
             return new PageResult<>(Collections.emptyList(), 0L, pageNum, pageSize);
         }
-        // 通过所属公司名获取全部认证列表
+
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(uuid);
+        StopWatch stopWatch = new StopWatch();
+           stopWatch.start();
         List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countSoftwareList(selectSoftware);
+        stopWatch.stop();
+        LOGGER.info("sql执行时间:{}", stopWatch.getTotalTimeMillis());
         processFields(currentSoftwareList, uuid);
         return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
     }
