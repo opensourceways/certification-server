@@ -157,6 +157,8 @@ public class AccountService {
                 }
                return loginByOidc(request, response);
             }
+            JSONArray cookieList = loginObj.getJSONArray("cookieList");
+            cookieConfig.writeCookieList(response,cookieList);
         } catch (Exception ignored) {
             if (!StringUtils.isEmpty(sessionId)) {
                 logout(request, response);
