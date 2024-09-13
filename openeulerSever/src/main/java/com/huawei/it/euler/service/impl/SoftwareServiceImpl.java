@@ -241,9 +241,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             // 调用审核接口
             ProcessVo processVo = new ProcessVo();
             processVo.setSoftwareId(software.getId());
-            processVo.setHandlerResult(1);
+            processVo.setHandlerResult(HandlerResultEnum.ACCEPT.getId());
             processVo.setTransferredComments("通过");
-            commonProcess(processVo, uuid, 1);
+            commonProcess(processVo, uuid, NodeEnum.APPLY.getId());
             return software.getId();
         }
         // 设置节点表当前信息 1-认证申请
@@ -273,7 +273,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setCompanyName(companyVo.getCompanyName());
         software.setCompanyId(companyVo.getId());
         software.setCompanyCode(companyVo.getCompanyCode());
-        // 设置软件信息表当前节点状态 1-认证申请
         software.setStatus(NodeEnum.APPLY.getId());
         // reviewer为当前节点处理人
         software.setReviewer(uuid);
@@ -297,9 +296,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         Node curNode = new Node();
         Date date = new Date();
         curNode.setNodeName(NodeEnum.APPLY.getName());
-        curNode.setStatus(1);
-        // 设置处理结果：0-待处理 1-通过 2-驳回 3-转审
-        curNode.setHandlerResult(1);
+        curNode.setStatus(NodeEnum.APPLY.getId());
+        curNode.setHandlerResult(HandlerResultEnum.ACCEPT.getId());
         // 当前节点处理人为申请人
         curNode.setHandler(userUuid);
         curNode.setHandlerTime(date);
@@ -311,9 +309,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private void setNextNode(Software software, Node nextNode, List<ApprovalPathNode> approvalPath) {
         nextNode.setNodeName(NodeEnum.PROGRAM_REVIEW.getName());
-        nextNode.setStatus(2);
-        // 设置处理结果：0-待处理 1-通过 2-驳回 3-转审
-        nextNode.setHandlerResult(0);
+        nextNode.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
+        nextNode.setHandlerResult(HandlerResultEnum.PENDING.getId());
         // 查询处理人
         ApprovalPathNode approvalPathNode = approvalPath.get(0);
         nextNode.setHandler(approvalPathNode.getUserUuid());
@@ -339,22 +336,14 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public JsonResponse<String> commonProcess(ProcessVo vo, String uuid, Integer nodeStatus) {
-        Software software = checkCommonProcess(vo, uuid);
-        if (!Objects.equals(software.getStatus(), nodeStatus)) {
-            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
-            throw new ParamException("审批阶段错误");
-        }
+        Software software = checkCommonProcess(vo, uuid,nodeStatus);
         updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
 
     public JsonResponse<String> testingPhase(ProcessVo vo, String uuid) {
-        Software software = checkCommonProcess(vo, uuid);
-        if (!Objects.equals(software.getStatus(), NodeEnum.TESTING_PHASE.getId())) {
-            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
-            throw new ParamException("审批阶段错误");
-        }
-        if (vo.getHandlerResult() != 1) {
+        Software software = checkCommonProcess(vo, uuid, NodeEnum.TESTING_PHASE.getId());
+        if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
             return JsonResponse.failedResult("非法的审核结果参数");
         }
         AttachmentQuery attachmentQuery = new AttachmentQuery();
@@ -369,11 +358,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public JsonResponse<String> reportReview(ProcessVo vo, String uuid) {
-        Software software = checkCommonProcess(vo, uuid);
-        if (!Objects.equals(software.getStatus(), NodeEnum.REPORT_REVIEW.getId())) {
-            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
-            throw new ParamException("审批阶段错误");
-        }
+        Software software = checkCommonProcess(vo, uuid, NodeEnum.REPORT_REVIEW.getId());
         if (!Objects.equals(software.getReviewer(), uuid)) {
             LOGGER.error("审批人员错误:id:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException("审批人员错误");
@@ -383,21 +368,13 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public JsonResponse<String> certificateConfirmation(ProcessVo vo, String uuid) {
-        Software software = checkCommonProcess(vo, uuid);
-        if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_CONFIRMATION.getId())) {
-            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
-            throw new ParamException("审批阶段错误");
-        }
+        Software software = checkCommonProcess(vo, uuid,NodeEnum.CERTIFICATE_CONFIRMATION.getId());
         updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
 
     public JsonResponse<String> certificateIssuance(ProcessVo vo, String uuid) throws IOException {
-        Software software = checkCommonProcess(vo, uuid);
-        if (!Objects.equals(software.getStatus(), NodeEnum.CERTIFICATE_ISSUANCE.getId())) {
-            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), software.getStatus());
-            throw new ParamException("审批阶段错误");
-        }
+        Software software = checkCommonProcess(vo, uuid, NodeEnum.CERTIFICATE_ISSUANCE.getId());
         updateCurNode(vo, uuid);
         getNextNode(vo, software);
         if (software.getStatus() < NodeEnum.FINISHED.getId()) {
@@ -412,7 +389,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     private Software getNextNode(ProcessVo vo, Software software) {
         Integer nextNodeNumber = software.getStatus();
         switch (vo.getHandlerResult()) {
-            case 1:
+            case 1: //通过
                 // intel取消报告初审
                 if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
                     && Objects.equals(nextNodeNumber, NodeEnum.TESTING_PHASE.getId())) {
@@ -422,7 +399,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 software.setStatus(nextNodeNumber);
                 getHandler(nextNodeNumber, software);
                 break;
-            case 2:
+            case 2: //驳回
                 // intel取消报告初审
                 if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
                     && Objects.equals(nextNodeNumber, NodeEnum.REPORT_RE_REVIEW.getId())) {
@@ -433,10 +410,11 @@ public class SoftwareServiceImpl implements SoftwareService {
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 getHandler(nextNodeNumber, software);
                 break;
-            case 3:
+            case 3: //转审
                 software.setReviewer(vo.getTransferredUser());
                 break;
             default:
+                LOGGER.error("审批阶段错误:id:{},HandlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
                 break;
         }
         return software;
@@ -483,7 +461,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewRole(approvalPathNode.getRoleId());
     }
 
-    private Software checkCommonProcess(ProcessVo vo, String uuid) {
+    private Software checkCommonProcess(ProcessVo vo, String uuid,Integer nodeNumber) {
         Integer handlerResult = vo.getHandlerResult();
         if (handlerResult < 1 || handlerResult > 3) {
             LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
@@ -499,6 +477,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (softwareInDb == null) {
             LOGGER.error("审核条目不存在:{}", vo.getSoftwareId());
             throw new ParamException("审核条目不存在:" + vo.getSoftwareId());
+        }
+        if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
+            throw new ParamException("审批阶段错误");
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
             LOGGER.error("非法的审核人:{}", uuid);
