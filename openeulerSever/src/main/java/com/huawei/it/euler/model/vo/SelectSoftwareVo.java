@@ -36,6 +36,11 @@ public class SelectSoftwareVo {
     private List<@Length(max = 50, message = "测评机构最大不超过{max}个字符") String> testOrganization;
 
     /**
+     * 测试机构ID
+     */
+    private List<Integer> testOrgId;
+
+    /**
      * 产品类型
      */
     private List<@Length(max = 50, message = "产品类型最大不超过{max}个字符") String> productType;
