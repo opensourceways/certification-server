@@ -101,7 +101,7 @@
                 and s.status in
                 <foreach collection="software.statusId" item="item" open="(" separator="," close=")">
                     #{item}
-                </foreach>)
+                </foreach>
             </if>
             <if test="software.testOrganization != null and software.testOrganization.size() > 0">
                 and test_organization in
@@ -135,7 +135,7 @@
                 and s.status in (select id from node_name_t where node_name in
                 <foreach collection="software.status" item="item" open="(" separator="," close=")">
                     #{item}
-                </foreach>)
+                </foreach>
             </if>
             <if test="software.statusId != null and software.statusId.size() > 0">
                 and s.status in
