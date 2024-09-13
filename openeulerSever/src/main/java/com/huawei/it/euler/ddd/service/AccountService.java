@@ -1,5 +1,6 @@
 package com.huawei.it.euler.ddd.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.it.euler.config.CookieConfig;
 import com.huawei.it.euler.ddd.domain.account.*;
@@ -89,6 +90,9 @@ public class AccountService {
         logUtils.insertAuditLog(request, uuid, "login", "login in", "user auto login in");
         cookieConfig.writeSessionInCookie(response, sessionId);
         request.setAttribute("sessionId",sessionId);
+
+        JSONArray cookieList = loginObj.getJSONArray("cookieList");
+        cookieConfig.writeCookieList(response,cookieList);
 
         String token = xsrfService.refreshToken(uuid);
         cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
@@ -253,14 +257,11 @@ public class AccountService {
     }
 
     public UserInfo getUserInfo(String uuid){
-        UserInfo userInfo = userInfoService.getUser(uuid);
-        if (userInfo == null) {
-            userInfo = oidcAuthService.getUserInfo(uuid);
-            if (userInfo != null) {
-                userInfoService.saveUser(userInfo);
-            }
-        }
-        return userInfo;
+        return userInfoService.getUser(uuid);
+    }
+
+    public List<Role> getUserRoleList(String uuid){
+        return roleService.getRoleInfoByUuid(uuid);
     }
 
     public List<UserInfo> getUserInfoList(List<String> uuidList){
@@ -273,8 +274,8 @@ public class AccountService {
     }
 
     public boolean isPartner(String uuid){
-        UserInfo userInfo = getUserInfo(uuid);
-        return roleService.isPartner(userInfo.getRoleList());
+        List<Role> userRoleList = roleService.getRoleInfoByUuid(uuid);
+        return roleService.isPartner(userRoleList);
     }
 
     public String toLogout(){

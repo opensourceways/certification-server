@@ -1,6 +1,7 @@
 package com.huawei.it.euler.ddd.domain.account;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import com.huawei.it.euler.ddd.infrastructure.oidc.OidcAuthService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,18 +26,22 @@ public class UserInfoService implements UserDetailsService {
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private OidcAuthService oidcAuthService;
+
     public void saveUser(UserInfo userInfo){
         List<Role> roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
         if (roleInfoList.isEmpty()) {
             roleService.setDefaultRole(userInfo.getUuid());
-            roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
+//            roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
         }
-        userInfo.setRoleList(roleInfoList);
-        persistentCache.put(userInfo.getUuid(), userInfo);
+//        userInfo.setRoleList(roleInfoList);
+//        persistentCache.put(userInfo.getUuid(), userInfo);
     }
 
     public UserInfo getUser(String uuid){
-        return (UserInfo) persistentCache.getIfPresent(uuid);
+        return oidcAuthService.getUserInfo(uuid);
+//        return (UserInfo) persistentCache.getIfPresent(uuid);
     }
 
     @Override
