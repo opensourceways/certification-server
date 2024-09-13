@@ -31,4 +31,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     public List<String> findUuidByRoleId(int roleId) {
         return roleMapper.findUuidByRole(roleId);
     }
+
+    @Override
+    public List<String> findAllUuid() {
+        return roleMapper.findAllUuid();
+    }
 }

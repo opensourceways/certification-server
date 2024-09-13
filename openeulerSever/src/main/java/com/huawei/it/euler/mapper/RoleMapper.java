@@ -37,4 +37,6 @@ public interface RoleMapper {
     List<Integer> findUserByRole(@Param("roleId") Integer roleId);
 
     void insertRef(RoleRelationship roleRelationship);
+
+    List<String> findAllUuid();
 }

@@ -10,4 +10,6 @@ public interface RoleRepository {
     List<Role> findRoleInfoByUuid(String uuid);
 
     List<String> findUuidByRoleId(int roleId);
+
+    List<String> findAllUuid();
 }

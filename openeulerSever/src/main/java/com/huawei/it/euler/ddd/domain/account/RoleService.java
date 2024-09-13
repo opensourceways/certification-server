@@ -46,4 +46,8 @@ public class RoleService {
     public List<String> getUuidListByRoleId(int roleId) {
         return roleRepository.findUuidByRoleId(roleId);
     }
+
+    public List<String> findAllUuid(){
+        return roleRepository.findAllUuid();
+    }
 }
