@@ -25,6 +25,7 @@ public class SelectSoftware {
      */
     private List<String> status;
 
+    private List<Integer> statusId;
     /**
      * 测试机构
      */
