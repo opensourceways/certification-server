@@ -443,6 +443,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (nextNodeNameForNumber == NodeEnum.FINISHED.getId()) {
             return software;
         }
+        if (nextNodeNameForNumber == NodeEnum.TESTING_PHASE.getId()) {
+            if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())){
+                Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
+                software.setReviewer(node.getHandler());
+                software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
+            }else {
+                software.setReviewer(software.getUserUuid());
+                software.setReviewRole(RoleEnum.USER.getRoleId());
+            }
+            return software;
+        }
         if (nextNodeNameForNumber == NodeEnum.APPLY.getId()
             || nextNodeNameForNumber == NodeEnum.CERTIFICATE_CONFIRMATION.getId()) {
             software.setReviewer(software.getUserUuid());
@@ -457,13 +468,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         ApprovalPathNode approvalPathNode =
             approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNameForNumber);
-        if (nextNodeNameForNumber == NodeEnum.TESTING_PHASE.getId()) {
-            software.setReviewer(approvalPathNode == null ? software.getUserUuid() : approvalPathNode.getUserUuid());
-            software.setReviewRole(approvalPathNode == null ? RoleEnum.USER.getRoleId() : approvalPathNode.getRoleId());
-        } else {
-            software.setReviewer(approvalPathNode.getUserUuid());
-            software.setReviewRole(approvalPathNode.getRoleId());
-        }
+        software.setReviewer(approvalPathNode.getUserUuid());
+        software.setReviewRole(approvalPathNode.getRoleId());
         return software;
     }
 
@@ -474,7 +480,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
         }
         if (StringUtils.isBlank(vo.getTransferredComments())
-            || (handlerResult == 3 && StringUtils.isBlank(vo.getTransferredUser()))) {
+            || (handlerResult.equals(HandlerResultEnum.TRANSFER.getId()) && StringUtils.isBlank(vo.getTransferredUser()))) {
             LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
             throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
         }
@@ -487,7 +493,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("非法的审核人:{}", uuid);
             throw new ParamException("非法的审核人:" + uuid);
         }
-        if (handlerResult == 3) {
+        if (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())) {
             if (vo.getTransferredUser().equals(uuid)) {
                 LOGGER.error("转审人不能为自己:{}", uuid);
                 throw new ParamException("转审人不能为自己:" + uuid);
@@ -526,17 +532,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         node.setUpdateTime(new Date());
         node.setHandler(software.getReviewer());
         nodeMapper.insertNode(node);
-    }
-
-    private boolean checkPermission(ProcessVo vo, String uuid) {
-        List<SimpleUserVo> simpleUserVos = transferredUserList(vo.getSoftwareId(), uuid);
-        boolean isApprove = false;
-        for (SimpleUserVo simpleUserVo : simpleUserVos) {
-            if (Objects.equals(simpleUserVo.getUuid(), vo.getTransferredUser())) {
-                isApprove = true;
-            }
-        }
-        return isApprove;
     }
 
     @Override

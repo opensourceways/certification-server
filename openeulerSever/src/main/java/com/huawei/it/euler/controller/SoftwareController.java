@@ -301,7 +301,7 @@ public class SoftwareController {
      * @return JsonResponse
      */
     @PostMapping("/software/upload")
-    @PreAuthorize("hasAnyRole('user', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'euler_ic','OSV_user')")
     public JsonResponse<String> upload(@RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
         @RequestParam("file") MultipartFile file,
         @RequestParam("fileTypeCode") @NotNull(message = "文件类型编码不能为空") Integer fileTypeCode,
