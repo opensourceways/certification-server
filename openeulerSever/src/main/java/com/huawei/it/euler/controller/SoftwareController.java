@@ -29,7 +29,6 @@ import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
 
-import cn.hutool.core.date.StopWatch;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -213,11 +212,7 @@ public class SoftwareController {
     public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start("伙伴侧sql");
         PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, uuid);
-        stopWatch.stop();
-        stopWatch.start("process");
         softwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
@@ -227,9 +222,6 @@ public class SoftwareController {
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
         });
-        stopWatch.stop();
-        log.info("process 耗时时间:{}", stopWatch.prettyPrint());
-        log.info("华为侧查询软件列表耗时:{} ms", stopWatch.getTotalTimeMillis());
         return JsonResponse.success(softwareList);
     }
 
@@ -245,12 +237,8 @@ public class SoftwareController {
     public JsonResponse<PageResult<SoftwareListVo>>
         getReviewSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start("华为侧sql");
         PageResult<SoftwareListVo> reviewSoftwareList =
             softwareService.getReviewSoftwareList(selectSoftwareVo, uuid);
-        stopWatch.stop();
-        stopWatch.start("华为侧process");
         reviewSoftwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
@@ -260,9 +248,6 @@ public class SoftwareController {
                 .forEach(item -> buffer.append(item).append("/"));
             softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
         });
-        stopWatch.stop();
-        log.info("process 耗时时间:{}", stopWatch.prettyPrint());
-        log.info("华为侧查询软件列表耗时:{} ms", stopWatch.getTotalTimeMillis());
         return JsonResponse.success(reviewSoftwareList);
     }
 

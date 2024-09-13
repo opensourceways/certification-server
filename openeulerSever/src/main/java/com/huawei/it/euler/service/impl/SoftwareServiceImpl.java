@@ -44,7 +44,6 @@ import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.ListPageUtils;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.StopWatch;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -565,12 +564,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start("华为1");
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        stopWatch.stop();
-        stopWatch.start("华为2");
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
         int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
@@ -578,19 +573,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (ObjectUtils.isEmpty(company)) {
             return new PageResult<>(Collections.emptyList(), 0L, pageNum, pageSize);
         }
-        stopWatch.stop();
-        stopWatch.start("华为3");
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(uuid);
         List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countSoftwareList(selectSoftware);
-        stopWatch.stop();
-        stopWatch.start("华为4");
         processFields(currentSoftwareList, uuid);
-        stopWatch.stop();
-        LOGGER.info("process 耗时时间:{}", stopWatch.prettyPrint());
-        LOGGER.info("查询软件列表耗时:{} ms", stopWatch.getTotalTimeMillis());
         return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
     }
 
@@ -608,28 +596,17 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start("伙伴1");
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        stopWatch.stop();
-        stopWatch.start("伙伴2");
         selectSoftware.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
-        stopWatch.stop();
-        stopWatch.start("伙伴3");
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
         int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
         List<SoftwareListVo> reviewSoftwareList =
             softwareMapper.getReviewSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countReviewSoftwareList(selectSoftware);
-        stopWatch.stop();
-        stopWatch.start("伙伴4");
         Map<Integer, List<Integer>> roleMap = userService.getUserAllRole(Integer.valueOf(uuid));
         updateSoftwareListStatus(reviewSoftwareList, roleMap);
-        stopWatch.stop();
-        LOGGER.info("process 耗时时间:{}", stopWatch.prettyPrint());
-        LOGGER.info("查询软件列表耗时:{} ms", stopWatch.getTotalTimeMillis());
         return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
     }
 
