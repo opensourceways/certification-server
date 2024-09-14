@@ -4,25 +4,24 @@
 
 package com.huawei.it.euler.filter;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.config.CookieConfig;
+import com.huawei.it.euler.ddd.domain.account.WhiteListService;
+import com.huawei.it.euler.ddd.domain.account.XsrfService;
+import com.huawei.it.euler.ddd.service.AccountService;
+import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.util.FilterUtils;
 import com.huawei.it.euler.util.RequestUtils;
-import com.huawei.it.euler.util.SessionManagement;
-import com.huawei.it.euler.util.UserUtils;
-import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.*;
 
 /**
@@ -33,59 +32,45 @@ import java.util.*;
 @Slf4j
 @Component
 public class CsrfFilter extends OncePerRequestFilter {
-    @Value("${oauth.cookie.path}")
-    private String cookiePath;
 
-    @Value("${url.whitelist}")
-    private String urlWhitelist;
-    @Resource
-    private Cache<String, Object> caffeineCache;
+    @Autowired
+    private WhiteListService whiteListService;
+
+    @Autowired
+    private XsrfService xsrfService;
+
+    @Autowired
+    private AccountService accountService;
+
+    @Autowired
+    private CookieConfig cookieConfig;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        String token;
+        String loginUuid = "0";
         try {
-            token = SessionManagement.generateTokenToHex();
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException("XSRF-TOKEN Generation failed.");
+            loginUuid = accountService.getLoginUuid(request);
+        } catch (NoLoginException ignored) {
         }
-        Cookie cookie = new Cookie("XSRF-TOKEN", token);
-        cookie.setPath(cookiePath);
-        cookie.setSecure(true);
-        cookie.setHttpOnly(false);
-        response.addCookie(cookie);
-        response.addHeader("XSRF-TOKEN", token);
-        // 加入缓存
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String tokenKey = cookieUuid + "_xsrf-token";
-        List<String> tokenOld = Objects.isNull(caffeineCache.getIfPresent(tokenKey))
-                ? new ArrayList<>() : (List) caffeineCache.getIfPresent(tokenKey);
-        tokenOld.add(token);
-        if (tokenOld.size() > 10) {
-            tokenOld.remove(0);
-        }
-        caffeineCache.put(tokenKey, tokenOld);
-        String xsrfToken = request.getHeader("X-XSRF-TOKEN");
-        if (!Arrays.asList("GET", "HEAD", "OPTIONS", "TRACE").contains(request.getMethod())
-                && !isWriteUrl(request)
-                && !tokenOld.contains(xsrfToken)) {
-            log.info("The X-XSRF-TOKEN request header is verification fails, user : {}", cookieUuid);
-            FilterUtils.writeErrorResp(response, "The X-XSRF-TOKEN request header is verification fails",
-                    JsonResponse.FORBIDDEN_STATUS);
-            return;
-        }
-        chain.doFilter(request, response);
-    }
 
-    private boolean isWriteUrl(HttpServletRequest request){
+        String token = xsrfService.refreshToken(loginUuid);
+        cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
+        response.addHeader(xsrfService.getResponseHeaderKey(), token);
+
+        boolean filterMethod = !Arrays.asList("GET", "HEAD", "OPTIONS", "TRACE").contains(request.getMethod());
         String shortUri = RequestUtils.getShortUri(request);
-        String[] writeUrlArr = urlWhitelist.split(",");
-        for (String writeUrl : writeUrlArr) {
-            if (shortUri.matches(writeUrl.replaceAll("\\*", "\\.\\*"))) {
-                return true;
+        boolean writeUrl = whiteListService.isWriteUrl(shortUri);
+        if (filterMethod && !writeUrl) {
+            String xsrfToken = request.getHeader(xsrfService.getRequestHeaderKey());
+            boolean isActive = xsrfService.isTokenActive(loginUuid, xsrfToken);
+            if (!isActive) {
+                log.info("The X-XSRF-TOKEN request header is verification fails, user : {}", loginUuid);
+                FilterUtils.writeErrorResp(response, "The X-XSRF-TOKEN request header is verification fails",
+                        JsonResponse.FORBIDDEN_STATUS);
+                return;
             }
         }
-        return false;
+        chain.doFilter(request, response);
     }
 }
