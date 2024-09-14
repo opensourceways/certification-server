@@ -55,8 +55,8 @@
         values (#{uuid}, 1, NOW())
     </insert>
 
-    <select id="findUserByRole" resultType="java.lang.Integer">
-        SELECT user_id
+    <select id="findUserByRole" resultType="java.lang.String">
+        SELECT uuid
         FROM user_role_mapping_t
         WHERE role_id = #{roleId}
           <if test="dataScope != null">
