@@ -4,6 +4,8 @@
 
 package com.huawei.it.euler.mapper;
 
+import com.huawei.it.euler.ddd.domain.account.Role;
+import com.huawei.it.euler.ddd.domain.account.RoleRelationship;
 import com.huawei.it.euler.model.vo.RoleVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -24,7 +26,17 @@ public interface RoleMapper {
 
     List<RoleVo> findRoleInfoByUserId(@Param("userId") Integer userId);
 
-    void insertDefaultRole(@Param("userId") Integer userId);
+    List<String> findByUuid(@Param("uuid") String uuid);
+
+    List<Role> findRoleInfoByUuid(@Param("uuid") String uuid);
+
+    void insertDefaultRole(@Param("uuid") String uuid);
+
+    List<String> findUuidByRole(@Param("roleId") Integer roleId);
 
     List<Integer> findUserByRole(@Param("roleId") Integer roleId);
+
+    void insertRef(RoleRelationship roleRelationship);
+
+    List<String> findAllUuid();
 }
