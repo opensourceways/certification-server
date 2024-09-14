@@ -4,19 +4,21 @@
 
 package com.huawei.it.euler.service;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.vo.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 /**
  * 软件认证
@@ -41,26 +43,19 @@ public interface SoftwareService {
      * @param request request
      * @return
      */
-    JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request) throws IOException;
+    JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request)
+        throws IOException;
 
     /**
      * 新增软件信息
      *
      * @param software 软件信息
      * @param uuid uuid
-     * @param request request
      */
-    void insertSoftware(Software software, String uuid, HttpServletRequest request) throws InputException, IOException;
+    Integer createSoftware(Software software, String uuid)
+        throws InputException, IOException;
 
-    /**
-     * 软件认证审核流程
-     *
-     * @param vo 审核参数
-     * @param uuid uuid
-     * @param request request
-     * @return JsonResponse
-     */
-    JsonResponse<String> processReview(ProcessVo vo, String uuid, HttpServletRequest request) throws IOException;
+    JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
 
     /**
      * 获取转审人员列表
@@ -78,7 +73,7 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
+    PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
 
     /**
      * 华为侧查询兼容性认证申请列表
@@ -87,7 +82,7 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return 列表
      */
-    List<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
+    PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
 
     /**
      * 认证审核记录
@@ -122,9 +117,10 @@ public interface SoftwareService {
      * 查询审批流节点信息
      *
      * @param softwareId 软件id
+     * @param uuid uuid
      * @return 列表
      */
-    List<AuditRecordsVo> getNodeList(Integer softwareId);
+    List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid);
 
     /**
      * 上传文件
@@ -196,10 +192,12 @@ public interface SoftwareService {
      * @param certificateConfirmVo certificateConfirmVo
      * @param response response
      */
-    void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response) throws InputException, IOException;
+    void previewCertificateConfirmInfo(CertificateConfirmVo certificateConfirmVo, HttpServletResponse response)
+        throws InputException, IOException;
 
     /**
-     *  查询社区软件清单
+     * 查询社区软件清单
+     * 
      * @param vo 筛选条件
      * @return 社区软件清单集合
      */

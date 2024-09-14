@@ -7,6 +7,7 @@ package com.huawei.it.euler.model.vo;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * UserInfoVo
@@ -16,6 +17,8 @@ import java.util.List;
 @Data
 public class UserInfoVo {
     private String username;
+
+    private String nickName;
 
     private String telephone;
 
@@ -30,4 +33,6 @@ public class UserInfoVo {
     private List<String> roles;
 
     private List<String> roleNames;
+
+    private Map<Integer,List<Integer>> role;
 }

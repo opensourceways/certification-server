@@ -4,14 +4,15 @@
 
 package com.huawei.it.euler.mapper;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.huawei.it.euler.model.entity.*;
-import com.huawei.it.euler.model.vo.*;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Map;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.huawei.it.euler.model.entity.*;
+import com.huawei.it.euler.model.query.AttachmentQuery;
+import com.huawei.it.euler.model.vo.*;
 
 /**
  * SoftwareMapper
@@ -53,9 +54,9 @@ public interface SoftwareMapper {
     /**
      * 更新状态
      *
-     * @param vo 状态
+     * @param software 状态
      */
-    void updateSoftwareStatusAndReviewer(SoftwareVo vo);
+    void updateSoftware(Software software);
 
     /**
      * 查询兼容性认证申请列表
@@ -63,15 +64,20 @@ public interface SoftwareMapper {
      * @param selectSoftware 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(SelectSoftware selectSoftware);
+    List<SoftwareListVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+                                         @Param("software")SelectSoftware selectSoftware);
 
+    Long countSoftwareList(@Param("software") SelectSoftware selectSoftware);
     /**
      * 华为侧查询兼容性认证申请列表
      *
      * @param selectSoftware 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getReviewSoftwareList(SelectSoftware selectSoftware);
+    List<SoftwareListVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+        @Param("software") SelectSoftware selectSoftware);
+
+    Long countReviewSoftwareList(@Param("software") SelectSoftware selectSoftware);
 
     /**
      * 审核节点记录
@@ -90,7 +96,7 @@ public interface SoftwareMapper {
      * @return
      */
     IPage<AuditRecordsVo> getAuditRecordsListPage(@Param("softwareId") Integer softwareId,
-                                                  @Param("nodeName") String nodeName, IPage<AuditRecordsVo> page);
+        @Param("nodeName") String nodeName, IPage<AuditRecordsVo> page);
 
     /**
      * 证书信息确认查询
@@ -113,7 +119,6 @@ public interface SoftwareMapper {
      * @param fileModel 附件信息
      */
     void updateSign(FileModel fileModel);
-    void updateFlag(FileModel fileModel);//更新flag
 
     /**
      * 查询上传文件名称
@@ -121,7 +126,7 @@ public interface SoftwareMapper {
      * @param param 参数
      * @return 名称列表
      */
-    List<AttachmentsVo> getAttachmentsNames(Map<String, Object> param);
+    List<AttachmentsVo> getAttachmentsNames(AttachmentQuery param);
 
     /**
      * 下载附件
@@ -130,7 +135,7 @@ public interface SoftwareMapper {
      * @return Attachments
      */
     Attachments downloadAttachments(String fileId);
-    Attachments getEmptyAttachmentsNames();
+
     /**
      * 删除附件
      *
@@ -163,7 +168,8 @@ public interface SoftwareMapper {
     String getSignedFileId(Integer softwareId);
 
     /**
-     *  查询社区软件清单
+     * 查询社区软件清单
+     *
      * @param vo 筛选条件
      * @return 社区软件清单集合
      */

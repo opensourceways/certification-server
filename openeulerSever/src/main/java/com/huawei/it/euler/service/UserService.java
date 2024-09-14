@@ -4,16 +4,15 @@
 
 package com.huawei.it.euler.service;
 
-import com.huawei.it.euler.common.JsonResponse;
-import com.huawei.it.euler.model.entity.EulerUser;
-import com.huawei.it.euler.model.vo.EulerUserVo;
-import com.huawei.it.euler.model.vo.RoleVo;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import com.huawei.it.euler.model.entity.Attachments;
+import com.huawei.it.euler.model.entity.Software;
 
-import java.util.List;
 
 /**
  * 用户service
@@ -21,12 +20,7 @@ import java.util.List;
  * @since 2024/06/29
  */
 public interface UserService extends UserDetailsService {
-    /**
-     * 新增用户
-     *
-     * @param user uesr
-     */
-    void insertUser(EulerUser user);
+
 
     /**
      * 根据用户id获取用户权限信息
@@ -36,21 +30,8 @@ public interface UserService extends UserDetailsService {
      */
     String getUserAuthorityInfo(Integer userId);
 
-    /**
-     * 获取用户角色列表
-     *
-     * @param userId 用户id
-     * @return roles
-     */
-    List<String> getUserRoles(Integer userId);
 
-    /**
-     * 获取用户角色列表
-     *
-     * @param userId 用户id
-     * @return roles
-     */
-    List<RoleVo> getUserRoleInfo(Integer userId);
+    List<Integer> getUserRolesByUUID(Integer uuid);
 
     /**
      * 根据用户id获取用户权限信息
@@ -61,43 +42,30 @@ public interface UserService extends UserDetailsService {
     List<GrantedAuthority> getUserAuthorities(Integer userId);
 
     /**
-     * 更新个人信息
+     * 查询时获取用户的数据权限
      *
-     * @param userVo 用户
+     * @param uuid 用户uuid
+     * @return 用户的数据权限
      */
-    void updateUser(EulerUserVo userVo);
+    String getUserAllDateScope(Integer uuid);
+    Map<Integer, List<Integer>> getUserAllRole(Integer uuid);
+    /**
+     * 查询用户对应角色是否有的操作权限
+     * 
+     * @param userUuid 用户uuid
+     * @param software 角色id
+     * @return 用户的数据权限
+     */
+    boolean isUserDataScopeByRole(Integer userUuid, Software software);
 
     /**
-     * 根据uuid查询用户
-     *
-     * @param uuid uuid
-     * @return 用户信息
+     * 查询用户是否有流程的权限
+     * 
+     * @param userUuid 用户uuid
+     * @param software 流程信息
+     * @return 结果
      */
-    EulerUser findByUuid(String uuid);
+    boolean isUserPermission(Integer userUuid, Software software);
 
-    /**
-     * 注销用户信息
-     *
-     * @param request request
-     * @return JsonResponse
-     */
-    JsonResponse<String> deregisterUser(HttpServletRequest request);
-
-    /**
-     * 签署协议
-     *
-     * @param protocolType 协议类型
-     * @param userUuid uuid
-     * @return JsonResponse
-     */
-    JsonResponse<String> signAgreement(Integer protocolType, String userUuid);
-
-    /**
-     * 撤销签署协议
-     *
-     * @param protocolType 协议类型
-     * @param userUuid uuid
-     * @return JsonResponse
-     */
-    JsonResponse<String> cancelAgreement(Integer protocolType, String userUuid);
+    boolean isAttachmentPermission(String userUuid, Attachments attachment);
 }

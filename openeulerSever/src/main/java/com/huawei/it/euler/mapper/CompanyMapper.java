@@ -35,4 +35,6 @@ public interface CompanyMapper extends BaseMapper {
 
     Company findCompanyByCreditCode(@Param("code") String code);
 
+    Integer countCompany();
+
 }

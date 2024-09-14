@@ -54,6 +54,7 @@ import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.LicenseInfoVo;
 import com.huawei.it.euler.model.vo.UserCompanyVo;
 import com.huawei.it.euler.service.CompanyService;
+import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.third.CompanyVerifyClient;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.FileUtils;
@@ -97,6 +98,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
+    private static final Integer COMPANY_INIT_NUM = 10000;
+
     @Value("${sns.templateId}")
     private String templateId;
 
@@ -128,6 +131,9 @@ public class CompanyServiceImpl implements CompanyService {
     private SoftwareMapper softwareMapper;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     @Lazy
     private SoftwareServiceImpl softwareService;
 
@@ -148,12 +154,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional
     @Override
     public JsonResponse<String> registerCompany(CompanyVo companyVo, String uuid) {
-        Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
-        if (companyByCreditCode != null) {
-            return JsonResponse.failed("当前公司已认证");
-        }
         Company company = new Company();
         BeanUtils.copyProperties(companyVo, company);
+        Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
+        if (companyByCreditCode != null) {
+            company.setCompanyCode(companyByCreditCode.getCompanyCode());
+        }else{
+            company.setCompanyCode(COMPANY_INIT_NUM + companyMapper.countCompany());
+        }
         Date currentTime = new Date();
         company.setUpdateTime(currentTime);
         company.setApplyTime(currentTime);
@@ -428,10 +436,8 @@ public class CompanyServiceImpl implements CompanyService {
         if (!Objects.equals(fileType, FILE_TYPE_LOGO) && !Objects.equals(fileType, FILE_TYPE_LICENSE)) {
             throw new ParamException("无权限预览当前文件");
         }
-        if (accountService.isPartner(uuid)) {
-            if (!Objects.equals(uuid, attachments.getUuid())) {
-                throw new ParamException("无权限预览当前文件");
-            }
+        if (!userService.isAttachmentPermission(uuid, attachments)) {
+            throw new ParamException("无权限预览当前文件");
         }
         softwareService.previewImage(fileId, response);
     }

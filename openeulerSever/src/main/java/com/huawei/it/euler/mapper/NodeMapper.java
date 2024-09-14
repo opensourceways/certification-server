@@ -4,8 +4,10 @@
 
 package com.huawei.it.euler.mapper;
 
-import com.huawei.it.euler.model.entity.Node;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
+
+import com.huawei.it.euler.model.entity.Node;
 
 /**
  * NodeMapper
@@ -17,6 +19,8 @@ public interface NodeMapper {
     void insertNode(Node node);
 
     Node findLatestNodeById(Integer softwareId);
+
+    Node findLatestFinishedNode(@Param("softwareId") Integer softwareId, @Param("status") Integer status);
 
     void updateNodeById(Node node);
 }
