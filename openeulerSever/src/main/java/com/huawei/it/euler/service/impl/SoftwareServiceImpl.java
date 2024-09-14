@@ -530,16 +530,16 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public List<SimpleUserVo> transferredUserList(Integer softwareId, String uuid) {
         Software software = softwareMapper.findById(softwareId);
-        ApprovalPathNode approvalPathNode =
-            approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), software.getStatus());
-        if (ObjectUtils.isEmpty(approvalPathNode)) {
-            return new ArrayList<>();
-        }
-        List<Integer> userIdList = roleMapper.findUserByRole(approvalPathNode.getRoleId(), software.getTestOrgId());
-        List<EulerUser> users = userMapper.findByUserId(userIdList);
-        List<SimpleUserVo> userVos = users.stream().map(item -> {
+        List<String> userIdList = roleMapper.findUserByRole(software.getReviewRole(), software.getTestOrgId());
+        List<UserInfo> eulerUsers = accountService.getUserInfoList(userIdList);
+        List<SimpleUserVo> userVos = eulerUsers.stream().map(item -> {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
-            BeanUtils.copyProperties(item, simpleUserVo);
+            simpleUserVo.setUuid(item.getUuid());
+            if(item.getNickName() != null) {
+                simpleUserVo.setUsername(item.getNickName());
+            }else {
+                simpleUserVo.setUsername(item.getUserName());
+            }
             return simpleUserVo;
         }).toList();
         // 转审人不能为自己
