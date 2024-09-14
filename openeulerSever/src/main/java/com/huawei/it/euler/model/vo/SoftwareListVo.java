@@ -104,6 +104,8 @@ public class SoftwareListVo {
      * 认证状态
      */
     private String status;
+
+    private Integer statusId;
     /**
      * 算力平台名称
      */
