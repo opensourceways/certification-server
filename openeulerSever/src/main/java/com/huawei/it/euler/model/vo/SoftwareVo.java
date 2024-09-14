@@ -43,11 +43,15 @@ public class SoftwareVo {
     private String reviewer;
 
     @JsonIgnore
+    private Integer reviewRole;
+
+    @JsonIgnore
     private Integer status;
 
     @JsonIgnore
     private Date updateTime;
 
+    private Integer testOrgId;
     @JsonIgnore
     private String authenticationStatus;
 }
