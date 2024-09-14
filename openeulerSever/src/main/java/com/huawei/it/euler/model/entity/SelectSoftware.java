@@ -55,4 +55,9 @@ public class SelectSoftware {
      * 申请人/审核人
      */
     private String applicant;
+
+    /**
+     * 当前用户uuid
+     */
+    private String uuid;
 }

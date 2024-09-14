@@ -584,6 +584,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
         SelectSoftware selectSoftware = new SelectSoftware();
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
+        selectSoftware.setUuid(uuid);
         selectSoftware.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
