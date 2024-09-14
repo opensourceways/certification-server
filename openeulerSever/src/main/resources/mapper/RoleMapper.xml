@@ -56,7 +56,7 @@
     </insert>
 
     <select id="findUserByRole" resultType="java.lang.String">
-        SELECT user_id
+        SELECT uuid
         FROM user_role_mapping_t
         WHERE role_id = #{roleId}
           <if test="dataScope != null">
