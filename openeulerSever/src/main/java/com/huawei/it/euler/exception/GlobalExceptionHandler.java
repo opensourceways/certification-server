@@ -262,4 +262,11 @@ public class GlobalExceptionHandler {
         log.error("StackOverflowError");
         return JsonResponse.failed("服务内部错误");
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(value = NoLoginException.class)
+    public JsonResponse resolveNoLoginException(){
+        log.error("NoLoginException");
+        return new JsonResponse(JsonResponse.NOT_LOGIN_STATUS, JsonResponse.NOT_LOGIN_MESSAGE, false);
+    }
 }
