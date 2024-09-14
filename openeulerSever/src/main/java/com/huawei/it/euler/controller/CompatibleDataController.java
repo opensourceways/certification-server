@@ -5,7 +5,10 @@
 package com.huawei.it.euler.controller;
 
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
+import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.mapper.CompatibleDataMapper;
 import com.huawei.it.euler.model.entity.CompatibleDataApproval;
 import com.huawei.it.euler.model.entity.CompatibleDataInfo;
@@ -14,7 +17,6 @@ import com.huawei.it.euler.model.vo.CompatibleDataSearchVo;
 import com.huawei.it.euler.model.vo.ExcelInfoVo;
 import com.huawei.it.euler.model.vo.FileDataVo;
 import com.huawei.it.euler.service.CompatibleDataService;
-import com.huawei.it.euler.util.UserUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -48,6 +50,9 @@ public class CompatibleDataController {
     @Autowired
     private CompatibleDataMapper compatibleDataMapper;
 
+    @Autowired
+    private AccountService accountService;
+
     /**
      * 兼容性数据材料模板下载
      *
@@ -69,8 +74,9 @@ public class CompatibleDataController {
     @PostMapping("/uploadTemplate")
     @PreAuthorize("hasAnyRole('OSV_user')")
     public JsonResponse<ExcelInfoVo> uploadTemplate(@RequestParam("file") @NotNull(message = "模板文件不能为空")
-        MultipartFile file, HttpServletRequest request) throws InputException {
-        return compatibleDataService.uploadTemplate(file, request);
+        MultipartFile file, HttpServletRequest request) throws InputException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return compatibleDataService.uploadTemplate(file, uuid);
     }
 
     /**
@@ -85,8 +91,9 @@ public class CompatibleDataController {
     @PreAuthorize("hasAnyRole('OSV_user')")
     public JsonResponse<FileDataVo> readCompatibleData(HttpServletResponse response, HttpServletRequest request,
         @RequestParam("fileId") @NotBlank(message = "附件id不能为空") @Length(max = 50, message = "附件id超出范围")
-        String fileId) throws InputException, IllegalAccessException {
-        return compatibleDataService.readCompatibleData(response, request, fileId);
+        String fileId) throws InputException, IllegalAccessException, NoLoginException {
+        UserInfo loginUser = accountService.getLoginUser(request);
+        return compatibleDataService.readCompatibleData(loginUser, fileId);
     }
 
     /**
@@ -99,9 +106,9 @@ public class CompatibleDataController {
     @PostMapping("/findDataList")
     @PreAuthorize("hasAnyRole('OSV_user', 'flag_store')")
     public JsonResponse<Map<String, Object>> findDataList(
-            @RequestBody @Valid CompatibleDataSearchVo searchVo, HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        return compatibleDataService.findDataList(searchVo, cookieUuid);
+            @RequestBody @Valid CompatibleDataSearchVo searchVo, HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return compatibleDataService.findDataList(searchVo, uuid);
     }
 
     /**
@@ -148,8 +155,8 @@ public class CompatibleDataController {
     @PostMapping("/approvalCompatibleData")
     @PreAuthorize("hasAnyRole('flag_store')")
     public JsonResponse<String> approvalCompatibleData(
-            @RequestBody @Valid ApprovalDataVo vo, HttpServletRequest request) {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        return compatibleDataService.approvalCompatibleData(vo, cookieUuid);
+            @RequestBody @Valid ApprovalDataVo vo, HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return compatibleDataService.approvalCompatibleData(vo, uuid);
     }
 }
