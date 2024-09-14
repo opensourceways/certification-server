@@ -70,7 +70,7 @@ public class XsrfService {
         }
         String token = createToken();
         tokenList.add(token);
-        if (tokenList.size() > 10){
+        if (tokenList.size() > 20){
             tokenList.remove(0);
         }
         persistentCache.put(tokenKey,tokenList);
