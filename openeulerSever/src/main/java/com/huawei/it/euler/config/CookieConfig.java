@@ -41,7 +41,7 @@ public class CookieConfig {
         addCookie(response, "openeuler", "in");
     }
 
-    public void writeXsrfInCookie(HttpServletResponse response,String xsrfKey, String xsrfToken) {
+    public void writeXsrfInCookie(HttpServletResponse response, String xsrfKey, String xsrfToken) {
         Cookie cookie = new Cookie(xsrfKey, xsrfToken);
         cookie.setSecure(true);
         cookie.setHttpOnly(false);
@@ -49,7 +49,10 @@ public class CookieConfig {
         response.addCookie(cookie);
     }
 
-    public void writeCookieList(HttpServletResponse response,JSONArray cookieList){
+    public void writeCookieList(HttpServletResponse response, JSONArray cookieList) {
+        if (cookieList == null) {
+            return;
+        }
         for (Object cookieObj : cookieList) {
             String cookieStr = cookieObj.toString();
             Cookie cookie = createCookie(cookieStr);
@@ -57,12 +60,12 @@ public class CookieConfig {
         }
     }
 
-    public Cookie createCookie(String str){
+    public Cookie createCookie(String str) {
         String[] cookieParamArr = str.split(";");
         String nameValueStr = cookieParamArr[0];
         String name = nameValueStr.split("=")[0].trim();
         String value = nameValueStr.split("=")[1].trim();
-        Cookie cookie = new Cookie(name,value);
+        Cookie cookie = new Cookie(name, value);
         for (int i = 1; i < cookieParamArr.length; i++) {
             String[] split = cookieParamArr[i].split("=");
             String attrName = split[0].toLowerCase().trim();
