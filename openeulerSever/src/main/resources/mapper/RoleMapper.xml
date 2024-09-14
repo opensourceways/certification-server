@@ -55,7 +55,7 @@
         values (#{uuid}, 1, NOW())
     </insert>
 
-    <select id="findUserByRole" resultType="java.lang.Integer">
+    <select id="findUserByRole" resultType="java.lang.String">
         SELECT user_id
         FROM user_role_mapping_t
         WHERE role_id = #{roleId}
