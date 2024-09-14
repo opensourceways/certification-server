@@ -15,6 +15,7 @@ import com.huawei.it.euler.model.enumeration.ProtocolEnum;
 import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.EulerUserVo;
 import com.huawei.it.euler.model.vo.UserInfoVo;
+import com.huawei.it.euler.service.UserService;
 import com.huawei.it.euler.service.impl.CompanyServiceImpl;
 import com.huawei.it.euler.util.EncryptUtils;
 import com.huawei.it.euler.util.LogUtils;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 @RestController
 @Validated
 public class UserController {
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private CompanyServiceImpl companyService;
@@ -90,11 +93,12 @@ public class UserController {
      * @return JsonResponse
      */
     @GetMapping("/user/getUserInfo")
-    @PreAuthorize("hasAnyRole('ROLE_user', 'user', 'china_region', 'sig_group', 'euler_ic', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group',  'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<UserInfoVo> getUserInfo(HttpServletRequest request) throws NoLoginException {
         UserInfo loginUser = accountService.getLoginUser(request);
         UserInfoVo vo = new UserInfoVo();
         if (loginUser != null) {
+            BeanUtils.copyProperties(loginUser, vo);
             String telephone = loginUser.getPhone();
             telephone = encryptUtils.isEncrypted(telephone)
                     ? StringPropertyUtils.reducePhoneSensitivity(encryptUtils.aesDecrypt(telephone))
@@ -106,10 +110,10 @@ public class UserController {
             vo.setTelephone(telephone);
             vo.setMail(mail);
             vo.setUsername(loginUser.getUserName());
-            BeanUtils.copyProperties(loginUser, vo);
             List<Role> roleList = accountService.getUserRoleList(loginUser.getUuid());
             vo.setRoles(roleList.stream().map(Role::getRole).collect(Collectors.toList()));
             vo.setRoleNames(roleList.stream().map(Role::getRoleName).collect(Collectors.toList()));
+            vo.setRole(userService.getUserAllRole(Integer.valueOf(loginUser.getUuid())));
         }
         return JsonResponse.success(vo);
     }

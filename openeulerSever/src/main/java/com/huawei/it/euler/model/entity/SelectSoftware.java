@@ -25,10 +25,21 @@ public class SelectSoftware {
      */
     private List<String> status;
 
+    private List<Integer> statusId;
     /**
      * 测试机构
      */
     private List<String> testOrganization;
+
+    /**
+     *  测试机构id
+     */
+    private List<Integer> testOrgId;
+
+    /**
+     * 权限范围
+     */
+    private String dataScope;
 
     /**
      * 产品类型
@@ -44,4 +55,9 @@ public class SelectSoftware {
      * 申请人/审核人
      */
     private String applicant;
+
+    /**
+     * 当前用户uuid
+     */
+    private String uuid;
 }
