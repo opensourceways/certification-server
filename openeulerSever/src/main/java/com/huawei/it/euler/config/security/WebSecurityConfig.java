@@ -1,5 +1,6 @@
 package com.huawei.it.euler.config.security;
 
+import com.huawei.it.euler.ddd.domain.account.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,6 @@ import com.huawei.it.euler.config.handler.EulerLogoutSuccessHandler;
 import com.huawei.it.euler.filter.CsrfFilter;
 import com.huawei.it.euler.filter.JwtTokenFilter;
 import com.huawei.it.euler.filter.SecurityFilter;
-import com.huawei.it.euler.service.UserService;
 
 @Configuration
 @EnableWebSecurity
@@ -33,7 +33,7 @@ public class WebSecurityConfig {
     private String urlWhitelist;
 
     @Autowired
-    private UserService userService;
+    private UserInfoService userInfoService;
 
     @Autowired
     private EulerAccessDeniedHandler eulerAccessDeniedHandler;
@@ -56,7 +56,7 @@ public class WebSecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userService);
+        authProvider.setUserDetailsService(userInfoService);
         return authProvider;
     }
 

@@ -6,11 +6,12 @@ package com.huawei.it.euler.service.impl;
 
 import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.mapper.CompatibleDataMapper;
 import com.huawei.it.euler.mapper.ProtocolMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
-import com.huawei.it.euler.mapper.UserMapper;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.constant.CompatibleOperationConstant;
 import com.huawei.it.euler.model.constant.CompatibleStatusConstant;
@@ -22,7 +23,6 @@ import com.huawei.it.euler.service.CompanyService;
 import com.huawei.it.euler.service.CompatibleDataService;
 import com.huawei.it.euler.util.*;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,9 +137,6 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     private CompanyService companyService;
 
     @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
     private SoftwareMapper softwareMapper;
 
     @Autowired
@@ -151,8 +148,9 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     @Autowired
     private FileUtils fileUtils;
 
+
     @Autowired
-    private EncryptUtils encryptUtils;
+    private AccountService accountService;
 
     @Override
     public void downloadDataTemplate(HttpServletResponse response) throws IOException {
@@ -177,9 +175,9 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     }
 
     @Override
-    public JsonResponse<ExcelInfoVo> uploadTemplate(MultipartFile file, HttpServletRequest request)
+    public JsonResponse<ExcelInfoVo> uploadTemplate(MultipartFile file, String uuid)
             throws InputException {
-        FileModel fileModel = fileUtils.uploadFile(file, null, 1, "", request);
+        FileModel fileModel = fileUtils.uploadFile(file, null, 1, "", uuid);
         softwareMapper.insertAttachment(fileModel);
         String fileSize = file.getSize() / 1000 + "KB";
         ExcelInfoVo vo = new ExcelInfoVo(fileModel.getFileId(), fileModel.getFileName(), fileSize);
@@ -188,20 +186,13 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     @Transactional
-    public JsonResponse<FileDataVo> readCompatibleData(HttpServletResponse response, HttpServletRequest request,
-                                                       String fileId) throws InputException, IllegalAccessException {
-        String cookieUuid = UserUtils.getCookieUuid(request);
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        EulerUser user = userMapper.findByUuid(userUuid);
-        if (Objects.equals(user.getUseable(), 0)) {
-            throw new InputException("您已注销账号！无法上传兼容性数据");
-        }
-        CompanyVo companyVo = companyService.findCompanyByUserUuid(userUuid);
+    public JsonResponse<FileDataVo> readCompatibleData(UserInfo loginUser, String fileId) throws InputException, IllegalAccessException {
+        CompanyVo companyVo = companyService.findCompanyByUserUuid(loginUser.getUuid());
         if (companyVo == null || !Objects.equals(companyVo.getStatus(), CompanyStatusConstant.COMPANY_PASSED)) {
             throw new InputException("上传兼容性数据需要完成企业实名认证");
         }
         Protocol protocol = protocolMapper.selectProtocolDesc(
-                ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), userUuid);
+                ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), loginUser.getUuid());
         if (protocol == null || Objects.equals(protocol.getStatus(), 0)) {
             throw new InputException("上传兼容性数据需要签署兼容性清单使用声明");
         }
@@ -212,12 +203,12 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
         if (excelInfo == null || excelInfo.isEmpty()) {
             return JsonResponse.failed("未能获取到兼容性数据信息");
         }
-        FileDataVo fileDataVo = checkDataIsSuccess(dataId, excelInfo, similarVoList, companyVo, user);
+        FileDataVo fileDataVo = checkDataIsSuccess(dataId, excelInfo, similarVoList, companyVo, loginUser);
         return JsonResponse.success(fileDataVo);
     }
 
     private FileDataVo checkDataIsSuccess(int dataId, List<CompatibleDataInfo> excelInfo,
-        List<CompatibleSimilarVo> similarVoList, CompanyVo companyVo, EulerUser user) throws IllegalAccessException {
+        List<CompatibleSimilarVo> similarVoList, CompanyVo companyVo, UserInfo loginUser) throws IllegalAccessException {
         Date date = new Date();
         Integer row = 1;
         Integer successRows = 0;
@@ -241,8 +232,8 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
                     failedData.add(row);
                 } else if (companyVo != null) {
                     dataInfo.setDataId(++dataId).setUploadCompany(companyVo.getCompanyName())
-                            .setCreatedBy(user.getUsername()).setStatus("审核中").setApplyTime(date)
-                            .setUpdateTime(date).setUuid(user.getUuid());
+                            .setCreatedBy(loginUser.getUserName()).setStatus("审核中").setApplyTime(date)
+                            .setUpdateTime(date).setUuid(loginUser.getUuid());
                     successRows++;
                     dataLists.add(dataInfo);
                     successDataList.add(vo);
@@ -296,12 +287,11 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     }
 
     @Override
-    public JsonResponse<Map<String, Object>> findDataList(CompatibleDataSearchVo searchVo, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        List<Integer> role = compatibleDataMapper.selectUserRoleByUuid(userUuid);
+    public JsonResponse<Map<String, Object>> findDataList(CompatibleDataSearchVo searchVo, String uuid) {
+        List<Integer> role = compatibleDataMapper.selectUserRoleByUuid(uuid);
         List<CompatibleDataInfo> dataList;
         if (role.contains(RoleEnum.OSV_USER.getRoleId())) {
-            searchVo.setUuid(userUuid);
+            searchVo.setUuid(uuid);
             dataList = compatibleDataMapper.getDataList(searchVo);
         } else {
             dataList = compatibleDataMapper.getDataList(searchVo);
@@ -326,9 +316,8 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     }
 
     @Override
-    public JsonResponse<String> approvalCompatibleData(ApprovalDataVo vo, String cookieUuid) {
-        String userUuid = encryptUtils.aesDecrypt(cookieUuid);
-        EulerUser user = userMapper.findByUuid(userUuid);
+    public JsonResponse<String> approvalCompatibleData(ApprovalDataVo vo, String uuid) {
+        UserInfo userInfo = accountService.getUserInfo(uuid);
         List<Integer> dataIdList = vo.getDataIdList();
         Integer handlerResult = vo.getHandlerResult();
         List<String> statusList = compatibleDataMapper.getStatus(dataIdList);
@@ -348,7 +337,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
         List<CompatibleDataApproval> dataApprovalList = dataInfoList.stream().map(dataInfo -> {
             CompatibleDataApproval dataApproval = new CompatibleDataApproval();
             BeanUtils.copyProperties(dataInfo, dataApproval, "status");
-            dataApproval.setHandler(user.getUsername())
+            dataApproval.setHandler(userInfo.getUserName())
                     .setHandlerResult(handlerResult)
                     .setHandlerComment(vo.getHandlerComment())
                     .setHandlerTime(date)

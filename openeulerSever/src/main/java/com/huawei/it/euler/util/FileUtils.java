@@ -10,7 +10,6 @@ import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.model.entity.FileModel;
 import com.obs.services.internal.ServiceException;
 import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import com.google.common.collect.Lists;
@@ -98,11 +97,11 @@ public class FileUtils {
      * @param softwareId 软件id
      * @param fileTypeCode 文件类型编码
      * @param fileType 文件类型，logo，执照license，测试报告testReport，签名sign，证书certificates
-     * @param request request
+     * @param uuid uuid
      * @return 文件的存储路径
      */
     public FileModel uploadFile(MultipartFile file, Integer softwareId, Integer fileTypeCode,
-                                String fileType, HttpServletRequest request) throws InputException {
+                                String fileType, String uuid) throws InputException {
         checkFileSize(file, fileType);
         FileModel fileModel = new FileModel();
         fileModel.setSoftwareId(softwareId);
@@ -137,8 +136,7 @@ public class FileUtils {
         try {
             s3Utils.uploadFile(file, fileId);
             fileModel.setUpdateTime(new Date());
-            String cookieUuid = UserUtils.getCookieUuid(request);
-            fileModel.setUuid(encryptUtils.aesDecrypt(cookieUuid));
+            fileModel.setUuid(uuid);
             return fileModel;
         } catch (IOException e) {
             throw new InputException("上传失败" + e.getMessage());
