@@ -17,8 +17,6 @@ import java.util.Date;
 public class ApprovalPath {
     private Integer id;
 
-    private Integer icId;
-
     private Integer planReview;
 
     private Integer reportFirstTrial;

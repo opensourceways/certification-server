@@ -4,24 +4,13 @@
 
 package com.huawei.it.euler.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huawei.it.euler.common.JsonResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
+
 import com.huawei.it.euler.ddd.service.AccountService;
-import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.NoLoginException;
-import com.huawei.it.euler.model.entity.FileModel;
-import com.huawei.it.euler.model.vo.CompanyAuditVo;
-import com.huawei.it.euler.model.vo.CompanySearchVo;
-import com.huawei.it.euler.model.vo.CompanyVo;
-import com.huawei.it.euler.model.vo.UserCompanyVo;
-import com.huawei.it.euler.service.CompanyService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +18,25 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.exception.InputException;
+import com.huawei.it.euler.model.entity.FileModel;
+import com.huawei.it.euler.model.vo.CompanyAuditVo;
+import com.huawei.it.euler.model.vo.CompanySearchVo;
+import com.huawei.it.euler.model.vo.CompanyVo;
+import com.huawei.it.euler.model.vo.UserCompanyVo;
+import com.huawei.it.euler.service.CompanyService;
+import com.huawei.it.euler.util.LogUtils;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 /**
  * CompanyController
  *
@@ -49,6 +53,9 @@ public class CompanyController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private LogUtils logUtils;
 
     /**
      * 提交企业实名认证信息
@@ -79,7 +86,7 @@ public class CompanyController {
     }
 
     /**
-     * 查询当前用户认证的企业信息
+     * 查询当前用户的公司名
      *
      * @param request request
      * @return JsonResponse
@@ -132,7 +139,9 @@ public class CompanyController {
      */
     @PostMapping("/companies/company/audit")
     @PreAuthorize("hasRole('china_region')")
-    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo) {
+    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo,HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        logUtils.insertAuditLog(request, uuid, "company", "company audit", "company audit:" + companyAuditVo.getResult());
         return companyService.approveCompany(companyAuditVo);
     }
 
@@ -160,7 +169,7 @@ public class CompanyController {
      */
     @PostMapping("/companies/uploadLicense")
     @PreAuthorize("hasRole('user')")
-    public JsonResponse uploadLicense(@RequestParam("file") @NotNull(message = "模板文件不能为空")
+    public JsonResponse<Map<String, Object>> uploadLicense(@RequestParam("file") @NotNull(message = "模板文件不能为空")
         MultipartFile file, HttpServletRequest request) throws InputException, IOException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return companyService.uploadLicense(file, uuid);

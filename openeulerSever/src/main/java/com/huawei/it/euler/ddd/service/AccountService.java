@@ -305,7 +305,7 @@ public class AccountService {
             String uuid = sessionService.clear(sessionId);
             cookieConfig.cleanCookie(request,response);
             logUtils.insertAuditLog(request, uuid, "login", "login out", "user login out");
-        } catch (Exception e) {
+        } catch (NoLoginException e) {
             log.error("logout failed!");
             log.error(e.getMessage());
         }
