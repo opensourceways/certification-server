@@ -1,12 +1,9 @@
 package com.huawei.it.euler.config;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.alibaba.fastjson.JSONArray;
-import com.huawei.it.euler.util.EncryptUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,19 +11,6 @@ import org.springframework.stereotype.Component;
 public class CookieConfig {
     @Value("${oauth.cookie.path}")
     private String cookiePath;
-
-    @Autowired
-    private EncryptUtils encryptUtils;
-
-    @Autowired
-    private Cache<String, Object> caffeineCache;
-
-    public void writeCookie(HttpServletResponse response, String uuid) {
-        String enUuid = encryptUtils.aesEncrypt(uuid);
-        addCookie(response, "uuid", enUuid);
-        addCookie(response, "openeuler", "in");
-        caffeineCache.put(enUuid, uuid);
-    }
 
     public void addCookie(HttpServletResponse response, String key, String value) {
         Cookie cookie = new Cookie(key, value);
