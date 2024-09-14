@@ -4,10 +4,11 @@
 
 package com.huawei.it.euler.model.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Data;
 
 /**
  * SoftwareListVo

@@ -169,7 +169,7 @@ public interface SoftwareMapper {
 
     /**
      * 查询社区软件清单
-     *
+     * 
      * @param vo 筛选条件
      * @return 社区软件清单集合
      */

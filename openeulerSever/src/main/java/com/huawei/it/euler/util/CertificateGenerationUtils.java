@@ -4,41 +4,32 @@
 
 package com.huawei.it.euler.util;
 
-import com.alibaba.fastjson.JSONObject;
-import com.huawei.it.euler.exception.InputException;
-import com.huawei.it.euler.mapper.SoftwareMapper;
-import com.huawei.it.euler.model.entity.FileModel;
-import com.huawei.it.euler.model.entity.GenerateCertificate;
-import com.huawei.it.euler.model.vo.ComputingPlatformVo;
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import wiki.xsx.core.pdf.doc.XEasyPdfDocument;
-import wiki.xsx.core.pdf.doc.XEasyPdfPage;
-import wiki.xsx.core.pdf.doc.XEasyPdfPositionStyle;
-import wiki.xsx.core.pdf.handler.XEasyPdfHandler;
-import wiki.xsx.core.pdf.util.XEasyPdfImageUtil;
-
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.alibaba.fastjson.JSONObject;
+import com.huawei.it.euler.mapper.SoftwareMapper;
+import com.huawei.it.euler.model.entity.FileModel;
+import com.huawei.it.euler.model.entity.GenerateCertificate;
+import com.huawei.it.euler.model.vo.ComputingPlatformVo;
+
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import wiki.xsx.core.pdf.doc.XEasyPdfDocument;
+import wiki.xsx.core.pdf.doc.XEasyPdfPage;
+import wiki.xsx.core.pdf.doc.XEasyPdfPositionStyle;
+import wiki.xsx.core.pdf.handler.XEasyPdfHandler;
+import wiki.xsx.core.pdf.util.XEasyPdfImageUtil;
 
 /**
  * 生成pdf证书util
@@ -77,9 +68,9 @@ public class CertificateGenerationUtils {
         return softwareMapper.getSignedFileId(generateCertificate.getId());
     }
 
-    public void generateCertificate(GenerateCertificate generateCertificate) throws IOException{
-        String code = "E" + new SimpleDateFormat("yyyyMM").format(new Date()) + "E" + String.valueOf(
-                generateCertificate.getId() + 100000).substring(1);
+    public void generateCertificate(GenerateCertificate generateCertificate) throws IOException {
+        String code = "E" + new SimpleDateFormat("yyyyMM").format(new Date()) + "E"
+            + String.valueOf(generateCertificate.getId() + 100000).substring(1);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (InputStream inputStream = CertificateGenerationUtils.class.getResourceAsStream(BKGPDF);
             XEasyPdfDocument document = getDocument(inputStream, generateCertificate)) {
@@ -103,18 +94,17 @@ public class CertificateGenerationUtils {
         softwareMapper.insertAttachment(model);
     }
 
-    private XEasyPdfDocument getDocument(InputStream inputStream, GenerateCertificate generateCertificate) throws IOException {
+    private XEasyPdfDocument getDocument(InputStream inputStream, GenerateCertificate generateCertificate)
+        throws IOException {
         XEasyPdfDocument document;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         if (!StringUtils.isNotEmpty(getSignedFileId(generateCertificate))) {
             document = XEasyPdfHandler.Document.load(inputStream);
         } else {
-            XEasyPdfHandler.Document
-                    .load(inputStream)
-                    .replacer()
-                    .replaceImage(XEasyPdfImageUtil.read(s3Utils.downloadFile(getSignedFileId(generateCertificate))),
-                            Arrays.asList(1, 2), 0)
-                    .finish(outputStream);
+            XEasyPdfHandler.Document.load(inputStream).replacer()
+                .replaceImage(XEasyPdfImageUtil.read(s3Utils.downloadFile(getSignedFileId(generateCertificate))),
+                    Arrays.asList(1, 2), 0)
+                .finish(outputStream);
             ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray());
             document = XEasyPdfHandler.Document.load(input);
         }
@@ -128,7 +118,7 @@ public class CertificateGenerationUtils {
      * @param response 响应
      */
     public void previewCertificate(GenerateCertificate generateCertificate, HttpServletResponse response)
-            throws IOException {
+        throws IOException {
         GenerateCertificate certificate = new GenerateCertificate();
         BeanUtils.copyProperties(generateCertificate, certificate);
         certificate.setProductName(generateCertificate.getProductName().trim());
@@ -169,23 +159,23 @@ public class CertificateGenerationUtils {
      * @param code 证书编码
      */
     private void generateFront(XEasyPdfPage page, GenerateCertificate generateCertificate, Boolean isPreview,
-                               String code) {
+        String code) {
         if (page == null) {
             log.info("#None normal#generateFront#page is null");
             return;
         }
-        page.addComponent(XEasyPdfHandler.Text.build(
-                OPEN_EULER + "版本：" + generateCertificate.getOsName() + " " + generateCertificate.getOsVersion())
+        page.addComponent(
+            XEasyPdfHandler.Text
+                .build(OPEN_EULER + "版本：" + generateCertificate.getOsName() + " " + generateCertificate.getOsVersion())
                 .setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setMarginTop(340F),
-                XEasyPdfHandler.Text.build("完成兼容性测试").setHorizontalStyle(XEasyPdfPositionStyle.CENTER)
-                        .setMarginTop(80F));
+            XEasyPdfHandler.Text.build("完成兼容性测试").setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setMarginTop(80F));
         String validityPeriod = generateCertificate.getValidityPeriod();
         if (StringUtils.isEmpty(validityPeriod)) {
             page.addComponent(XEasyPdfHandler.Text.build("有效期：20xx年xx月-20xx年xx月")
-                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setMarginTop(80F));
+                .setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setMarginTop(80F));
         } else {
             page.addComponent(XEasyPdfHandler.Text.build("有效期：" + validityPeriod)
-                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setMarginTop(80F));
+                .setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setMarginTop(80F));
         }
         getFirstComponent(page, generateCertificate, isPreview, code);
         // 处理超长算力平台
@@ -201,27 +191,28 @@ public class CertificateGenerationUtils {
     }
 
     private void getFirstComponent(XEasyPdfPage page, GenerateCertificate generateCertificate, Boolean isPreview,
-                                   String code) {
-        page.addComponent(XEasyPdfHandler.Text.build(OPEN_EULER + "社区")
-                .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginTop(18F)
-                .setMarginLeft(310f), XEasyPdfHandler.Text.build("江大勇")
-                .setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
-                .setMarginTop(70F).setMarginLeft(310f),
-                XEasyPdfHandler.Text.build(OPEN_EULER + "委员会主席").setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
-                        .setMarginLeft(310f),
-                XEasyPdfHandler.Text.build("发证机构：" + OPEN_EULER + "社区")
-                        .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f),
-                XEasyPdfHandler.Text.build("测试机构：" + generateCertificate.getTestOrganization())
-                        .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
+        String code) {
+        page.addComponent(
+            XEasyPdfHandler.Text.build(OPEN_EULER + "社区").setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
+                .setMarginTop(18F).setMarginLeft(310f),
+            XEasyPdfHandler.Text.build("江大勇").setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginTop(70F)
+                .setMarginLeft(310f),
+            XEasyPdfHandler.Text.build(OPEN_EULER + "委员会主席").setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
+                .setMarginLeft(310f),
+            XEasyPdfHandler.Text.build("发证机构：" + OPEN_EULER + "社区").setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
+                .setMarginLeft(310f),
+            XEasyPdfHandler.Text.build("测试机构：" + generateCertificate.getTestOrganization())
+                .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
         if (isPreview) {
             page.addComponent(XEasyPdfHandler.Text.build("授予日期：20xx年xx月xx日")
-                    .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
-        } else {
-            page.addComponent(XEasyPdfHandler.Text.build("授予日期：" + new SimpleDateFormat("yyyy年MM月dd日")
-                            .format(new Date())).setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
-        }
-        page.addComponent(XEasyPdfHandler.Text.build("证书编号：" + code)
                 .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
+        } else {
+            page.addComponent(
+                XEasyPdfHandler.Text.build("授予日期：" + new SimpleDateFormat("yyyy年MM月dd日").format(new Date()))
+                    .setHorizontalStyle(XEasyPdfPositionStyle.LEFT).setMarginLeft(310f));
+        }
+        page.addComponent(XEasyPdfHandler.Text.build("证书编号：" + code).setHorizontalStyle(XEasyPdfPositionStyle.LEFT)
+            .setMarginLeft(310f));
     }
 
     /**
@@ -233,12 +224,12 @@ public class CertificateGenerationUtils {
     private void getNewHashratePlatForm(XEasyPdfPage page, GenerateCertificate generateCertificate) {
         String newHashratePlatform = getNewHashratePlatform(generateCertificate.getHashratePlatform());
         String[] split = newHashratePlatform.split("/");
-        page.addComponent(XEasyPdfHandler.Text.build("算力平台")
-                .setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setPosition(0, 470));
+        page.addComponent(
+            XEasyPdfHandler.Text.build("算力平台").setHorizontalStyle(XEasyPdfPositionStyle.CENTER).setPosition(0, 470));
         // 选择一个算力平台
         if (split.length == 1) {
-            page.addComponent(XEasyPdfHandler.Text.build(String.valueOf(split[0]))
-                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
+            page.addComponent(
+                XEasyPdfHandler.Text.build(String.valueOf(split[0])).setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
             return;
         }
         // 选择多个算力平台
@@ -251,18 +242,18 @@ public class CertificateGenerationUtils {
             }
             if (platform.length() <= MAXIMUM_LENGTH && remainNum >= 2) {
                 page.addComponent(XEasyPdfHandler.Text.build(String.valueOf(platform))
-                        .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
+                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
                 remainNum -= 2;
                 if (remainNum != 1) {
                     i++;
                 }
             } else if (platform.length() >= MAXIMUM_LENGTH) {
                 page.addComponent(XEasyPdfHandler.Text.build(String.valueOf(split[i]))
-                        .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
+                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
                 remainNum -= 1;
             } else {
                 page.addComponent(XEasyPdfHandler.Text.build(String.valueOf(split[i + 1]))
-                        .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
+                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
                 remainNum -= 1;
             }
         }
@@ -275,13 +266,12 @@ public class CertificateGenerationUtils {
      * @return 处理结果
      */
     private String getNewHashratePlatform(String hashratePlatform) {
-        List<ComputingPlatformVo> platformVos = JSONObject.parseArray(hashratePlatform)
-                .toJavaList(ComputingPlatformVo.class);
+        List<ComputingPlatformVo> platformVos =
+            JSONObject.parseArray(hashratePlatform).toJavaList(ComputingPlatformVo.class);
         StringBuffer stringBuffer = new StringBuffer();
-        platformVos.forEach(
-                item -> stringBuffer.append(item.getPlatformName()).append(item.getServerTypes()).append("/"));
-        return stringBuffer.substring(0, stringBuffer.lastIndexOf("/"))
-                .replace("[", "(").replace("]", ")");
+        platformVos
+            .forEach(item -> stringBuffer.append(item.getPlatformName()).append(item.getServerTypes()).append("/"));
+        return stringBuffer.substring(0, stringBuffer.lastIndexOf("/")).replace("[", "(").replace("]", ")");
     }
 
     /**
@@ -300,16 +290,16 @@ public class CertificateGenerationUtils {
                 int i = length / 2;
                 if (length % 2 == 0) {
                     page.addComponent(
-                            XEasyPdfHandler.Text.build(companyName.substring(0, i))
-                                    .setPosition(125f - (length - 10) * 5, 255f),
-                            XEasyPdfHandler.Text.build(companyName.substring(i, length))
-                                    .setPosition(125f - (length - 10) * 5, 240f));
+                        XEasyPdfHandler.Text.build(companyName.substring(0, i)).setPosition(125f - (length - 10) * 5,
+                            255f),
+                        XEasyPdfHandler.Text.build(companyName.substring(i, length))
+                            .setPosition(125f - (length - 10) * 5, 240f));
                 } else {
                     page.addComponent(
-                            XEasyPdfHandler.Text.build(companyName.substring(0, i + 1))
-                                    .setPosition(125f - (length - 10) * 5, 255f),
-                            XEasyPdfHandler.Text.build(companyName.substring(i + 1, length))
-                                    .setPosition(125f - (length - 10) * 5, 240f));
+                        XEasyPdfHandler.Text.build(companyName.substring(0, i + 1))
+                            .setPosition(125f - (length - 10) * 5, 255f),
+                        XEasyPdfHandler.Text.build(companyName.substring(i + 1, length))
+                            .setPosition(125f - (length - 10) * 5, 240f));
                 }
             }
         } else {
@@ -346,7 +336,8 @@ public class CertificateGenerationUtils {
      * @param generateCertificate 证书字段
      */
     private void getSecondLineProductName(XEasyPdfPage page, GenerateCertificate generateCertificate) {
-        String productNameAndVersion = generateCertificate.getProductName() + " " + generateCertificate.getProductVersion();
+        String productNameAndVersion =
+            generateCertificate.getProductName() + " " + generateCertificate.getProductVersion();
         processingOverlongFields(productNameAndVersion, 550f, 545f, page);
     }
 
@@ -363,15 +354,13 @@ public class CertificateGenerationUtils {
         if (length > 40) {
             int i = length / 2;
             page.addComponent(
-                    XEasyPdfHandler.Text.build(fields.substring(0, i))
-                            .setPosition(0, newBeginY)
-                            .setHorizontalStyle(XEasyPdfPositionStyle.CENTER),
-                    XEasyPdfHandler.Text.build(fields.substring(i, length))
-                            .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
-        } else {
-            page.addComponent(XEasyPdfHandler.Text.build(fields)
-                    .setPosition(0, oldBeginY)
+                XEasyPdfHandler.Text.build(fields.substring(0, i)).setPosition(0, newBeginY)
+                    .setHorizontalStyle(XEasyPdfPositionStyle.CENTER),
+                XEasyPdfHandler.Text.build(fields.substring(i, length))
                     .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
+        } else {
+            page.addComponent(XEasyPdfHandler.Text.build(fields).setPosition(0, oldBeginY)
+                .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
         }
     }
 
@@ -384,48 +373,41 @@ public class CertificateGenerationUtils {
      */
     private void generateSecond(XEasyPdfPage page, GenerateCertificate generateCertificate, String code) {
         secondPageFirstLine(page, generateCertificate);
-        page.addComponent(XEasyPdfHandler.Text.build("根据认证结果，现双方根据以下条款授权对方使用本技术兼容性证明，且甲方授权乙方使用甲")
-                .setMarginLeft(50F).setMarginTop(30F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("方的认证徽标").setMarginLeft(50F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("一、甲方授权乙方使用该证明，且甲方授权乙方使用其认证徽标，")
-                        .setMarginLeft(50F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("本证明及认证徽标使用许可为非独占、不可转让的普通许可，")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("具体授权内容如下：")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("1. 授权使用条件：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
-                XEasyPdfHandler.Text.build("仅用于证明甲方与乙方就证书所列产品完成基于" + OPEN_EULER + "操作系统")
-                        .setMarginTop(-17F).setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("的兼容性测试").setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("2. 授权使用范围：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
-                XEasyPdfHandler.Text.build("在甲方许可方位内使用该证明及认证徽标。").setMarginTop(-17F).setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("3. 授权使用时间：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
-                XEasyPdfHandler.Text.build("自证书颁发之日起36个月。").setMarginTop(-17F).setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("4. 授权使用方式：")
-                        .setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD).enableChildComponent(),
-                XEasyPdfHandler.Text.build("本证明及认证徽标只能用于说明甲方与乙方产品兼容的目的，双方")
-                        .setMarginTop(-17F).setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("不得滥用该证明用于其他任何目的。乙方必须严格按照甲方提供的").setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("认证徽标图样使用，不得擅自对图样作任何修改。").setMarginLeft(185F),
-                XEasyPdfHandler.Text.build("二、未经对方书面同意，双方均不得超出具体授权内容使用本证明及认证徽章。双方授权的使")
-                        .setMarginLeft(50F).setMarginTop(10F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("用许可，不构成双方任何已有权利的转移。")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("三、除第一条明确授权外，本证明不包括任何其他授权或许可，也不应被解释为在甲方和乙方")
-                        .setMarginLeft(50F).setMarginTop(20F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("间创设或者形成任何其他关系；任何一方若违反本认证书的任何约定，对方有权随时单方")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("撤回本证明的所有授权。")
-                        .setMarginLeft(74F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("四、授权认证徽标图样")
-                        .setMarginLeft(50F).setMarginTop(20F).setFontPath(DOCBD),
-                XEasyPdfHandler.Text.build("本证书自甲方发布之日起生效")
-                        .setHorizontalStyle(XEasyPdfPositionStyle.RIGHT).setMarginRight(50F).setMarginTop(90F),
-                XEasyPdfHandler.Text.build("证书编号：" + code)
-                        .setHorizontalStyle(XEasyPdfPositionStyle.RIGHT).setMarginRight(50F));
+        page.addComponent(
+            XEasyPdfHandler.Text.build("根据认证结果，现双方根据以下条款授权对方使用本技术兼容性证明，且甲方授权乙方使用甲").setMarginLeft(50F).setMarginTop(30F)
+                .setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("方的认证徽标").setMarginLeft(50F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("一、甲方授权乙方使用该证明，且甲方授权乙方使用其认证徽标，").setMarginLeft(50F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("本证明及认证徽标使用许可为非独占、不可转让的普通许可，").setMarginLeft(74F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("具体授权内容如下：").setMarginLeft(74F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("1. 授权使用条件：").setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD)
+                .enableChildComponent(),
+            XEasyPdfHandler.Text
+                .build("仅用于证明甲方与乙方就证书所列产品完成基于" + OPEN_EULER + "操作系统").setMarginTop(-17F).setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("的兼容性测试").setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("2. 授权使用范围：").setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD)
+                .enableChildComponent(),
+            XEasyPdfHandler.Text.build("在甲方许可方位内使用该证明及认证徽标。").setMarginTop(-17F).setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("3. 授权使用时间：").setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD)
+                .enableChildComponent(),
+            XEasyPdfHandler.Text.build("自证书颁发之日起36个月。").setMarginTop(-17F).setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("4. 授权使用方式：").setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD)
+                .enableChildComponent(),
+            XEasyPdfHandler.Text.build("本证明及认证徽标只能用于说明甲方与乙方产品兼容的目的，双方").setMarginTop(-17F).setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("不得滥用该证明用于其他任何目的。乙方必须严格按照甲方提供的").setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("认证徽标图样使用，不得擅自对图样作任何修改。").setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("二、未经对方书面同意，双方均不得超出具体授权内容使用本证明及认证徽章。双方授权的使").setMarginLeft(50F).setMarginTop(10F)
+                .setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("用许可，不构成双方任何已有权利的转移。").setMarginLeft(74F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("三、除第一条明确授权外，本证明不包括任何其他授权或许可，也不应被解释为在甲方和乙方").setMarginLeft(50F).setMarginTop(20F)
+                .setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("间创设或者形成任何其他关系；任何一方若违反本认证书的任何约定，对方有权随时单方").setMarginLeft(74F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("撤回本证明的所有授权。").setMarginLeft(74F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("四、授权认证徽标图样").setMarginLeft(50F).setMarginTop(20F).setFontPath(DOCBD),
+            XEasyPdfHandler.Text.build("本证书自甲方发布之日起生效").setHorizontalStyle(XEasyPdfPositionStyle.RIGHT)
+                .setMarginRight(50F).setMarginTop(90F),
+            XEasyPdfHandler.Text.build("证书编号：" + code).setHorizontalStyle(XEasyPdfPositionStyle.RIGHT)
+                .setMarginRight(50F));
     }
 
     /**
@@ -443,19 +425,11 @@ public class CertificateGenerationUtils {
         int length = str.length();
         if (length > 43) {
             page.addComponent(
-                    XEasyPdfHandler.Text.build(str.substring(0, 42))
-                            .setMarginLeft(50F)
-                            .setMarginTop(180F)
-                            .setFontPath(DOCBD),
-                    XEasyPdfHandler.Text.build(str.substring(42, length))
-                            .setMarginLeft(50F)
-                            .setFontPath(DOCBD));
+                XEasyPdfHandler.Text.build(str.substring(0, 42)).setMarginLeft(50F).setMarginTop(180F)
+                    .setFontPath(DOCBD),
+                XEasyPdfHandler.Text.build(str.substring(42, length)).setMarginLeft(50F).setFontPath(DOCBD));
         } else {
-            page.addComponent(
-                    XEasyPdfHandler.Text.build(str)
-                            .setMarginLeft(50F)
-                            .setMarginTop(180F)
-                            .setFontPath(DOCBD));
+            page.addComponent(XEasyPdfHandler.Text.build(str).setMarginLeft(50F).setMarginTop(180F).setFontPath(DOCBD));
         }
     }
 
