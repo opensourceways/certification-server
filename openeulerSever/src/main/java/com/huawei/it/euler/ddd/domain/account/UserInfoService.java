@@ -16,6 +16,10 @@ import java.util.List;
 
 @Service
 @Transactional
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 public class UserInfoService implements UserDetailsService {
 
     private static final String ACCOUNT_INVAILD = "账号或密码错误";
