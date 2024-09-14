@@ -67,7 +67,6 @@ public class UserServiceImpl implements UserService {
         }
         return authorities;
     }
-
     public List<Integer> getUserRolesByUUID(Integer uuid) {
         return roleMapper.findByUUID(uuid);
     }
@@ -82,10 +81,11 @@ public class UserServiceImpl implements UserService {
     public UserDetails loadUserByUsername(String uuid) throws UsernameNotFoundException {
         EulerUser user = userMapper.findByUuid(uuid);
         UserDetails userDetails;
-        if (user == null) {
+        if (user != null) {
+            userDetails = new User("", "", getUserAuthorities(user.getId()));
+        } else {
             throw new UsernameNotFoundException(ACCOUNT_INVALID);
         }
-        userDetails = new User("", "", getUserAuthorities(user.getId()));
         return userDetails;
     }
 
@@ -112,8 +112,8 @@ public class UserServiceImpl implements UserService {
             && Objects.equals(userUuid, Integer.valueOf(software.getUserUuid()))) {
             return true;
         }
-        List<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, software.getReviewRole()).stream()
-            .map(RoleVo::getDataScope).filter(Objects::nonNull).toList();
+        List<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, software.getReviewRole()).stream().map(RoleVo::getDataScope)
+            .filter(Objects::nonNull).toList();
         return dateScope.contains(ALL_PERMISSION) || dateScope.contains(software.getTestOrgId());
     }
 
@@ -121,19 +121,19 @@ public class UserServiceImpl implements UserService {
     public boolean isUserPermission(Integer userUuid, Software software) {
         if (Objects.equals(userUuid, Integer.valueOf(software.getUserUuid()))) {
             return true;
-        }
-        Company company = companyMapper.findCompanyByUserUuid(String.valueOf(userUuid));
-        if (company != null) {
-            return company.getCompanyCode().equals(software.getCompanyCode());
-        }
-        Set<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, null).stream().map(RoleVo::getDataScope)
-            .filter(Objects::nonNull).collect(Collectors.toSet());
-        if (dateScope.contains(ALL_PERMISSION)) {
-            return true;
         } else {
-            return dateScope.contains(software.getTestOrgId());
+            Company company = companyMapper.findCompanyByUserUuid(String.valueOf(userUuid));
+            if (company != null){
+                return company.getCompanyCode().equals(software.getCompanyCode());
+            }
+            Set<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, null).stream().map(RoleVo::getDataScope)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+            if (dateScope.contains(ALL_PERMISSION)) {
+                return true;
+            } else {
+                return dateScope.contains(software.getTestOrgId());
+            }
         }
-
     }
 
     @Override
