@@ -406,8 +406,8 @@ public class SoftwareServiceImpl implements SoftwareService {
                     nextNodeNumber--;
                 }
                 nextNodeNumber--;
-                software.setStatus(nextNodeNumber);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
+                software.setStatus(nextNodeNumber);
                 getHandler(nextNodeNumber, software);
                 break;
             case 3: //转审
