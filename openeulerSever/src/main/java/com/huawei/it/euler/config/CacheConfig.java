@@ -6,9 +6,9 @@ package com.huawei.it.euler.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.springframework.cache.CacheManager;
+import com.github.benmanes.caffeine.cache.Expiry;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,18 +32,40 @@ public class CacheConfig {
                 // 缓存的最大条数
                 .maximumSize(1000).build();
     }
+    @Bean
+    public Cache<String, String> customizeCache() {
+        return Caffeine.newBuilder()
+                .expireAfter(new Expiry<String, String>() {
+                    @Override
+                    public long expireAfterCreate(@NotNull String key, @NotNull String value, long currentTime) {
+                        // Set expiration time for each key
+                        int splitIndex = value.lastIndexOf("-");
+                        long time = Long.parseLong(value.substring(splitIndex + 1));
+                        return TimeUnit.SECONDS.toNanos(time);
+                    }
 
-    @Bean(name = "persistentCache")
-    public CacheManager cacheManager(){
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.setCaffeine(Caffeine.newBuilder()
+                    @Override
+                    public long expireAfterUpdate(@NotNull String key, @NotNull String value, long currentTime, long currentDuration) {
+                        return currentDuration; // Keep the same expiration
+                    }
+
+                    @Override
+                    public long expireAfterRead(@NotNull String key, @NotNull String value, long currentTime, long currentDuration) {
+                        return currentDuration; // Keep the same expiration
+                    }
+                })
+                .build();
+    }
+
+    @Bean
+    public Cache<String, Object> persistentCache() {
+        return Caffeine.newBuilder()
+                // 设置最后一次写入或访问后经过固定时间过期
+                .expireAfterWrite(Long.MAX_VALUE, TimeUnit.MINUTES)
                 // 初始的缓存空间大小
                 .initialCapacity(100)
                 // 缓存的最大条数
-                .maximumSize(1000)
-                // 永久有效
-                .expireAfterAccess(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
-        );
-        return cacheManager;
+                .maximumSize(1000).build();
     }
+
 }
