@@ -38,7 +38,5 @@ public class Attachments {
      */
     private String fileType;
 
-    private Integer flag;
-
     private String fileId;
 }
