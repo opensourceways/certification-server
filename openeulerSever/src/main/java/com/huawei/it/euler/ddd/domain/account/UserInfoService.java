@@ -33,15 +33,21 @@ public class UserInfoService implements UserDetailsService {
         List<Role> roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
         if (roleInfoList.isEmpty()) {
             roleService.setDefaultRole(userInfo.getUuid());
-//            roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
+            roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
         }
-//        userInfo.setRoleList(roleInfoList);
-//        persistentCache.put(userInfo.getUuid(), userInfo);
+        userInfo.setRoleList(roleInfoList);
+        persistentCache.put(userInfo.getUuid(), userInfo);
     }
 
     public UserInfo getUser(String uuid){
-        return oidcAuthService.getUserInfo(uuid);
-//        return (UserInfo) persistentCache.getIfPresent(uuid);
+//        return oidcAuthService.getUserInfo(uuid);
+        Object ifPresent = persistentCache.getIfPresent(uuid);
+        if (ifPresent == null){
+            UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
+            saveUser(userInfo);
+            return userInfo;
+        }
+        return (UserInfo) ifPresent;
     }
 
     @Override
