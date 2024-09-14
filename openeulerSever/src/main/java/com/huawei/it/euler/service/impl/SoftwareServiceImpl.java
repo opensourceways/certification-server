@@ -436,6 +436,8 @@ public class SoftwareServiceImpl implements SoftwareService {
             case 4:// 报告初审
                 setProgramReviewerAsReviewer(software);
                 break;
+            case 9:// 已完成
+                break;
             default:
                 setApprovalAsReviewer(software, nextNodeNameForNumber);
                 break;
