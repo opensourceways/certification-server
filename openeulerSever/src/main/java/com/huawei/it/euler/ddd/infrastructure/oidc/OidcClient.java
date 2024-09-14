@@ -146,6 +146,7 @@ public class OidcClient {
         OidcResponse oidcResponse = JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
         if (oidcResponse != null){
             List<String> cookieList = responseEntity.getHeaders().get("Set-Cookie");
+            log.info("refresh session set cookie " + JSONObject.toJSONString(cookieList));
             oidcResponse.setCookieList(cookieList);
         }
         return oidcResponse;
