@@ -266,7 +266,8 @@
         s.application_time,s.status,s.authentication_status,s.cpu_vendor
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
-        order by s.update_time DESC
+        order by IF(reviewer = #{software.uuid}, 0, 1)
+        ,s.update_time DESC
         LIMIT #{offset}, #{pageSize}
     </select>
 
