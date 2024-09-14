@@ -141,7 +141,7 @@
                 and s.status in
                 <foreach collection="software.statusId" item="item" open="(" separator="," close=")">
                     #{item}
-                </foreach>)
+                </foreach>
             </if>
             <if test="software.testOrganization != null and software.testOrganization.size() > 0">
                 and test_organization in
