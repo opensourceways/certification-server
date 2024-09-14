@@ -112,7 +112,7 @@ class SoftwareServiceImplTest {
         Integer id = softwareServiceImpl.createSoftware(software, USER_UUID);
 
         // verify
-        Assertions.assertEquals(ErrorCodes.UNAUTHORIZED.getMessage(), id);
+        Assertions.assertEquals(1, id);
     }
 
     @Test
@@ -160,30 +160,34 @@ class SoftwareServiceImplTest {
 
     private Software initTestSoftware() {
         Software software = new Software();
-        software.setId(1);
-        software.setStatus(1);
-        software.setJsonHashRatePlatform(
-            "[{\"serverTypes\":[\"超强Z520-M1\"],\"platformName\":\"兆芯\",\"serverProvider\":\"清华同方\"}]");
+        software.setCompanyName("test公司");
         ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
         computingPlatformVo.setPlatformName("兆芯");
         computingPlatformVo.setServerProvider("清华同方");
         computingPlatformVo.setServerTypes(List.of("超强Z520-M1"));
         software.setHashratePlatformList(List.of(computingPlatformVo));
-        software.setPlatforms(List.of("兆芯/清华同方/超强Z520-M1"));
+        software.setOsName("openEuler");
+        software.setOsVersion("20.03");
+        software.setProductFunctionDesc("测试用例描述");
+        software.setProductType("硬件/DIMM");
+        software.setTestOrganization("openEuler社区");
         return software;
     }
 
     private Software initResultSoftware() {
         Software software = new Software();
         software.setId(1);
-        software.setStatus(1);
-        software.setJsonHashRatePlatform(
-            "[{\"serverTypes\":[\"超强Z520-M1\"],\"platformName\":\"兆芯\",\"serverProvider\":\"清华同方\"}]");
+        software.setCompanyName("test公司");
         ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
         computingPlatformVo.setPlatformName("兆芯");
         computingPlatformVo.setServerProvider("清华同方");
         computingPlatformVo.setServerTypes(List.of("超强Z520-M1"));
         software.setHashratePlatformList(List.of(computingPlatformVo));
+        software.setOsName("openEuler");
+        software.setOsVersion("20.03");
+        software.setProductFunctionDesc("测试用例描述");
+        software.setProductType("硬件/DIMM");
+        software.setTestOrganization("openEuler社区");
         return software;
     }
 

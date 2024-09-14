@@ -231,7 +231,8 @@
             reviewer              = #{reviewer},
             update_time           = #{updateTime},
             authentication_status = #{authenticationStatus},
-            review_role           = #{reviewRole}
+            review_role           = #{reviewRole},
+            update_time           = now()
         where id = #{id}
     </update>
 
