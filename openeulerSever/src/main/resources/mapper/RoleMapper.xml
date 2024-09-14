@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.RoleMapper">
 
-    <select id="findByIdList" parameterType="java.util.List">
+    <select id="findByIdList" parameterType="java.util.List" resultType="java.lang.String">
         select role_t.role
         from role_t
         where id in
@@ -18,6 +18,12 @@
             where ur.user_id = #{userId}
     </select>
 
+    <select id="findByUUID" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select role_id
+        from user_role_mapping_t
+        where uuid = #{uuid}
+    </select>
+
     <select id="findRoleInfoByUserId" parameterType="java.lang.Integer" resultType="com.huawei.it.euler.model.vo.RoleVo">
         select r.role as role, r.role_name as roleName
         from role_t r
@@ -25,15 +31,58 @@
         where ur.user_id = #{userId}
     </select>
 
-    <insert id="insertDefaultRole" parameterType="java.lang.Integer">
-        insert into user_role_mapping_t (user_id, role_id, update_time)
-        values (#{userId}, 1, NOW())
+    <select id="findByUuid" parameterType="java.lang.String" resultType="java.lang.String">
+        select r.role
+        from role_t r
+                 left join user_role_mapping_t ur on r.id = ur.role_id
+        where ur.uuid = #{uuid}
+    </select>
+
+    <select id="findRoleInfoByUuid" parameterType="java.lang.String" resultType="com.huawei.it.euler.ddd.domain.account.Role">
+        select r.id as id, r.role as role, r.role_name as roleName, ur.data_scope as dataScope
+        from role_t r
+                 left join user_role_mapping_t ur on r.id = ur.role_id
+        where ur.uuid = #{uuid}
+    </select>
+
+    <insert id="insertRef" parameterType="com.huawei.it.euler.ddd.domain.account.RoleRelationship">
+        insert into user_role_mapping_t (uuid, role_id, update_time)
+        values (#{uuid}, #{roleId}, NOW())
     </insert>
 
-    <select id="findUserByRole" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select user_id
+    <insert id="insertDefaultRole" parameterType="java.lang.String">
+        insert into user_role_mapping_t (uuid, role_id, update_time)
+        values (#{uuid}, 1, NOW())
+    </insert>
+
+    <select id="findUserByRole" resultType="java.lang.String">
+        SELECT uuid
+        FROM user_role_mapping_t
+        WHERE role_id = #{roleId}
+          <if test="dataScope != null">
+              AND (data_scope = #{dataScope} OR data_scope = 0)
+          </if>
+    </select>
+
+    <select id="findRoleByUserId" resultType="com.huawei.it.euler.model.vo.RoleVo">
+        select role_id as role,data_scope as dataScope
+        from user_role_mapping_t
+        where uuid = #{uuid}
+        <if test="roleId != null">
+            and role_id = #{roleId}
+        </if>
+    </select>
+
+    <select id="findUuidByRole" parameterType="java.lang.Integer" resultType="java.lang.String">
+        select uuid
         from user_role_mapping_t
         where role_id = #{roleId}
+    </select>
+
+
+    <select id="findAllUuid" resultType="java.lang.String">
+        select distinct uuid
+        from user_role_mapping_t
     </select>
 
 </mapper>

@@ -121,6 +121,11 @@ public class Company {
     private String userUuid;
 
     /**
+     * 企业编码
+     */
+    private Integer companyCode;
+
+    /**
      * 是否通过工商注册校验
      */
     private Boolean isCheckedPass;
