@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.domain.account;
 
 import org.springframework.stereotype.Service;
