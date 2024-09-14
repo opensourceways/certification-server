@@ -41,6 +41,8 @@ public class CompanyVo {
     @JsonIgnore
     private Integer id;
 
+    @JsonIgnore
+    private Integer companyCode;
     /**
      * 申请状态
      */

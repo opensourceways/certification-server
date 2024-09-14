@@ -24,6 +24,8 @@ public interface RoleMapper {
 
     List<String> findByUserId(@Param("userId") Integer userId);
 
+    List<Integer> findByUUID(@Param("uuid") Integer uuid);
+
     List<RoleVo> findRoleInfoByUserId(@Param("userId") Integer userId);
 
     List<String> findByUuid(@Param("uuid") String uuid);
@@ -34,9 +36,11 @@ public interface RoleMapper {
 
     List<String> findUuidByRole(@Param("roleId") Integer roleId);
 
-    List<Integer> findUserByRole(@Param("roleId") Integer roleId);
-
     void insertRef(RoleRelationship roleRelationship);
+
+    List<String> findUserByRole(@Param("roleId") Integer roleId,@Param("dataScope") Integer dataScope);
+
+    List<RoleVo> findRoleByUserId(@Param("uuid") Integer uuid,@Param("roleId") Integer roleId);
 
     List<String> findAllUuid();
 }

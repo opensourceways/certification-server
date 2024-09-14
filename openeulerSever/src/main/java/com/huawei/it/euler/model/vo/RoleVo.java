@@ -16,4 +16,6 @@ public class RoleVo {
     private String role;
 
     private String roleName;
+
+    private Integer dataScope;
 }

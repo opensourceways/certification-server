@@ -142,77 +142,39 @@
         where id = #{id}
     </update>
 
+    <select id="countSoftwareList" resultType="java.lang.Long">
+        select COUNT(*) from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
     <select id="getSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
-               s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
-               s.cpu_vendor, n.node_name, u2.username as reviewername, u.username
+        s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
+        s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id
         from software_t AS s
-        left join user_t AS u on s.user_uuid = u.uuid
-        left join user_t AS u2 on s.reviewer = u2.uuid
-        left join node_name_t AS n on s.status = n.id
-        <where>
-            <if test="status != null and status.size() > 0">
-                and s.status in (select id from node_name_t where node_name in
-                <foreach collection="status" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>)
-            </if>
-            <if test="testOrganization != null and testOrganization.size() > 0">
-                and test_organization in
-                <foreach collection="testOrganization" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="productType != null and productType.size() > 0">
-                and
-                <foreach collection="productType" item="item" open="(" separator="or" close=")">
-                    instr(product_type, #{item})
-                </foreach>
-            </if>
-            <if test="companyName != null and companyName != ''">
-                and company_name = #{companyName}
-            </if>
-            <if test="applicant != null and applicant != ''">
-                and user_uuid = #{applicant}
-            </if>
-            <if test="productName != null and productName != ''">
-                and lower(product_name) like lower(concat('%/',#{productName},'%')) escape '/'
-            </if>
-        </where>
-        order by status ASC, s.update_time ASC
+        <include refid="whereSoftwareList"/>
+        order by IF(user_uuid = #{software.applicant}, 0, 1)
+        ,s.update_time DESC
+        LIMIT #{offset}, #{pageSize}
     </select>
 
-    <select id="getReviewSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
+    <select id="countReviewSoftwareList" resultType="java.lang.Long">
+        select COUNT(*) from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
+    </select>
+
+    <select id="getReviewSoftwareList"
             resultMap="softwareMap">
-        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version, s.reviewer,
-        s.hashrate_platform, s.test_organization, s.application_time, n.node_name,u.username as reviewername,s.authentication_status,s.cpu_vendor
+        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
+        s.reviewer,s.review_role,
+        s.hashrate_platform, s.test_organization,s.test_org_id,
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor
         from software_t AS s
-        left join user_t AS u on s.reviewer = u.uuid
-        left join node_name_t AS n on s.status = n.id
-        where s.id in (select software_id from node_t where handler = #{applicant})
-            <if test="status != null and status.size() > 0">
-                and s.status in (select id from node_name_t where node_name in
-                <foreach collection="status" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>)
-            </if>
-            <if test="testOrganization != null and testOrganization.size() > 0">
-                and test_organization in
-                <foreach collection="testOrganization" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="productType != null and productType.size() > 0">
-                and
-                <foreach collection="productType" item="item" open="(" separator="or" close=")">
-                    instr(product_type, #{item})
-                </foreach>
-            </if>
-            <if test="productName != null and productName != ''">
-                and concat(lower(product_name), lower(company_name)) like lower(concat('%/',#{productName},'%')) escape '/'
-            </if>
-        order by status ASC, s.update_time ASC
+        <include refid="whereReviewSoftwareList"/>
+        order by IF(reviewer = #{software.uuid}, 0, 1)
+        ,s.update_time DESC
+        LIMIT #{offset}, #{pageSize}
     </select>
 
     <select id="getAuditRecordsList" parameterType="java.lang.Integer" resultType="com.huawei.it.euler.model.vo.AuditRecordsVo">

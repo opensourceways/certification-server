@@ -31,9 +31,19 @@ public class SelectSoftwareVo {
     private List<@Length(max = 10, message = "测评状态错误") String> status;
 
     /**
+     * 认证状态ID
+     */
+    private List< Integer> statusId;
+
+    /**
      * 测试机构
      */
     private List<@Length(max = 50, message = "测评机构最大不超过{max}个字符") String> testOrganization;
+
+    /**
+     * 测试机构ID
+     */
+    private List<Integer> testOrgId;
 
     /**
      * 产品类型
