@@ -537,7 +537,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<SimpleUserVo> userVos = eulerUsers.stream().map(item -> {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
             simpleUserVo.setUuid(item.getUuid());
-            if(item.getNickName() != null) {
+            if(StringUtils.isNotBlank(item.getNickName())) {
                 simpleUserVo.setUsername(item.getNickName());
             }else {
                 simpleUserVo.setUsername(item.getUserName());
