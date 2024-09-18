@@ -250,7 +250,7 @@ public class FileUtils {
 
     public void downloadFile(String fileId, String originalFilename, HttpServletResponse response)
             throws UnsupportedEncodingException, InputException {
-        response.reset();
+        response.resetBuffer();
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         response.addHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -274,7 +274,7 @@ public class FileUtils {
     }
 
     public void previewImage(String fileId, HttpServletResponse response) throws InputException {
-        response.reset();
+        response.resetBuffer();
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         response.addHeader("Access-Control-Allow-Headers", "Content-Type");
