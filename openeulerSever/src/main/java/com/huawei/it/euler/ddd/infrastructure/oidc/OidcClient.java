@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.infrastructure.oidc;
 
 import com.alibaba.fastjson.JSONObject;
@@ -62,7 +66,7 @@ public class OidcClient {
     private RestTemplate restTemplate;
 
     public String getLoginUrl() {
-        return String.format("%s?response_type=code&scope=openid profile email phone address offline_access&client_id=%s&redirect_uri=%s&loginType=code", authCodeUrl, clientId, redirectUrl);
+        return String.format("%s?response_type=code&scope=openid profile email phone address offline_access&client_id=%s&redirect_uri=%s", authCodeUrl, clientId, redirectUrl);
     }
 
     public String getLogoutUrl() {
@@ -133,12 +137,10 @@ public class OidcClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("token", oidcCookie.get_U_T_());
+        headers.add("Referer", "https://certification.openeuler.org");
         headers.add(HttpHeaders.COOKIE, "_Y_G_=" + oidcCookie.get_Y_G_());
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(refreshTokenUrl, HttpMethod.GET, httpEntity, String.class);
-        log.info("refresh session api " + refreshTokenUrl);
-        log.info("refresh session param " + JSONObject.toJSONString(oidcCookie));
-        log.info(JSONObject.toJSONString(responseEntity));
         OidcResponse oidcResponse = JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
         if (oidcResponse != null){
             List<String> cookieList = responseEntity.getHeaders().get("Set-Cookie");

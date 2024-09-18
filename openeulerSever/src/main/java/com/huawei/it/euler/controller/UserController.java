@@ -110,7 +110,6 @@ public class UserController {
             vo.setTelephone(telephone);
             vo.setMail(mail);
             vo.setUsername(loginUser.getUserName());
-            BeanUtils.copyProperties(loginUser, vo);
             List<Role> roleList = accountService.getUserRoleList(loginUser.getUuid());
             vo.setRoles(roleList.stream().map(Role::getRole).collect(Collectors.toList()));
             vo.setRoleNames(roleList.stream().map(Role::getRoleName).collect(Collectors.toList()));

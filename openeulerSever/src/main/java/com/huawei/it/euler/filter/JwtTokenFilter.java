@@ -13,7 +13,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +44,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        LOGGER.debug("url : {}", request.getRequestURL());
-        LOGGER.info("url : {}", request.getRequestURL());
         String shortUri = RequestUtils.getShortUri(request);
         if (whiteListService.isWriteUrl(shortUri)) {
             chain.doFilter(request, response);
