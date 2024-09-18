@@ -44,8 +44,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        LOGGER.debug("url : {}", request.getRequestURL());
-        LOGGER.info("url : {}", request.getRequestURL());
         String shortUri = RequestUtils.getShortUri(request);
         if (whiteListService.isWriteUrl(shortUri)) {
             chain.doFilter(request, response);
@@ -62,7 +60,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         accountService.refreshLogin(request);
 
         accountService.setAuthentication(request);
-
         chain.doFilter(request, response);
     }
 }

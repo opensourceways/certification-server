@@ -79,4 +79,10 @@
         where role_id = #{roleId}
     </select>
 
+
+    <select id="findAllUuid" resultType="java.lang.String">
+        select distinct uuid
+        from user_role_mapping_t
+    </select>
+
 </mapper>

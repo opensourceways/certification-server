@@ -52,5 +52,4 @@ public class FileModel {
      */
     private String uuid;
 
-    private Integer flag;
 }

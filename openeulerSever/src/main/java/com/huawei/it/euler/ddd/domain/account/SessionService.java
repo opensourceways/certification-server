@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.domain.account;
 
 import com.huawei.it.euler.ddd.infrastructure.cache.CustomizeCacheService;
@@ -51,8 +55,8 @@ public class SessionService {
         String sessionKey = getSessionKey(sessionId);
         String refreshKey = getRefreshKey(sessionId);
         String encryptedUuid = aesGcmEncryptionService.encrypt(uuid);
-        tokenExpiresIn = tokenExpiresIn / 2 > defaultExpireTime ? defaultExpireTime : tokenExpiresIn / 2;
-        long expiredTimeMillis = System.currentTimeMillis() + tokenExpiresIn * 1000L;
+        long expiredTimeMillis = System.currentTimeMillis() + tokenExpiresIn / 2 * 1000L;
+        System.out.println("save session ==》 sessionId=" + sessionId + "; uuid = " + uuid + "; tokenExpiresIn = " + tokenExpiresIn);
         customizeCacheService.put(encryptedUuid, sessionId, tokenExpiresIn);
         customizeCacheService.put(refreshKey, String.valueOf(expiredTimeMillis), tokenExpiresIn);
         customizeCacheService.put(sessionKey, encryptedUuid, tokenExpiresIn);
@@ -85,6 +89,9 @@ public class SessionService {
     public String getUuid(String sessionId) throws Exception {
         String sessionKey = getSessionKey(sessionId);
         String encryptedUuid = customizeCacheService.get(sessionKey);
+        if (StringUtils.isEmpty(encryptedUuid)){
+            System.out.println("get uuid by sessionId failed ==》 sessionId=" + sessionId);
+        }
         return aesGcmEncryptionService.decrypt(encryptedUuid);
     }
 

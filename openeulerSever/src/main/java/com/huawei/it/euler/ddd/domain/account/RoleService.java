@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.domain.account;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +49,9 @@ public class RoleService {
 
     public List<String> getUuidListByRoleId(int roleId) {
         return roleRepository.findUuidByRoleId(roleId);
+    }
+
+    public List<String> findAllUuid(){
+        return roleRepository.findAllUuid();
     }
 }

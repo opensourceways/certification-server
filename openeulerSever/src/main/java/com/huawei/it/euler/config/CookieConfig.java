@@ -1,5 +1,6 @@
 package com.huawei.it.euler.config;
 
+import com.alibaba.fastjson.JSONArray;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,12 +41,44 @@ public class CookieConfig {
         addCookie(response, "openeuler", "in");
     }
 
-    public void writeXsrfInCookie(HttpServletResponse response,String xsrfKey, String xsrfToken) {
+    public void writeXsrfInCookie(HttpServletResponse response, String xsrfKey, String xsrfToken) {
         Cookie cookie = new Cookie(xsrfKey, xsrfToken);
         cookie.setSecure(true);
         cookie.setHttpOnly(false);
         cookie.setPath(cookiePath);
         response.addCookie(cookie);
+    }
+
+    public void writeCookieList(HttpServletResponse response, JSONArray cookieList) {
+        if (cookieList == null) {
+            return;
+        }
+        for (Object cookieObj : cookieList) {
+            String cookieStr = cookieObj.toString();
+            Cookie cookie = createCookie(cookieStr);
+            response.addCookie(cookie);
+        }
+    }
+
+    public Cookie createCookie(String str) {
+        String[] cookieParamArr = str.split(";");
+        String nameValueStr = cookieParamArr[0];
+        String name = nameValueStr.split("=")[0].trim();
+        String value = nameValueStr.split("=")[1].trim();
+        Cookie cookie = new Cookie(name, value);
+        for (int i = 1; i < cookieParamArr.length; i++) {
+            String[] split = cookieParamArr[i].split("=");
+            String attrName = split[0].toLowerCase().trim();
+            String attrValue = split.length > 1 ? split[1].trim() : "";
+            switch (attrName) {
+                case "path" -> cookie.setPath(attrValue);
+                case "secure" -> cookie.setSecure(true);
+                case "httponly" -> cookie.setHttpOnly(true);
+                case "max-age" -> cookie.setMaxAge(Integer.parseInt(attrValue));
+                case "domain" -> cookie.setDomain(attrValue);
+            }
+        }
+        return cookie;
     }
 
     public String getCookie(HttpServletRequest request, String key) {

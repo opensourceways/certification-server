@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.infrastructure.oidc;
 
 import cn.hutool.http.HttpStatus;
@@ -30,10 +34,16 @@ public class OidcAuthService {
         if (refreshResult == null){
             throw new NoLoginException();
         }
+
+        if (HttpStatus.HTTP_OK != refreshResult.getCode()){
+            throw new NoLoginException();
+        }
+
         JSONObject dataJSONObject = JSON.parseObject(refreshResult.getData());
         if (dataJSONObject == null) {
             throw new NoLoginException();
         }
+        dataJSONObject.put("cookieList",refreshResult.getCookieList());
         return dataJSONObject;
     }
 
@@ -52,8 +62,12 @@ public class OidcAuthService {
             log.info(tokenResponse);
             JSONObject tokenObj = JSONObject.parseObject(tokenResponse);
             managerToken = tokenObj.getString("token");
-            long expireTimeSec = tokenObj.getLong("token_expire");
-            customizeCacheService.put("managerToken", managerToken, expireTimeSec);
+            if (tokenObj.containsKey("token_expire")) {
+                long expireTimeSec = tokenObj.getLong("token_expire");
+                customizeCacheService.put("managerToken", managerToken, expireTimeSec);
+            } else {
+                customizeCacheService.put("managerToken", managerToken, 10);
+            }
         } else {
             managerToken = tokenStr;
         }
@@ -74,10 +88,6 @@ public class OidcAuthService {
 
     public String getLogoutUrl(){
         return oidcClient.getLogoutUrl();
-    }
-
-    public String toIndex(){
-        return oidcClient.getFrontIndexUrl();
     }
 
     public String redirectToIndex(){
