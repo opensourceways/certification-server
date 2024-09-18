@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.infrastructure.oidc;
 
 import cn.hutool.http.HttpStatus;
@@ -58,8 +62,12 @@ public class OidcAuthService {
             log.info(tokenResponse);
             JSONObject tokenObj = JSONObject.parseObject(tokenResponse);
             managerToken = tokenObj.getString("token");
-            long expireTimeSec = tokenObj.getLong("token_expire");
-            customizeCacheService.put("managerToken", managerToken, expireTimeSec);
+            if (tokenObj.containsKey("token_expire")) {
+                long expireTimeSec = tokenObj.getLong("token_expire");
+                customizeCacheService.put("managerToken", managerToken, expireTimeSec);
+            } else {
+                customizeCacheService.put("managerToken", managerToken, 10);
+            }
         } else {
             managerToken = tokenStr;
         }

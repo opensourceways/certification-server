@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(value = RuntimeException.class)
     public JsonResponse<String> handler(RuntimeException exception, HttpServletRequest request) {
-        log.error("URL: {}, RuntimeException, errorMessage: {}", request.getRequestURL(), exception);
+        log.error("URL: {}, RuntimeException, errorMessage: {}", request.getRequestURL(), exception.getMessage());
         return JsonResponse.failed(ERROR_MESSAGE);
     }
 
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = IllegalArgumentException.class)
     public JsonResponse<String> handler(IllegalArgumentException exception, HttpServletRequest request) {
         log.error("URL: {}, IllegalArgumentException, errorMessage: {}",
-                request.getRequestURL(), exception);
+                request.getRequestURL(), exception.getMessage());
         return JsonResponse.failed(ERROR_MESSAGE);
     }
 
@@ -262,7 +262,7 @@ public class GlobalExceptionHandler {
         log.error("StackOverflowError");
         return JsonResponse.failed("服务内部错误");
     }
-    
+
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(value = NoLoginException.class)
     public JsonResponse resolveNoLoginException(){

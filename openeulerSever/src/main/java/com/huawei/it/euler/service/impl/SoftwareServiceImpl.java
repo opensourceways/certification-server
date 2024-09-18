@@ -263,7 +263,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     /**
      * 初始化测评流程信息
-     * 
+     *
      * @param software 需要初始化的测评流程
      * @param uuid 用户uuid
      * @param companyVo 用户对应的公司信息
@@ -406,8 +406,8 @@ public class SoftwareServiceImpl implements SoftwareService {
                     nextNodeNumber--;
                 }
                 nextNodeNumber--;
-                software.setStatus(nextNodeNumber);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
+                software.setStatus(nextNodeNumber);
                 getHandler(nextNodeNumber, software);
                 break;
             case 3: //转审
