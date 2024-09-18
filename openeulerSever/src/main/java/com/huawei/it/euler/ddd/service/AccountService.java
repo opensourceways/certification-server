@@ -1,5 +1,6 @@
 package com.huawei.it.euler.ddd.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.it.euler.config.CookieConfig;
 import com.huawei.it.euler.ddd.domain.account.*;
@@ -63,49 +64,109 @@ public class AccountService {
             log.error(e.getMessage());
         }
         cookieConfig.writeSessionInCookie(response, sessionId);
+
         String token = xsrfService.refreshToken(userInfo.getUuid());
         cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
         response.addHeader(xsrfService.getResponseHeaderKey(), token);
+
         response.sendRedirect(oidcAuthService.redirectToIndex());
     }
 
+    public boolean loginByOidc(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        OidcCookie oidcCookie = getOidcCookie(request);
+        JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
+        String uuid = loginObj.getString("userId");
+
+        UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
+        userInfoService.saveUser(userInfo);
+
+        String sessionId = sessionService.create();
+        if (loginObj.containsKey("tokenExpireInterval")) {
+            int tokenExpiresIn = loginObj.getInteger("tokenExpireInterval");
+            sessionService.save(sessionId, uuid, tokenExpiresIn);
+        } else {
+            sessionService.save(sessionId, uuid);
+        }
+        logUtils.insertAuditLog(request, uuid, "login", "login in", "user auto login in");
+        cookieConfig.writeSessionInCookie(response, sessionId);
+        request.setAttribute("sessionId",sessionId);
+
+        JSONArray cookieList = loginObj.getJSONArray("cookieList");
+        cookieConfig.writeCookieList(response,cookieList);
+
+        String token = xsrfService.refreshToken(uuid);
+        cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
+        response.addHeader(xsrfService.getResponseHeaderKey(), token);
+        return true;
+    }
+
     public boolean isLogin(HttpServletRequest request, HttpServletResponse response) {
-        boolean isLoginLocal = false;
+        String sessionId = null;
         try {
-            String sessionId = getSessionId(request);
-            isLoginLocal = sessionService.isAuth(sessionId);
-        } catch (Exception ignored) {
-        }
-        if (isLoginLocal) {
-            return true;
+            sessionId = getSessionId(request);
+        } catch (NoLoginException ignored) {
         }
 
+        OidcCookie oidcCookie = null;
         try {
-            OidcCookie oidcCookie = getOidcCookie(request);
-            JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
-            String uuid = loginObj.getString("userId");
+            oidcCookie = getOidcCookie(request);
+        } catch (NoLoginException ignored) {
+        }
 
-            UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
-            userInfoService.saveUser(userInfo);
-
-            String sessionId = sessionService.create();
-            if (loginObj.containsKey("tokenExpireInterval")){
-                int tokenExpiresIn = loginObj.getInteger("tokenExpireInterval");
-                sessionService.save(sessionId, uuid, tokenExpiresIn);
-            } else {
-                sessionService.save(sessionId, uuid);
-            }
-            logUtils.insertAuditLog(request, uuid, "login", "login in", "user login in");
-            cookieConfig.writeSessionInCookie(response, sessionId);
-
-            String token = xsrfService.refreshToken(uuid);
-            cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
-            response.addHeader(xsrfService.getResponseHeaderKey(), token);
-
-            return true;
-        } catch (Exception e) {
+        // both no login
+        if (StringUtils.isEmpty(sessionId) && oidcCookie == null) {
             return false;
         }
+
+        // local login but remote no login, set local logout
+        if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
+            logout(request, response);
+            return false;
+        }
+
+        // local no login but remote login, set local login
+        if (StringUtils.isEmpty(sessionId) && oidcCookie != null) {
+            try {
+                return loginByOidc(request, response);
+            } catch (Exception e) {
+                log.error("login local with remote login error");
+                log.error(e.getMessage());
+                return false;
+            }
+        }
+
+        // bot login and check login expire or not and check local user equal remote user or not
+        String loginUuid = null;
+        try {
+            boolean isLoginLocal = sessionService.isAuth(sessionId);
+            if (isLoginLocal) {
+                loginUuid = getLoginUuid(request);
+            } else {
+                sessionId = null;
+            }
+        } catch (NoLoginException ignored) {
+        }
+
+        try {
+            JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
+
+            String uuid = loginObj.getString("userId");
+            if (!uuid.equals(loginUuid)) {
+                if (!StringUtils.isEmpty(sessionId)) {
+                    sessionService.clear(sessionId);
+                }
+               return loginByOidc(request, response);
+            }
+            JSONArray cookieList = loginObj.getJSONArray("cookieList");
+            cookieConfig.writeCookieList(response,cookieList);
+        } catch (Exception ignored) {
+            if (!StringUtils.isEmpty(sessionId)) {
+                logout(request, response);
+                sessionId = null;
+            }
+        }
+
+        return StringUtils.isNotEmpty(sessionId);
     }
 
     public void refreshLogin(HttpServletRequest request) {
@@ -132,11 +193,12 @@ public class AccountService {
 
     public void setAuthentication(HttpServletRequest request) {
         try {
-            String loginUuid = getLoginUuid(request);
+            String sessionId = getSessionId(request);
+            String loginUuid = sessionService.getUuid(sessionId);
             List<GrantedAuthority> userAuthorities = roleService.getUserAuthorities(loginUuid);
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginUuid, null, userAuthorities);
             SecurityContextHolder.getContext().setAuthentication(token);
-        } catch (NoLoginException e) {
+        } catch (Exception e) {
             log.error("set authentication failed!");
             log.error(e.getMessage());
         }
@@ -149,6 +211,7 @@ public class AccountService {
         } catch (NoLoginException e) {
             throw new NoLoginException();
         }
+
         String uuid;
         try {
             uuid = sessionService.getUuid(sessionId);
@@ -175,6 +238,9 @@ public class AccountService {
     private String getSessionId(HttpServletRequest request) throws NoLoginException {
         String sessionId = cookieConfig.getCookie(request,"sessionId");
         if (StringUtils.isEmpty(sessionId)){
+            sessionId = (String) request.getAttribute("sessionId");
+        }
+        if (StringUtils.isEmpty(sessionId)){
             throw new NoLoginException();
         }
         return sessionId;
@@ -193,14 +259,11 @@ public class AccountService {
     }
 
     public UserInfo getUserInfo(String uuid){
-        UserInfo userInfo = userInfoService.getUser(uuid);
-        if (userInfo == null) {
-            userInfo = oidcAuthService.getUserInfo(uuid);
-            if (userInfo != null) {
-                userInfoService.saveUser(userInfo);
-            }
-        }
-        return userInfo;
+        return userInfoService.getUser(uuid);
+    }
+
+    public List<Role> getUserRoleList(String uuid){
+        return roleService.getRoleInfoByUuid(uuid);
     }
 
     public String getUserName(String uuid){
@@ -228,8 +291,8 @@ public class AccountService {
     }
 
     public boolean isPartner(String uuid){
-        UserInfo userInfo = getUserInfo(uuid);
-        return roleService.isPartner(userInfo.getRoleList());
+        List<Role> userRoleList = roleService.getRoleInfoByUuid(uuid);
+        return roleService.isPartner(userRoleList);
     }
 
     public String toLogout(){

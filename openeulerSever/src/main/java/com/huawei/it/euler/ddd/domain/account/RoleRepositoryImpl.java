@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
 package com.huawei.it.euler.ddd.domain.account;
 
 import com.huawei.it.euler.mapper.RoleMapper;
@@ -30,5 +34,10 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public List<String> findUuidByRoleId(int roleId) {
         return roleMapper.findUuidByRole(roleId);
+    }
+
+    @Override
+    public List<String> findAllUuid() {
+        return roleMapper.findAllUuid();
     }
 }

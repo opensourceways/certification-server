@@ -41,4 +41,6 @@ public interface RoleMapper {
     List<String> findUserByRole(@Param("roleId") Integer roleId,@Param("dataScope") Integer dataScope);
 
     List<RoleVo> findRoleByUserId(@Param("uuid") Integer uuid,@Param("roleId") Integer roleId);
+
+    List<String> findAllUuid();
 }
