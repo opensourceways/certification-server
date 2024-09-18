@@ -140,7 +140,7 @@ public class CertificateGenerationUtils {
     }
 
     private void writeResponse(HttpServletResponse response) {
-        response.reset();
+        response.resetBuffer();
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         response.addHeader("Access-Control-Allow-Headers", "Content-Type");
