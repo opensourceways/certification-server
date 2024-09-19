@@ -234,8 +234,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         Integer softwareId = software.getId();
         // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
         if (softwareId == null || softwareId == 0) {
-            softwareMapper.insertSoftware(software);
-            softwareId = software.getId();
+            softwareId = softwareMapper.insertSoftware(software);
         } else {
             softwareMapper.recommit(software);
             // 调用审核接口
@@ -853,15 +852,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         certificate.setHashratePlatform(hashRatePlatform);
         checkCertificateInfo(certificate.getOsName(), certificate.getOsVersion(), hashRatePlatform);
         certificateGenerationUtils.previewCertificate(certificate, response);
-    }
-
-    public List<String> getRoles(String userUuid) {
-        EulerUser user = userMapper.findByUuid(userUuid);
-        if (user == null) {
-            throw new ParamException("请登录");
-        }
-        List<RoleVo> roleVos = roleMapper.findRoleInfoByUserId(user.getId());
-        return roleVos.stream().map(RoleVo::getRole).collect(Collectors.toList());
     }
 
     /**
