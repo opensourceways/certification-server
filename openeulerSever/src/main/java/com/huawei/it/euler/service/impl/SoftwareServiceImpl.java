@@ -854,15 +854,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         certificateGenerationUtils.previewCertificate(certificate, response);
     }
 
-    public List<String> getRoles(String userUuid) {
-        EulerUser user = userMapper.findByUuid(userUuid);
-        if (user == null) {
-            throw new ParamException("请登录");
-        }
-        List<RoleVo> roleVos = roleMapper.findRoleInfoByUserId(user.getId());
-        return roleVos.stream().map(RoleVo::getRole).collect(Collectors.toList());
-    }
-
     /**
      * send test apply to innovation center
      *
