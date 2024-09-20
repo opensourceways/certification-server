@@ -128,6 +128,9 @@
             <if test="software.productName != null and software.productName != ''">
                 and lower(product_name) like lower(concat('%/',#{software.productName},'%')) escape '/'
             </if>
+            <if test="software.applicant != null and software.applicant != ''">
+                and s.id not in (select software_id from software_display_t where uuid = #{software.applicant})
+            </if>
         </where>
     </sql>
     <sql id="whereReviewSoftwareList">
@@ -173,6 +176,9 @@
                 and concat(lower(product_name), lower(company_name)) like
                 lower(concat('%/',#{software.productName},'%')) escape
                 '/'
+            </if>
+            <if test="software.uuid != null and software.uuid != ''">
+                and s.id not in (select software_id from software_display_t where uuid = #{software.uuid})
             </if>
         </where>
     </sql>
