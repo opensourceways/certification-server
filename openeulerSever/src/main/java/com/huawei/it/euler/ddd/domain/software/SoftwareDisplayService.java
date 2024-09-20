@@ -5,13 +5,13 @@
 package com.huawei.it.euler.ddd.domain.software;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.ErrorCodes;
 import com.huawei.it.euler.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,10 +46,12 @@ public class SoftwareDisplayService {
     }
 
     public Page<SoftwareDisplayPO> getHiddenPage(String uuid, String productName, int current, int size) {
-        QueryWrapper<SoftwareDisplayPO> wrapper = new QueryWrapper<>();
-        wrapper.eq("uuid", uuid);
-        wrapper.like("productName", productName);
+        QueryWrapper<SoftwareDisplayPO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("uuid", uuid);
+        if (!StringUtils.isEmpty(productName)) {
+            queryWrapper.like("product_name", productName);
+        }
         Page<SoftwareDisplayPO> poPage = new Page<>(current, size);
-        return displayRepository.page(poPage);
+        return displayRepository.page(poPage, queryWrapper);
     }
 }
