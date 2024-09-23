@@ -88,6 +88,31 @@ public class SoftwareController {
     }
 
     /**
+     * 撤销评测
+     *
+     */
+    @PostMapping("/software/withdraw-register")
+    @PreAuthorize("hasRole('user')")
+    public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws InputException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        softwareService.commonProcess(processVo, uuid, NodeEnum.APPLY.getId());
+        return JsonResponse.success();
+    }
+
+    /**
+     * 撤销评测
+     *
+     */
+    @DeleteMapping("/software/register")
+    @PreAuthorize("hasRole('user')")
+    public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request)
+            throws InputException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return JsonResponse.success(softwareService.deleteSoftware(id, uuid));
+    }
+
+    /**
      * program_review 方案审核
      */
     @PostMapping("/software/programReview")
