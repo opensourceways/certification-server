@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2024/06/29
  */
 @Configuration
-@MapperScan(basePackages = {"com.huawei.it.euler.mapper","com.huawei.it.euler.ddd.domain"})
+@MapperScan(value = {"com.huawei.it.euler.mapper","com.huawei.it.euler.ddd.domain.software"})
 public class MybatisPlusConfig {
     /**
      * 配置分页插件
