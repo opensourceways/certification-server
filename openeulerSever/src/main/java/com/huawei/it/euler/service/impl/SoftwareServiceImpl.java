@@ -412,6 +412,17 @@ public class SoftwareServiceImpl implements SoftwareService {
             case 3: //转审
                 software.setReviewer(vo.getTransferredUser());
                 break;
+            case 4: //撤回
+                // intel取消报告初审
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
+                        && Objects.equals(nextNodeNumber, NodeEnum.REPORT_RE_REVIEW.getId())) {
+                    nextNodeNumber--;
+                }
+                nextNodeNumber--;
+                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已撤回");
+                software.setStatus(nextNodeNumber);
+                setProgramReviewerAsReviewer(software,software.getStatus());
+                break;
             default:
                 LOGGER.error("审批阶段错误:id:{},HandlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
                 break;
@@ -427,13 +438,13 @@ public class SoftwareServiceImpl implements SoftwareService {
                 break;
             case 3: // 审批流程
                 if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
-                    setProgramReviewerAsReviewer(software);
+                    setProgramReviewerAsReviewer(software,NodeEnum.PROGRAM_REVIEW.getId());
                 } else {
                     setUserAsReviewer(software);
                 }
                 break;
             case 4:// 报告初审
-                setProgramReviewerAsReviewer(software);
+                setProgramReviewerAsReviewer(software,NodeEnum.PROGRAM_REVIEW.getId());
                 break;
             case 9:// 已完成
                 break;
@@ -449,8 +460,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewRole(RoleEnum.USER.getRoleId());
     }
 
-    private void setProgramReviewerAsReviewer(Software software) {
-        Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
+    private void setProgramReviewerAsReviewer(Software software,Integer status) {
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(), status);
         software.setReviewer(node.getHandler());
         software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
     }
@@ -464,7 +475,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private Software checkCommonProcess(ProcessVo vo, String uuid,Integer nodeNumber) {
         Integer handlerResult = vo.getHandlerResult();
-        if (handlerResult < 1 || handlerResult > 3) {
+        if (HandlerResultEnum.isValidId(handlerResult)) {
             LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
             throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
         }
