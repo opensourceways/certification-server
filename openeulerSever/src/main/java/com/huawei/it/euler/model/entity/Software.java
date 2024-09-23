@@ -105,4 +105,6 @@ public class Software {
     private String authenticationStatus;
 
     private Integer asId;
+
+    private Date certificationTime;
 }
