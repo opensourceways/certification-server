@@ -22,7 +22,7 @@ public enum HandlerResultEnum {
     // transfer
     TRANSFER(3, "转审"),
     // revocation
-    REVOCATION(4, "已撤销");
+    WITHDRAW(4, "已撤销");
 
     private final Integer id; // id
 
