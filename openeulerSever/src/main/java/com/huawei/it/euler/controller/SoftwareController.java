@@ -91,7 +91,7 @@ public class SoftwareController {
      * 撤销评测
      *
      */
-    @PostMapping("/software/v1/withdraw-software")
+    @PostMapping("/software/withdraw-software")
     @PreAuthorize("hasAnyRole('user','euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
             throws InputException, NoLoginException {
@@ -103,7 +103,7 @@ public class SoftwareController {
      * 删除评测
      *
      */
-    @DeleteMapping("/software/v1/delete-register")
+    @DeleteMapping("/software/delete-register")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request)
             throws InputException, NoLoginException {
