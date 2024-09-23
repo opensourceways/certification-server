@@ -432,7 +432,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
-    public String DeleteSoftware(Integer id,String uuid) {
+    public String deleteSoftware(Integer id,String uuid) {
         Software software = softwareMapper.findById(id);
         if (software == null) {
             return "软件不存在";
@@ -445,6 +445,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         return softwareMapper.deleteSoftware(id);
     }
+
     private Software getHandler(int nextNodeNameForNumber, Software software) {
         switch (nextNodeNameForNumber) {
             case 1: // 认证申请
