@@ -523,16 +523,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("审核条目不存在:{}", vo.getSoftwareId());
             throw new ParamException("审核条目不存在:" + vo.getSoftwareId());
         }
-        if (handlerResult.equals(HandlerResultEnum.WITHDRAW.getId())) {
-            if (!Objects.equals(getNextNodeNumber(softwareInDb, softwareInDb.getStatus(), false), nodeNumber)) {
-                LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), nodeNumber);
-                throw new ParamException("审批阶段错误");
-            }
-        } else {
-            if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
-                LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), nodeNumber);
-                throw new ParamException("审批阶段错误");
-            }
+        if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
+            LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
+            throw new ParamException("审批阶段错误");
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
             LOGGER.error("非法的审核人:{}", uuid);
