@@ -123,6 +123,7 @@ public interface SoftwareService {
     List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid);
 
     String deleteSoftware(Integer id, String uuid);
+
     /**
      * 上传文件
      *
