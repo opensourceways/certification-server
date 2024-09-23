@@ -6,6 +6,7 @@ package com.huawei.it.euler.model.entity;
 
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,4 +61,14 @@ public class SelectSoftware {
      * 当前用户uuid
      */
     private String uuid;
+
+    /**
+     * 认证完成时间筛选-开始时间
+     */
+    private Date beginCertificationTime;
+
+    /**
+     * 认证完成时间筛选-结束时间
+     */
+    private Date endCertificationTime;
 }

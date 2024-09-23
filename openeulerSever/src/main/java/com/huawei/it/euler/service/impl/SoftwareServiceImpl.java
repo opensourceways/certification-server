@@ -380,6 +380,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             addNextNode(software);
         } else if (software.getStatus().equals(NodeEnum.FINISHED.getId())) {
             generateCertificate(vo.getSoftwareId());
+            software.setCertificationTime(new Date());
         }
         softwareMapper.updateSoftware(software);
         return JsonResponse.success();
