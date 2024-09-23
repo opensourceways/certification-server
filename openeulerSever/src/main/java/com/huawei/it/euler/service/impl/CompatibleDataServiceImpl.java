@@ -158,7 +158,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
         org.springframework.core.io.Resource[] resources = resolver.getResources(DATA_TEMPLATE);
         org.springframework.core.io.Resource resource = resources[0];
         try (InputStream inputStream = resource.getInputStream()) {
-            response.reset();
+            response.resetBuffer();
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
             response.addHeader("Access-Control-Allow-Headers", "Content-Type");
