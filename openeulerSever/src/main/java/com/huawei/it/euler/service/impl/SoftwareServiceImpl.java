@@ -432,8 +432,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
-    public String DeleteSoftware(Integer id,Integer uuid) {
-
+    public String DeleteSoftware(Integer id,String uuid) {
+        Software software = softwareMapper.findById(id);
+        if (software == null) {
+            return "软件不存在";
+        }
+        if (!Objects.equals(software.getUserUuid(), uuid)) {
+            return "非法操作";
+        }
+        if (!software.getStatus().equals(NodeEnum.APPLY.getId())) {
+            return "软件已完成";
+        }
         return softwareMapper.deleteSoftware(id);
     }
     private Software getHandler(int nextNodeNameForNumber, Software software) {
