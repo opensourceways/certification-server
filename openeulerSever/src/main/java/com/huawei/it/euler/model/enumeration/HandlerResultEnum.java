@@ -21,7 +21,7 @@ public enum HandlerResultEnum {
     REJECT(2, "已驳回"),
     // transfer
     TRANSFER(3, "转审"),
-    // revocation
+    // withdraw
     WITHDRAW(4, "已撤销");
 
     private final Integer id; // id
