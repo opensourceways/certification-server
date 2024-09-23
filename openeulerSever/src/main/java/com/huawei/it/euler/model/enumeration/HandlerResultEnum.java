@@ -33,7 +33,7 @@ public enum HandlerResultEnum {
         this.name = name;
     }
 
-    public boolean isValidId(Integer id) {
+    public static boolean isValidId(Integer id) {
         for (HandlerResultEnum handlerResultEnum : HandlerResultEnum.values()) {
             if (handlerResultEnum.getId().equals(id)) {
                 return true;
