@@ -52,12 +52,19 @@ public interface SoftwareService {
      * @param software 软件信息
      * @param uuid uuid
      */
-    Integer createSoftware(Software software, String uuid)
-        throws InputException, IOException;
+    Integer createSoftware(Software software, String uuid) throws InputException, IOException;
 
     JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
 
+    /**
+     * 撤销软件信息
+     *
+     * @param vo 审批信息
+     * @param uuid uuid
+     * @return 流程id
+     */
     String withdrawSoftware(ProcessVo vo, String uuid);
+
     /**
      * 获取转审人员列表
      *
@@ -102,8 +109,8 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return 列表
      */
-    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
-                                                  IPage<AuditRecordsVo> page, String uuid);
+    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName, IPage<AuditRecordsVo> page,
+        String uuid);
 
     /**
      * 证书信息确认查询
@@ -123,6 +130,13 @@ public interface SoftwareService {
      */
     List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid);
 
+    /**
+     * 删除审批信息
+     *
+     * @param id 流程id
+     * @param uuid uuid
+     * @return 删除的流程id
+     */
     String deleteSoftware(Integer id, String uuid);
 
     /**
@@ -135,8 +149,8 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return JsonResponse
      */
-    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode,
-                                String fileType, String uuid) throws InputException, TestReportExceedMaxAmountException;
+    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
+        String uuid) throws InputException, TestReportExceedMaxAmountException;
 
     /**
      * 查询上传文件名称
@@ -156,7 +170,7 @@ public interface SoftwareService {
      * @param response response
      */
     void downloadAttachments(String fileId, HttpServletResponse response, String uuid)
-            throws UnsupportedEncodingException, InputException;
+        throws UnsupportedEncodingException, InputException;
 
     /**
      * 文件预览
