@@ -89,7 +89,7 @@
     <sql id="insertFields">
         company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
         hashrate_platform, product_type, test_organization,test_org_id, status, update_time, application_time,
-        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code
+        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code,delete_flag
     </sql>
 
     <sql id="insertAttachFields">
@@ -223,7 +223,7 @@
         #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
         #{productType}, #{testOrganization},#{testOrgId}, #{status}, #{updateTime}, #{applicationTime},
         #{reviewer},#{reviewRole},
-        #{userUuid}, #{cpuVendor}, #{asId},#{companyCode})
+        #{userUuid}, #{cpuVendor}, #{asId},#{companyCode},0)
     </insert>
 
     <update id="updateSoftware" parameterType="com.huawei.it.euler.model.entity.Software">
@@ -397,4 +397,10 @@
         select distinct name
         from innovation_center_t;
     </select>
+
+    <delete id="deleteSoftware">
+        update software_t
+        set delete_flag = 1
+        where id = #{id}
+    </delete>
 </mapper>
