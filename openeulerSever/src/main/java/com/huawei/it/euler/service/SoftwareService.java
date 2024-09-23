@@ -57,6 +57,7 @@ public interface SoftwareService {
 
     JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
 
+    String withdrawSoftware(ProcessVo vo, String uuid);
     /**
      * 获取转审人员列表
      *

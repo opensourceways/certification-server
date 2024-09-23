@@ -340,6 +340,23 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
+    public String withdrawSoftware(ProcessVo vo, String uuid) {
+        Software software = softwareMapper.findById(vo.getSoftwareId());
+        Integer status = getNextNodeNumber(software, software.getStatus(),false);
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(),status);
+        if (!Objects.equals(node.getHandler(), uuid)) {
+            LOGGER.error("当前用户撤销无权限:{}", uuid);
+            throw new ParamException("当前用户撤销无权限:" + uuid);
+
+        }
+        vo.setHandlerResult(HandlerResultEnum.WITHDRAW.getId());
+        updateCurNode(vo, uuid);
+        getNextNode(vo, software);
+        addNextNode(software);
+        softwareMapper.updateSoftware(software);
+        return String.valueOf(software.getId());
+    }
+
     public JsonResponse<String> testingPhase(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid, NodeEnum.TESTING_PHASE.getId());
         if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
@@ -375,7 +392,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     public JsonResponse<String> certificateIssuance(ProcessVo vo, String uuid) throws IOException {
         Software software = checkCommonProcess(vo, uuid, NodeEnum.CERTIFICATE_ISSUANCE.getId());
         updateCurNode(vo, uuid);
-        getNextNodeNumber(vo, software);
+        getNextNode(vo, software);
         if (software.getStatus() < NodeEnum.FINISHED.getId()) {
             addNextNode(software);
         } else if (software.getStatus().equals(NodeEnum.FINISHED.getId())) {
@@ -385,7 +402,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
-    private Software getNextNodeNumber(ProcessVo vo, Software software) {
+    private Software getNextNode(ProcessVo vo, Software software) {
         Integer nextNodeNumber = software.getStatus();
         switch (vo.getHandlerResult()) {
             case 1: // 通过
@@ -406,7 +423,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 nextNodeNumber = getNextNodeNumber(software, nextNodeNumber, false);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已撤回");
                 software.setStatus(nextNodeNumber);
-                setProgramReviewerAsReviewer(software, software.getStatus());
+                getHandler(nextNodeNumber, software);
                 break;
             default:
                 LOGGER.error("审批阶段错误:id:{},HandlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
@@ -536,7 +553,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private void updateNextSoftware(ProcessVo vo, Software software, String uuid) {
         updateCurNode(vo, uuid);
-        getNextNodeNumber(vo, software);
+        getNextNode(vo, software);
         addNextNode(software);
         softwareMapper.updateSoftware(software);
     }
