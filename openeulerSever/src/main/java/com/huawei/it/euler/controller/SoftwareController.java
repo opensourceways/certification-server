@@ -91,20 +91,19 @@ public class SoftwareController {
      * 撤销评测
      *
      */
-    @PostMapping("/software/withdraw-register")
-    @PreAuthorize("hasRole('user')")
+    @PostMapping("/software/withdraw-software")
+    @PreAuthorize("hasAnyRole('user','euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
             throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        softwareService.commonProcess(processVo, uuid, NodeEnum.APPLY.getId());
-        return JsonResponse.success();
+        return JsonResponse.success(softwareService.withdrawSoftware(processVo, uuid));
     }
 
     /**
      * 撤销评测
      *
      */
-    @DeleteMapping("/software/register")
+    @DeleteMapping("/software/delete-register")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request)
             throws InputException, NoLoginException {
