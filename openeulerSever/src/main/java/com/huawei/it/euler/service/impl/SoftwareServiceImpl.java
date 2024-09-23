@@ -491,7 +491,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private Software checkCommonProcess(ProcessVo vo, String uuid, Integer nodeNumber) {
         Integer handlerResult = vo.getHandlerResult();
-        if (HandlerResultEnum.isValidId(handlerResult)) {
+        if (!HandlerResultEnum.isValidId(handlerResult)) {
             LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
             throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
         }
