@@ -352,11 +352,11 @@ public class CertificateGenerationUtils {
     private void processingOverlongFields(String fields, float oldBeginY, float newBeginY, XEasyPdfPage page) {
         int length = fields.length();
         if (length > 40) {
-            int i = length / 2;
+            String[] words = fields.split(" ",2);
             page.addComponent(
-                XEasyPdfHandler.Text.build(fields.substring(0, i)).setPosition(0, newBeginY)
+                XEasyPdfHandler.Text.build(words[0]).setPosition(0, newBeginY)
                     .setHorizontalStyle(XEasyPdfPositionStyle.CENTER),
-                XEasyPdfHandler.Text.build(fields.substring(i, length))
+                XEasyPdfHandler.Text.build(words[1].trim())
                     .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
         } else {
             page.addComponent(XEasyPdfHandler.Text.build(fields).setPosition(0, oldBeginY)
