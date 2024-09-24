@@ -232,7 +232,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         Integer softwareId = software.getId();
         // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
         if (softwareId == null || softwareId == 0) {
-            softwareId = softwareMapper.insertSoftware(software);
+            softwareMapper.insertSoftware(software);
+            softwareId = software.getId();
         } else {
             softwareMapper.recommit(software);
             // 调用审核接口
@@ -669,6 +670,10 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(item.getAuthenticationStatus());
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
+            }
+            if (Objects.equals(item.getStatusId(), NodeEnum.FINISHED.getId())
+                || Objects.equals(item.getStatusId(), NodeEnum.APPLY.getId())) {
+                return;
             }
             item.setReviewerName(accountService.getUserName(item.getReviewer()));
             Integer status = getNextNodeNumber(item.getCpuVendor(), item.getStatusId(), false);
