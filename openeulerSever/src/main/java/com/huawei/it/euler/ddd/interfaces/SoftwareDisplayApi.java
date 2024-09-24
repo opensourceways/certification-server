@@ -10,6 +10,7 @@ import com.huawei.it.euler.ddd.domain.software.SoftwareDisplayPO;
 import com.huawei.it.euler.ddd.domain.software.SoftwareDisplayService;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.NoLoginException;
+import com.huawei.it.euler.exception.ParamException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -40,7 +41,7 @@ public class SoftwareDisplayApi {
     }
 
     @PostMapping("/hidden")
-    public JsonResponse<Boolean> hidden(@RequestBody SoftwareDisplayDto softwareDisplayDto, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<Boolean> hidden(@RequestBody SoftwareDisplayDto softwareDisplayDto, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
         boolean hidden = displayService.hidden(loginUuid, softwareDisplayDto.getSoftwareId());
         return JsonResponse.success(hidden);
