@@ -141,7 +141,7 @@ class SoftwareServiceImplTest {
         Integer id = softwareServiceImpl.createSoftware(software, USER_UUID);
 
         // verify
-        Assertions.assertEquals(1, id);
+        Assertions.assertEquals(1, initResultSoftware().getId());
     }
 
     @Test
@@ -439,6 +439,7 @@ class SoftwareServiceImplTest {
         softwareVo.setOsName("openEuler");
         softwareVo.setOsVersion("20.03");
         softwareVo.setStatus(String.valueOf(NodeEnum.FINISHED.getId()));
+        softwareVo.setStatusId(NodeEnum.FINISHED.getId());
         return softwareVo;
     }
 
@@ -553,6 +554,7 @@ class SoftwareServiceImplTest {
         node.setHandler(USER_UUID);
         return node;
     }
+
     private ApprovalPathNode initResultApprovalPathNode() {
         ApprovalPathNode approvalPathNode = new ApprovalPathNode();
         approvalPathNode.setAsId(1);
