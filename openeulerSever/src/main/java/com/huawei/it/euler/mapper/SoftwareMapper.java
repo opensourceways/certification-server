@@ -194,5 +194,5 @@ public interface SoftwareMapper {
      *
      * @return softwareId
      */
-    String deleteSoftware(Integer id);
+    Integer deleteSoftware(Integer id);
 }

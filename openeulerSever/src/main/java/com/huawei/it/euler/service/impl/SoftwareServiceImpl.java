@@ -471,7 +471,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("软件状态错误:id:{},status:{}", id, software.getStatus());
             throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
-        return softwareMapper.deleteSoftware(id);
+        return String.valueOf(softwareMapper.deleteSoftware(id));
     }
 
     /**
