@@ -498,6 +498,8 @@ public class SoftwareServiceImpl implements SoftwareService {
                 setProgramReviewerAsReviewer(software, NodeEnum.PROGRAM_REVIEW.getId());
                 break;
             case 9:// 已完成
+                software.setReviewer(null);
+                software.setReviewRole(null);
                 break;
             default:
                 setApprovalAsReviewer(software, nextNodeNumber);
