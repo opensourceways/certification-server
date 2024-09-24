@@ -33,6 +33,15 @@ public enum HandlerResultEnum {
         this.name = name;
     }
 
+    public static String findById(Integer id) {
+        for (HandlerResultEnum handlerResultEnum : HandlerResultEnum.values()) {
+            if (handlerResultEnum.getId().equals(id)) {
+                return handlerResultEnum.getName();
+            }
+        }
+        return null;
+    }
+
     public static boolean isValidId(Integer id) {
         for (HandlerResultEnum handlerResultEnum : HandlerResultEnum.values()) {
             if (handlerResultEnum.getId().equals(id)) {

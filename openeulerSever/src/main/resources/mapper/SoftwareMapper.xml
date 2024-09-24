@@ -75,7 +75,7 @@
     <resultMap id="AuditRecordsVoMap" type="com.huawei.it.euler.model.vo.AuditRecordsVo">
         <result column="node_name" property="nodeName"/>
         <result column="handler" property="handler"/>
-        <result column="handler_result" property="handlerResult"/>
+        <result column="handler_result" property="handlerResultId"/>
         <result column="handler_time" property="handlerTime"/>
         <result column="transferred_comments" property="transferredComments"/>
     </resultMap>
@@ -292,13 +292,7 @@
     </select>
 
     <select id="getAuditRecordsListPage" resultMap="AuditRecordsVoMap">
-        select node_name,handler, handler_time, transferred_comments, status,
-        case handler_result
-        when '0' then '待处理'
-        when '1' then '通过'
-        when '2' then '已驳回'
-        when '3' then '转审'
-        end as handler_result
+        select node_name,handler, handler_time, transferred_comments, status, handler_result
         from node_t AS n
         where software_id = #{softwareId}
         <if test="nodeName != null and nodeName != ''">

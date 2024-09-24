@@ -699,6 +699,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         IPage<AuditRecordsVo> iPage = softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
         iPage.getRecords().forEach(item -> {
             item.setHandlerName(accountService.getUserName(item.getHandler()));
+            item.setHandlerResult(HandlerResultEnum.findById(item.getHandlerResultId()));
         });
         return iPage;
     }
