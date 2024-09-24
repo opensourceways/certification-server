@@ -82,4 +82,14 @@ public class SelectSoftwareVo {
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endCertificationTime;
+
+    /**
+     * 正序排列字段集合
+     */
+    private List<String> ascSort;
+
+    /**
+     * 倒叙排列字段集合
+     */
+    private List<String> descSort;
 }

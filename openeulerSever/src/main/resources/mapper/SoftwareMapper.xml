@@ -270,8 +270,15 @@
         s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id,s.certification_time
         from software_t AS s
         <include refid="whereSoftwareList"/>
-        order by IF(user_uuid = #{software.applicant}, 0, 1)
-        ,s.update_time DESC
+        order by
+        <choose>
+            <when test="software.sort != null and software.sort != ''">
+                #{software.sort}
+            </when>
+            <otherwise>
+                IF(user_uuid = #{software.applicant}, 0, 1),s.update_time DESC
+            </otherwise>
+        </choose>
         LIMIT #{offset}, #{pageSize}
     </select>
 
@@ -288,8 +295,15 @@
         s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
-        order by IF(reviewer = #{software.uuid}, 0, 1)
-        ,s.update_time DESC
+        order by
+        <choose>
+            <when test="software.sort != null and software.sort != ''">
+                #{software.sort}
+            </when>
+            <otherwise>
+                IF(reviewer = #{software.uuid}, 0, 1),s.update_time DESC
+            </otherwise>
+        </choose>
         LIMIT #{offset}, #{pageSize}
     </select>
 

@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.CaseFormat;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -61,6 +62,8 @@ public class SoftwareServiceImpl implements SoftwareService {
     private static final String FILE_TYPE_SIGN = "sign";
 
     private static final String FILE_TYPE_TEST_REPORT = "testReport";
+
+    private static final List<String> SORT_COLUMN = new ArrayList<>(Arrays.asList("applicationTime", "certificationTime"));
 
     @Autowired
     private SoftwareMapper softwareMapper;
@@ -562,6 +565,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(uuid);
+        selectSoftware.setSort(parseSort(selectSoftwareVo));
         List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countSoftwareList(selectSoftware);
         processFields(currentSoftwareList, uuid);
@@ -586,6 +590,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         selectSoftware.setUuid(uuid);
         selectSoftware.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
+        selectSoftware.setSort(parseSort(selectSoftwareVo));
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
         int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
@@ -1008,5 +1013,22 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterCriteriaVo.setOsNames(osNames);
         filterCriteriaVo.setTestOrganizations(testOrganizations);
         return filterCriteriaVo;
+    }
+
+    public String parseSort(SelectSoftwareVo selectSoftwareVo){
+        String sort = "";
+        List<String> ascSort = selectSoftwareVo.getAscSort();
+        if (ascSort != null && !ascSort.isEmpty()){
+            sort = ascSort.stream().filter(SORT_COLUMN::contains)
+                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc")
+                    .collect(Collectors.joining(";")) + ";";
+        }
+        List<String> descSort = selectSoftwareVo.getDescSort();
+        if (descSort != null && !descSort.isEmpty()){
+            sort += descSort.stream().filter(SORT_COLUMN::contains)
+                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc")
+                    .collect(Collectors.joining(";")) + ";";
+        }
+        return sort;
     }
 }
