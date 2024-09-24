@@ -30,6 +30,10 @@ public class AuditRecordsVo {
     private String handlerName;
 
     /**
+     * 处理结果id
+     */
+    private Integer handlerResultId;
+    /**
      * 处理结果
      */
     private String handlerResult;
