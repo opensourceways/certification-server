@@ -354,7 +354,7 @@ class SoftwareServiceImplTest {
 
         // setup
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
-        Mockito.when(softwareMapper.deleteSoftware(anyInt())).thenReturn(TEST_SOFTWARE_ID);
+        Mockito.when(softwareMapper.deleteSoftware(anyInt())).thenReturn(SOFTWARE_ID);
 
         // run
         String result = softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
