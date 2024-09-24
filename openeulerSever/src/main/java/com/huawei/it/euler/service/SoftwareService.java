@@ -17,7 +17,6 @@ import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.vo.*;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -36,15 +35,13 @@ public interface SoftwareService {
     Software findById(Integer id, String uuid);
 
     /**
-     * 更新软件信息
+     * 证书初审
      *
      * @param software 软件信息
      * @param uuid uuid
-     * @param request request
-     * @return
+     * @return 流程id
      */
-    JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request)
-        throws IOException;
+    String reviewCertificate(SoftwareVo software, String uuid) throws IOException;
 
     /**
      * 新增软件信息
@@ -56,12 +53,13 @@ public interface SoftwareService {
 
     /**
      * 通用的审批流程
-     * @param vo 节点审批信息
-     * @param Uuid 用户id
+     *
+     * @param vo         节点审批信息
+     * @param Uuid       用户id
      * @param nodeStatus 节点状态
      * @return JsonResponse
      */
-    JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
+    String commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
 
     /**
      * 撤销软件信息

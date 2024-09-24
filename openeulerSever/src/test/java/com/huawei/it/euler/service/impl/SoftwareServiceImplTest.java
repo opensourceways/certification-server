@@ -163,11 +163,11 @@ class SoftwareServiceImplTest {
         doNothing().when(softwareMapper).updateSoftware(any());
 
         // run
-        JsonResponse<String> result =
+        String result =
             softwareServiceImpl.commonProcess(processVo, USER_UUID, NodeEnum.PROGRAM_REVIEW.getId());
 
         // verify
-        Assertions.assertEquals(JsonResponse.success(), result);
+        Assertions.assertEquals(TEST_SOFTWARE_ID, result);
     }
 
     @Test

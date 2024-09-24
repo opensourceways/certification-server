@@ -119,7 +119,7 @@ public class SoftwareController {
     public JsonResponse<String> programReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.PROGRAM_REVIEW.getId());
+        return JsonResponse.success(softwareService.commonProcess(processVo, uuid, NodeEnum.PROGRAM_REVIEW.getId()));
     }
 
     /**
@@ -152,7 +152,7 @@ public class SoftwareController {
     public JsonResponse<String> reportReReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId());
+        return JsonResponse.success(softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId()));
     }
 
     /**
@@ -167,7 +167,7 @@ public class SoftwareController {
     public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.updateSoftware(software, uuid, request);
+        return JsonResponse.success(softwareService.reviewCertificate(software, uuid));
     }
 
     /**

@@ -201,7 +201,8 @@
 
     <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
         update software_t
-        set product_version   = #{productVersion},
+        set product_name      = #{productName},
+            product_version   = #{productVersion},
             os_name           = #{osName},
             os_version        = #{osVersion},
             hashrate_platform = #{jsonHashRatePlatform},
