@@ -71,4 +71,9 @@ public class SelectSoftware {
      * 认证完成时间筛选-结束时间
      */
     private Date endCertificationTime;
+
+    /**
+     * 排序
+     */
+    private String sort;
 }
