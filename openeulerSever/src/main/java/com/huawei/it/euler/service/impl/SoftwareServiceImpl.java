@@ -44,7 +44,6 @@ import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.ListPageUtils;
 
 import cn.hutool.core.collection.CollectionUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -135,13 +134,15 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     @Transactional
-    public JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request) {
+    public String reviewCertificate(SoftwareVo software, String uuid) {
         Software softwareDb = softwareMapper.findById(software.getId());
-        if (softwareDb.getStatus() != 6) {
-            return JsonResponse.failed("该测评申请无法更新软件认证信息");
+        if (!Objects.equals(softwareDb.getStatus(), NodeEnum.CERTIFICATE_REVIEW.getId())) {
+            LOGGER.error("软件状态错误:id:{},status:{}", softwareDb.getId(), softwareDb.getStatus());
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareDb)) {
-            throw new ParamException("该用户无权访问当前信息");
+            LOGGER.error("软件不属于当前用户:id:{},uuid:{}", softwareDb.getId(), uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
         String jsonHashRatePlatform = JSON.toJSON(hashratePlatformList).toString();
@@ -154,10 +155,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setSoftwareId(software.getId());
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
-        JsonResponse<String> processJsonRep = commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
-        if (!Objects.equals(processJsonRep.getCode(), JsonResponse.SUCCESS_STATUS)) {
-            return processJsonRep;
-        }
+        commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
         softwareMapper.updateSoftwareById(software);
         // 证书信息修改
         CertificateInfoVo certificateInfoVo = new CertificateInfoVo();
@@ -173,7 +171,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         String validityPeriod = startTime + "-" + endTime;
         certificateInfoVo.setValidityPeriod(validityPeriod);
         softwareMapper.updateCertificationInfoById(certificateInfoVo);
-        return JsonResponse.success();
+        return software.getId().toString();
     }
 
     private void checkCertificateInfo(String osName, String osVersion, String hashratePlatform) {
@@ -334,26 +332,22 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
-    public JsonResponse<String> commonProcess(ProcessVo vo, String uuid, Integer nodeStatus) {
+    public String commonProcess(ProcessVo vo, String uuid, Integer nodeStatus) {
         Software software = checkCommonProcess(vo, uuid, nodeStatus);
         updateNextSoftware(vo, software, uuid);
-        return JsonResponse.success();
+        return String.valueOf(software.getId());
     }
 
     public String withdrawSoftware(ProcessVo vo, String uuid) {
         Software software = softwareMapper.findById(vo.getSoftwareId());
-        Integer status = getNextNodeNumber(software, software.getStatus(),false);
-        Node node = nodeMapper.findLatestFinishedNode(software.getId(),status);
+        Integer status = getNextNodeNumber(software, software.getStatus(), false);
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(), status);
         if (!Objects.equals(node.getHandler(), uuid)) {
-            LOGGER.error("当前用户撤销无权限:{}", uuid);
-            throw new ParamException("当前用户撤销无权限:" + uuid);
-
+            LOGGER.error("当前用户撤销无权限:softwareId:{},uuid:{}", vo.getSoftwareId(), uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         vo.setHandlerResult(HandlerResultEnum.WITHDRAW.getId());
-        updateCurNode(vo, uuid);
-        getNextNode(vo, software);
-        addNextNode(software);
-        softwareMapper.updateSoftware(software);
+        updateNextSoftware(vo, software, uuid);
         return String.valueOf(software.getId());
     }
 
@@ -403,6 +397,13 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
+    /**
+     * 获取更新了下一节点的审批信息
+     *
+     * @param vo 审批信息
+     * @param software 审批信息
+     * @return 更新后的审批信息
+     */
     private Software getNextNode(ProcessVo vo, Software software) {
         Integer nextNodeNumber = software.getStatus();
         switch (vo.getHandlerResult()) {
@@ -450,22 +451,32 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
-    public String deleteSoftware(Integer id,String uuid) {
+    public String deleteSoftware(Integer id, String uuid) {
         Software software = softwareMapper.findById(id);
         if (software == null) {
-            return "软件不存在";
+            LOGGER.error("软件不存在:id:{}", id);
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_NOT_EXIST.getMessage());
         }
         if (!Objects.equals(software.getUserUuid(), uuid)) {
-            return "非法操作";
+            LOGGER.error("软件不属于当前用户:id:{},uuid:{}", id, uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         if (!software.getStatus().equals(NodeEnum.APPLY.getId())) {
-            return "软件已完成";
+            LOGGER.error("软件状态错误:id:{},status:{}", id, software.getStatus());
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         return softwareMapper.deleteSoftware(id);
     }
 
-    private Software getHandler(int nextNodeNameForNumber, Software software) {
-        switch (nextNodeNameForNumber) {
+    /**
+     * 获取下一个节点的审批人员
+     *
+     * @param nextNodeNumber 下一个节点
+     * @param software 审批流程
+     * @return 修改了审批人员的审批流程
+     */
+    private Software getHandler(int nextNodeNumber, Software software) {
+        switch (nextNodeNumber) {
             case 1: // 认证申请
             case 7: // 证书确认
                 setUserAsReviewer(software);
@@ -483,7 +494,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             case 9:// 已完成
                 break;
             default:
-                setApprovalAsReviewer(software, nextNodeNameForNumber);
+                setApprovalAsReviewer(software, nextNodeNumber);
                 break;
         }
         return software;
@@ -545,6 +556,13 @@ public class SoftwareServiceImpl implements SoftwareService {
         return softwareInDb;
     }
 
+    /**
+     * 更新审批信息
+     *
+     * @param vo 节点审批信息
+     * @param software 审批信息
+     * @param uuid 用户uuid
+     */
     private void updateNextSoftware(ProcessVo vo, Software software, String uuid) {
         updateCurNode(vo, uuid);
         getNextNode(vo, software);
