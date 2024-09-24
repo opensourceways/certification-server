@@ -29,11 +29,20 @@ public class SoftwareDisplayService {
     @Autowired
     private UserService userService;
 
-    public boolean hidden(String uuid, Integer softwareId) {
+    public boolean hidden(String uuid, Integer softwareId) throws ParamException{
+        QueryWrapper<SoftwareDisplayPO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("software_id", softwareId);
+        queryWrapper.eq("uuid", uuid);
+        long count = displayRepository.count(queryWrapper);
+        if (count > 0){
+            throw new ParamException("业务已隐藏，请勿重复操作！");
+        }
+
         Software software = softwareMapper.findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException(ErrorCodes.UNAUTHORIZED.getMessage());
         }
+
         SoftwareDisplayPO softwareDisplayPO = new SoftwareDisplayPO();
         softwareDisplayPO.setUuid(uuid);
         softwareDisplayPO.setSoftwareId(softwareId);

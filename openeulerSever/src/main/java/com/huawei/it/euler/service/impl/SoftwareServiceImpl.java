@@ -1016,19 +1016,19 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public String parseSort(SelectSoftwareVo selectSoftwareVo){
-        String sort = "";
+        List<String> sortStr = new ArrayList<>();
         List<String> ascSort = selectSoftwareVo.getAscSort();
         if (ascSort != null && !ascSort.isEmpty()){
-            sort = ascSort.stream().filter(SORT_COLUMN::contains)
+            sortStr.addAll(ascSort.stream().filter(SORT_COLUMN::contains)
                     .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc")
-                    .collect(Collectors.joining(";")) + ";";
+                    .toList());
         }
         List<String> descSort = selectSoftwareVo.getDescSort();
         if (descSort != null && !descSort.isEmpty()){
-            sort += descSort.stream().filter(SORT_COLUMN::contains)
+            sortStr.addAll(descSort.stream().filter(SORT_COLUMN::contains)
                     .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc")
-                    .collect(Collectors.joining(";")) + ";";
+                    .toList());
         }
-        return sort;
+        return String.join(",", sortStr);
     }
 }

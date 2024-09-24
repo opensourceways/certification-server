@@ -53,6 +53,7 @@ public class SoftwareDisplayServiceTest {
         software.setProductName("测试隐藏");
 
         // setup
+        Mockito.when(displayRepository.count(any())).thenReturn(0L);
         Mockito.when(userService.isUserPermission(any(), any())).thenReturn(true);
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
         Mockito.when(displayRepository.save(any())).thenReturn(true);
@@ -64,8 +65,8 @@ public class SoftwareDisplayServiceTest {
     }
 
     @Test
-    @DisplayName("隐藏测试业务失败")
-    void testHiddenFailed() {
+    @DisplayName("隐藏测试业务失败-无权限")
+    void testHiddenFailedUnauthorized() {
         // setup
         Mockito.when(userService.isUserPermission(any(), any())).thenReturn(false);
 
@@ -75,6 +76,20 @@ public class SoftwareDisplayServiceTest {
         });
         // verify
         Assertions.assertEquals(ErrorCodes.UNAUTHORIZED.getMessage(), paramException.getMessage());
+    }
+
+    @Test
+    @DisplayName("隐藏测试业务失败-已隐藏")
+    void testHiddenFailedExist() {
+        // setup
+        Mockito.when(displayRepository.count(any())).thenReturn(1L);
+
+        // run
+        ParamException paramException = assertThrows(ParamException.class, () -> {
+            softwareDisplayService.hidden(USER_UUID, SOFTWARE_ID);
+        });
+        // verify
+        Assertions.assertEquals("业务已隐藏，请勿重复操作！", paramException.getMessage());
     }
 
     @Test
