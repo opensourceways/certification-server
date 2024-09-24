@@ -94,7 +94,7 @@ public class SoftwareController {
     @PostMapping("/software/withdraw-software")
     @PreAuthorize("hasAnyRole('user','euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws InputException, NoLoginException {
+            throws  NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return JsonResponse.success(softwareService.withdrawSoftware(processVo, uuid));
     }
@@ -106,7 +106,7 @@ public class SoftwareController {
     @DeleteMapping("/software/delete-register")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request)
-            throws InputException, NoLoginException {
+            throws  NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return JsonResponse.success(softwareService.deleteSoftware(id, uuid));
     }
@@ -119,7 +119,7 @@ public class SoftwareController {
     public JsonResponse<String> programReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.PROGRAM_REVIEW.getId());
+        return JsonResponse.success(softwareService.commonProcess(processVo, uuid, NodeEnum.PROGRAM_REVIEW.getId()));
     }
 
     /**
@@ -152,7 +152,7 @@ public class SoftwareController {
     public JsonResponse<String> reportReReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId());
+        return JsonResponse.success(softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId()));
     }
 
     /**
@@ -167,7 +167,7 @@ public class SoftwareController {
     public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.updateSoftware(software, uuid, request);
+        return JsonResponse.success(softwareService.reviewCertificate(software, uuid));
     }
 
     /**
