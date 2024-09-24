@@ -191,10 +191,10 @@ class SoftwareServiceImplTest {
         doNothing().when(softwareMapper).updateSoftware(any());
 
         // run
-        JsonResponse<String> result = softwareServiceImpl.testingPhase(processVo, USER_UUID);
+        String result = softwareServiceImpl.testingPhase(processVo, USER_UUID);
 
         // verify
-        Assertions.assertEquals(JsonResponse.success(), result);
+        Assertions.assertEquals(TEST_SOFTWARE_ID, result);
     }
 
     @Test
