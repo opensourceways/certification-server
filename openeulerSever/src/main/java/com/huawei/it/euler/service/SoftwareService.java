@@ -54,6 +54,13 @@ public interface SoftwareService {
      */
     Integer createSoftware(Software software, String uuid) throws InputException, IOException;
 
+    /**
+     * 通用的审批流程
+     * @param vo 节点审批信息
+     * @param Uuid 用户id
+     * @param nodeStatus 节点状态
+     * @return JsonResponse
+     */
     JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
 
     /**
