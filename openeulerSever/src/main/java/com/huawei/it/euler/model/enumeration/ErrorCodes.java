@@ -22,7 +22,12 @@ public enum ErrorCodes {
     // 用户无操作权限
     UNAUTHORIZED_OPERATION( "用户无操作权限"),
     //审批流程状态错误
-    APPROVAL_PROCESS_STATUS_ERROR( "审批流程状态错误"),;
+    APPROVAL_PROCESS_STATUS_ERROR( "审批流程状态错误"),
+    //审批流程参数不合法
+    INVALID_PARAMETERS( "审批流程参数不合法"),
+    //测试报告不存在
+    FILE_NOT_EXIST( "测试报告不存在"),
+    ;
 
 
     private final String message;
