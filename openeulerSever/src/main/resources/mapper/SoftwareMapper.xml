@@ -98,6 +98,7 @@
 
     <sql id="whereSoftwareList">
         <where>
+            s.delete_flag = 0
             <if test="software.statusId != null and software.statusId.size() > 0">
                 and s.status in
                 <foreach collection="software.statusId" item="item" open="(" separator="," close=")">
@@ -132,6 +133,7 @@
     </sql>
     <sql id="whereReviewSoftwareList">
         <where>
+            s.delete_flag = 0
             <if test="software.status != null and software.status.size() > 0">
                 and s.status in (select id from node_name_t where node_name in
                 <foreach collection="software.status" item="item" open="(" separator="," close=")">
@@ -180,7 +182,7 @@
     <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
         <include refid="baseFields"/>
-        from software_t where id = #{id}
+        from software_t where id = #{id} and delete_flag = 0
     </select>
 
     <select id="findCommunityCheckList" resultMap="compatibilityMap">
