@@ -546,6 +546,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         Software softwareInDb = findById(vo.getSoftwareId());
         if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
+            if (Objects.equals(softwareInDb.getStatus(),getNextNodeNumber(softwareInDb.getCpuVendor(), nodeNumber, false) )) {
+                LOGGER.error("当前流程已经撤回:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
+                throw new ParamException(ErrorCodes.CANCELLED.getMessage());
+            }
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
             throw new ParamException("审批阶段错误");
         }

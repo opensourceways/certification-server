@@ -27,6 +27,8 @@ public enum ErrorCodes {
     INVALID_PARAMETERS( "审批流程参数不合法"),
     //测试报告不存在
     FILE_NOT_EXIST( "测试报告不存在"),
+    //当前流程已经撤回
+    CANCELLED( "当前流程已经撤回"),
     ;
 
 
