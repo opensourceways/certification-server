@@ -338,7 +338,11 @@ public class CertificateGenerationUtils {
     private void getSecondLineProductName(XEasyPdfPage page, GenerateCertificate generateCertificate) {
         String productNameAndVersion =
             generateCertificate.getProductName() + " " + generateCertificate.getProductVersion();
-        processingOverlongFields(productNameAndVersion, 550f, 545f, page);
+        if (productNameAndVersion.length() > 40) {
+            processingFields(generateCertificate.getProductName(), generateCertificate.getProductVersion(), 545f, page);
+        } else {
+            processingOverlongFields(productNameAndVersion, 550f, 545f, page);
+        }
     }
 
     /**
@@ -352,16 +356,22 @@ public class CertificateGenerationUtils {
     private void processingOverlongFields(String fields, float oldBeginY, float newBeginY, XEasyPdfPage page) {
         int length = fields.length();
         if (length > 40) {
-            String[] words = fields.split(" ",2);
+            int i = length / 2;
             page.addComponent(
-                XEasyPdfHandler.Text.build(words[0]).setPosition(0, newBeginY)
+                XEasyPdfHandler.Text.build(fields.substring(0, i)).setPosition(0, newBeginY)
                     .setHorizontalStyle(XEasyPdfPositionStyle.CENTER),
-                XEasyPdfHandler.Text.build(words[1].trim())
+                XEasyPdfHandler.Text.build(fields.substring(i, length))
                     .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
         } else {
             page.addComponent(XEasyPdfHandler.Text.build(fields).setPosition(0, oldBeginY)
                 .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
         }
+    }
+
+    private void processingFields(String field1, String field2, float BeginY, XEasyPdfPage page) {
+        page.addComponent(
+            XEasyPdfHandler.Text.build(field1.trim()).setPosition(0, BeginY).setHorizontalStyle(XEasyPdfPositionStyle.CENTER),
+            XEasyPdfHandler.Text.build(field2.trim()).setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
     }
 
     /**
