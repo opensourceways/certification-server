@@ -279,6 +279,7 @@
                 ${software.sort}
             </when>
             <otherwise>
+                IF(reviewer = #{software.applicant}, 0, 1),
                 IF(user_uuid = #{software.applicant}, 0, 1),s.update_time DESC
             </otherwise>
         </choose>
