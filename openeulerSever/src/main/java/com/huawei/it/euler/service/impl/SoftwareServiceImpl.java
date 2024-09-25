@@ -536,13 +536,13 @@ public class SoftwareServiceImpl implements SoftwareService {
         Integer handlerResult = vo.getHandlerResult();
         if (!HandlerResultEnum.isValidId(handlerResult)) {
             LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
-            throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
+            throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
         if (StringUtils.isBlank(vo.getTransferredComments())
             || (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())
                 && StringUtils.isBlank(vo.getTransferredUser()))) {
             LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
-            throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
+            throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
         Software softwareInDb = findById(vo.getSoftwareId());
         if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
@@ -551,20 +551,20 @@ public class SoftwareServiceImpl implements SoftwareService {
                 throw new ParamException(ErrorCodes.CANCELLED.getMessage());
             }
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
-            throw new ParamException("审批阶段错误");
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
-            LOGGER.error("非法的审核人:{}", uuid);
-            throw new ParamException("非法的审核人:" + uuid);
+            LOGGER.error("非法的审核人:softwareId:{},uuid:{}",vo.getSoftwareId(), uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         if (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())) {
             if (vo.getTransferredUser().equals(uuid)) {
                 LOGGER.error("转审人不能为自己:{}", uuid);
-                throw new ParamException("转审人不能为自己:" + uuid);
+                throw new ParamException(ErrorCodes.CANNOT_BE_SELF.getMessage());
             }
             if (!userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()), softwareInDb)) {
                 LOGGER.error("转审人没有权限:{}", Integer.valueOf(vo.getTransferredUser()));
-                throw new ParamException("转审人没有权限:{}" + Integer.valueOf(vo.getTransferredUser()));
+                throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
             }
         }
         return softwareInDb;
