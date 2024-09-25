@@ -29,6 +29,8 @@ public enum ErrorCodes {
     FILE_NOT_EXIST( "测试报告不存在"),
     //当前流程已经撤回
     CANCELLED( "当前流程已经撤回"),
+    //转审人不能为自己
+    CANNOT_BE_SELF( "转审人不能为自己"),
     ;
 
 
