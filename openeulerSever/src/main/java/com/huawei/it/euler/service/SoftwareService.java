@@ -35,6 +35,13 @@ public interface SoftwareService {
     Software findById(Integer id, String uuid);
 
     /**
+     * 根据id查询软件认证信息
+     *
+     * @param id 软件id
+     * @return 软件信息
+     */
+    Software findById(Integer id);
+    /**
      * 证书初审
      *
      * @param software 软件信息
