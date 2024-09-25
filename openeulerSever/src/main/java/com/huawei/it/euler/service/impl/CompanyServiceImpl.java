@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
-import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.service.AccountService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -41,6 +39,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloud.apigateway.sdk.utils.Client;
 import com.cloud.apigateway.sdk.utils.Request;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.CompanyMapper;
@@ -70,6 +70,7 @@ import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseRequest;
 import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseResponse;
 import com.huaweicloud.sdk.ocr.v1.region.OcrRegion;
 
+import cn.hutool.core.util.ObjectUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -244,12 +245,13 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public CompanyVo findCompanyByUserUuid(String uuid) {
         Company company = companyMapper.findCompanyByUserUuid(uuid);
-        CompanyVo companyVo = new CompanyVo();
-        if (company != null) {
-            String companyMail = reduceSensitivity(company.getCompanyMail(), StringConstant.MAIL);
-            company.setCompanyMail(companyMail);
-            BeanUtils.copyProperties(company, companyVo);
+        if (ObjectUtil.isEmpty(company)) {
+            return null;
         }
+        CompanyVo companyVo = new CompanyVo();
+        String companyMail = reduceSensitivity(company.getCompanyMail(), StringConstant.MAIL);
+        company.setCompanyMail(companyMail);
+        BeanUtils.copyProperties(company, companyVo);
         return companyVo;
     }
 
