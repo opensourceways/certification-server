@@ -111,7 +111,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public Software findById(Integer id, String uuid) {
-        Software software = softwareMapper.findById(id);
+        Software software = findById(id);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException(ErrorCodes.UNAUTHORIZED.getMessage());
         }
@@ -133,9 +133,19 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
+    public Software findById(Integer id) {
+        Software software = softwareMapper.findById(id);
+        if (ObjectUtils.isEmpty(software)) {
+            LOGGER.error("流程不存在:id:{}", id);
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_NOT_EXIST.getMessage());
+        }
+        return software;
+    }
+
+    @Override
     @Transactional
     public String reviewCertificate(SoftwareVo software, String uuid) {
-        Software softwareDb = softwareMapper.findById(software.getId());
+        Software softwareDb = findById(software.getId());
         if (!Objects.equals(softwareDb.getStatus(), NodeEnum.CERTIFICATE_REVIEW.getId())) {
             LOGGER.error("软件状态错误:id:{},status:{}", softwareDb.getId(), softwareDb.getStatus());
             throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
@@ -340,7 +350,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public String withdrawSoftware(ProcessVo vo, String uuid) {
-        Software software = softwareMapper.findById(vo.getSoftwareId());
+        Software software = findById(vo.getSoftwareId());
         if (Objects.equals(software.getStatus(), NodeEnum.APPLY.getId())
             || Objects.equals(software.getStatus(), NodeEnum.FINISHED.getId())) {
             LOGGER.error("软件状态错误:id:{},status:{}", software.getId(), software.getStatus());
@@ -458,11 +468,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public String deleteSoftware(Integer id, String uuid) {
-        Software software = softwareMapper.findById(id);
-        if (software == null) {
-            LOGGER.error("软件不存在:id:{}", id);
-            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_NOT_EXIST.getMessage());
-        }
+        Software software = findById(id);
         if (!Objects.equals(software.getUserUuid(), uuid)) {
             LOGGER.error("软件不属于当前用户:id:{},uuid:{}", id, uuid);
             throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
@@ -538,11 +544,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
             throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
         }
-        Software softwareInDb = softwareMapper.findById(vo.getSoftwareId());
-        if (softwareInDb == null) {
-            LOGGER.error("审核条目不存在:{}", vo.getSoftwareId());
-            throw new ParamException("审核条目不存在:" + vo.getSoftwareId());
-        }
+        Software softwareInDb = findById(vo.getSoftwareId());
         if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
             throw new ParamException("审批阶段错误");
@@ -601,7 +603,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<SimpleUserVo> transferredUserList(Integer softwareId, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         List<String> userIdList = roleMapper.findUserByRole(software.getReviewRole(), software.getTestOrgId());
         List<UserInfo> eulerUsers = accountService.getUserInfoList(userIdList);
         List<SimpleUserVo> userVos = eulerUsers.stream().map(item -> {
@@ -694,7 +696,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
         IPage<AuditRecordsVo> page, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请审核信息");
         }
@@ -708,7 +710,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public CertificateInfoVo certificateInfo(Integer softwareId, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请证书信息");
         }
@@ -717,7 +719,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请节点信息");
         }
@@ -823,7 +825,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
         String uuid) throws InputException, TestReportExceedMaxAmountException {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!uuid.equals(software.getReviewer())) {
             return JsonResponse.failed("不是当前处理人");
         }
@@ -852,10 +854,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<AttachmentsVo> getAttachmentsNames(Integer softwareId, String fileType, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
-        if (software == null) {
-            throw new ParamException("无权限获取该测评申请文件");
-        }
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限获取该测评申请文件");
         }
@@ -902,7 +901,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!Objects.equals(uuid, fileOwnerUuid)) {
             throw new ParamException("无权限删除当前文件");
         }
-        Software software = softwareMapper.findById(Integer.parseInt(attachments.getSoftwareId()));
+        Software software = findById(Integer.parseInt(attachments.getSoftwareId()));
         Integer status = software.getStatus();
         if ((isSignFile && status != 7) || (isTestReportFile && status != 3)) {
             throw new ParamException("无权限删除当前文件");
