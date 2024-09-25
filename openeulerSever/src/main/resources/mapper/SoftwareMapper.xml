@@ -273,7 +273,7 @@
         order by
         <choose>
             <when test="software.sort != null and software.sort != ''">
-                ${software.sort}
+                ${software.sort},s.update_time DESC
             </when>
             <otherwise>
                 IF(user_uuid = #{software.applicant}, 0, 1),s.update_time DESC
@@ -298,7 +298,7 @@
         order by
         <choose>
             <when test="software.sort != null and software.sort != ''">
-                ${software.sort}
+                ${software.sort},s.update_time DESC
             </when>
             <otherwise>
                 IF(reviewer = #{software.uuid}, 0, 1),s.update_time DESC
