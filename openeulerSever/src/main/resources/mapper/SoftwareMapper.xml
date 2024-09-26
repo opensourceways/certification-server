@@ -267,7 +267,7 @@
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
         s.hashrate_platform, s.test_organization,s.test_org_id,
-        s.application_time,s.status,s.authentication_status,s.cpu_vendor
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor, s.user_uuid
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
         order by IF(reviewer = #{software.uuid}, 0, 1)
