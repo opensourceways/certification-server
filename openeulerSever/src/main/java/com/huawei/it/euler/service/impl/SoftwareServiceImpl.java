@@ -679,11 +679,11 @@ public class SoftwareServiceImpl implements SoftwareService {
             } else {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
+            item.setReviewerName(accountService.getUserName(item.getReviewer()));
             if (Objects.equals(item.getStatusId(), NodeEnum.FINISHED.getId())
                 || Objects.equals(item.getStatusId(), NodeEnum.APPLY.getId())) {
                 return;
             }
-            item.setReviewerName(accountService.getUserName(item.getReviewer()));
             Integer status = getNextNodeNumber(item.getCpuVendor(), item.getStatusId(), false);
             Node node = nodeMapper.findLatestFinishedNode(item.getId(), status);
             if (node != null) {
