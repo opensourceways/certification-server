@@ -686,6 +686,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
             item.setReviewerName(accountService.getUserName(item.getReviewer()));
+            item.setApplicantName(accountService.getUserName(item.getApplicant()));
             if (Objects.equals(item.getStatusId(), NodeEnum.FINISHED.getId())
                 || Objects.equals(item.getStatusId(), NodeEnum.APPLY.getId())) {
                 return;
