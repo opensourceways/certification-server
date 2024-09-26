@@ -132,10 +132,10 @@
                 and s.id not in (select software_id from software_display_t where uuid = #{software.applicant})
             </if>
             <if test="software.beginCertificationTime != null">
-                and s.certification_time &gt;= #{software.beginCertificationTime}
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginCertificationTime},'%Y-%m-%d')
             </if>
             <if test="software.endCertificationTime != null">
-                and s.certification_time &lt;= #{software.endCertificationTime}
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
         </where>
     </sql>
@@ -187,10 +187,10 @@
                 and s.id not in (select software_id from software_display_t where uuid = #{software.uuid})
             </if>
             <if test="software.beginCertificationTime != null">
-                and s.certification_time &gt;= #{software.beginCertificationTime}
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginCertificationTime},'%Y-%m-%d')
             </if>
             <if test="software.endCertificationTime != null">
-                and s.certification_time &lt;= #{software.endCertificationTime}
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
         </where>
     </sql>
