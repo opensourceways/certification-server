@@ -188,4 +188,11 @@ public interface SoftwareMapper {
      * @return 测试机构
      */
     List<String> findTestOrganization();
+
+    /**
+     * 删除流程
+     *
+     * @return softwareId
+     */
+    Integer deleteSoftware(Integer id);
 }

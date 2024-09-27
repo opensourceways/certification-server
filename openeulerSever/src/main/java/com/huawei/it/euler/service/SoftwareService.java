@@ -17,7 +17,6 @@ import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.vo.*;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -36,15 +35,20 @@ public interface SoftwareService {
     Software findById(Integer id, String uuid);
 
     /**
-     * 更新软件信息
+     * 根据id查询软件认证信息
+     *
+     * @param id 软件id
+     * @return 软件信息
+     */
+    Software findById(Integer id);
+    /**
+     * 证书初审
      *
      * @param software 软件信息
      * @param uuid uuid
-     * @param request request
-     * @return
+     * @return 流程id
      */
-    JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request)
-        throws IOException;
+    String reviewCertificate(SoftwareVo software, String uuid) throws IOException;
 
     /**
      * 新增软件信息
@@ -52,10 +56,26 @@ public interface SoftwareService {
      * @param software 软件信息
      * @param uuid uuid
      */
-    Integer createSoftware(Software software, String uuid)
-        throws InputException, IOException;
+    Integer createSoftware(Software software, String uuid) throws InputException, IOException;
 
-    JsonResponse<String> commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
+    /**
+     * 通用的审批流程
+     *
+     * @param vo         节点审批信息
+     * @param Uuid       用户id
+     * @param nodeStatus 节点状态
+     * @return JsonResponse
+     */
+    String commonProcess(ProcessVo vo, String Uuid, Integer nodeStatus);
+
+    /**
+     * 撤销软件信息
+     *
+     * @param vo 审批信息
+     * @param uuid uuid
+     * @return 流程id
+     */
+    String withdrawSoftware(ProcessVo vo, String uuid);
 
     /**
      * 获取转审人员列表
@@ -101,8 +121,8 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return 列表
      */
-    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
-                                                  IPage<AuditRecordsVo> page, String uuid);
+    IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName, IPage<AuditRecordsVo> page,
+        String uuid);
 
     /**
      * 证书信息确认查询
@@ -123,6 +143,15 @@ public interface SoftwareService {
     List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid);
 
     /**
+     * 删除审批信息
+     *
+     * @param id 流程id
+     * @param uuid uuid
+     * @return 删除的流程id
+     */
+    String deleteSoftware(Integer id, String uuid);
+
+    /**
      * 上传文件
      *
      * @param file 文件
@@ -132,8 +161,8 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return JsonResponse
      */
-    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode,
-                                String fileType, String uuid) throws InputException, TestReportExceedMaxAmountException;
+    JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
+        String uuid) throws InputException, TestReportExceedMaxAmountException;
 
     /**
      * 查询上传文件名称
@@ -153,7 +182,7 @@ public interface SoftwareService {
      * @param response response
      */
     void downloadAttachments(String fileId, HttpServletResponse response, String uuid)
-            throws UnsupportedEncodingException, InputException;
+        throws UnsupportedEncodingException, InputException;
 
     /**
      * 文件预览
