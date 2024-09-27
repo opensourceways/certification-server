@@ -184,7 +184,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         String validityPeriod = startTime + "-" + endTime;
         certificateInfoVo.setValidityPeriod(validityPeriod);
         softwareMapper.updateCertificationInfoById(certificateInfoVo);
-        return software.getId().toString();
+        return String.valueOf(software.getId());
     }
 
     private void checkCertificateInfo(String osName, String osVersion, String hashratePlatform) {
