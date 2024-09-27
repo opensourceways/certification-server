@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.base.CaseFormat;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,6 +25,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.base.CaseFormat;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.extension.EmailConfig;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
@@ -45,7 +45,6 @@ import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.ListPageUtils;
 
 import cn.hutool.core.collection.CollectionUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -115,7 +114,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public Software findById(Integer id, String uuid) {
-        Software software = softwareMapper.findById(id);
+        Software software = findById(id);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException(ErrorCodes.UNAUTHORIZED.getMessage());
         }
@@ -137,14 +136,26 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
+    public Software findById(Integer id) {
+        Software software = softwareMapper.findById(id);
+        if (ObjectUtils.isEmpty(software)) {
+            LOGGER.error("流程不存在:id:{}", id);
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_NOT_EXIST.getMessage());
+        }
+        return software;
+    }
+
+    @Override
     @Transactional
-    public JsonResponse<String> updateSoftware(SoftwareVo software, String uuid, HttpServletRequest request) {
-        Software softwareDb = softwareMapper.findById(software.getId());
-        if (softwareDb.getStatus() != 6) {
-            return JsonResponse.failed("该测评申请无法更新软件认证信息");
+    public String reviewCertificate(SoftwareVo software, String uuid) {
+        Software softwareDb = findById(software.getId());
+        if (!Objects.equals(softwareDb.getStatus(), NodeEnum.CERTIFICATE_REVIEW.getId())) {
+            LOGGER.error("软件状态错误:id:{},status:{}", softwareDb.getId(), softwareDb.getStatus());
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareDb)) {
-            throw new ParamException("该用户无权访问当前信息");
+            LOGGER.error("软件不属于当前用户:id:{},uuid:{}", softwareDb.getId(), uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
         String jsonHashRatePlatform = JSON.toJSON(hashratePlatformList).toString();
@@ -157,10 +168,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setSoftwareId(software.getId());
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
-        JsonResponse<String> processJsonRep = commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
-        if (!Objects.equals(processJsonRep.getCode(), JsonResponse.SUCCESS_STATUS)) {
-            return processJsonRep;
-        }
+        commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
         softwareMapper.updateSoftwareById(software);
         // 证书信息修改
         CertificateInfoVo certificateInfoVo = new CertificateInfoVo();
@@ -176,7 +184,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         String validityPeriod = startTime + "-" + endTime;
         certificateInfoVo.setValidityPeriod(validityPeriod);
         softwareMapper.updateCertificationInfoById(certificateInfoVo);
-        return JsonResponse.success();
+        return String.valueOf(software.getId());
     }
 
     private void checkCertificateInfo(String osName, String osVersion, String hashratePlatform) {
@@ -338,26 +346,46 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
     }
 
-    public JsonResponse<String> commonProcess(ProcessVo vo, String uuid, Integer nodeStatus) {
-        Software software = checkCommonProcess(vo, uuid,nodeStatus);
+    public String commonProcess(ProcessVo vo, String uuid, Integer nodeStatus) {
+        Software software = checkCommonProcess(vo, uuid, nodeStatus);
         updateNextSoftware(vo, software, uuid);
-        return JsonResponse.success();
+        return String.valueOf(software.getId());
     }
 
-    public JsonResponse<String> testingPhase(ProcessVo vo, String uuid) {
+    public String withdrawSoftware(ProcessVo vo, String uuid) {
+        Software software = findById(vo.getSoftwareId());
+        if (Objects.equals(software.getStatus(), NodeEnum.APPLY.getId())
+            || Objects.equals(software.getStatus(), NodeEnum.FINISHED.getId())) {
+            LOGGER.error("软件状态错误:id:{},status:{}", software.getId(), software.getStatus());
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
+        }
+        Integer status = getNextNodeNumber(software.getCpuVendor(), software.getStatus(), false);
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(), status);
+        if (!Objects.equals(node.getHandler(), uuid)) {
+            LOGGER.error("当前用户撤销无权限:softwareId:{},uuid:{}", vo.getSoftwareId(), uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
+        }
+        vo.setHandlerResult(HandlerResultEnum.WITHDRAW.getId());
+        updateNextSoftware(vo, software, uuid);
+        return String.valueOf(software.getId());
+    }
+
+    public String testingPhase(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid, NodeEnum.TESTING_PHASE.getId());
         if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
-            return JsonResponse.failedResult("非法的审核结果参数");
+            LOGGER.error("非法的审核结果参数:id:{},handlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
+            throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
         AttachmentQuery attachmentQuery = new AttachmentQuery();
         attachmentQuery.setSoftwareId(software.getId());
         attachmentQuery.setFileType("testReport");
         List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
         if (CollectionUtil.isEmpty(attachmentsVos)) {
-            return JsonResponse.failed("未上传测试报告");
+            LOGGER.error("未上传测试报告:id:{}", vo.getSoftwareId());
+            throw new ParamException(ErrorCodes.FILE_NOT_EXIST.getMessage());
         }
         updateNextSoftware(vo, software, uuid);
-        return JsonResponse.success();
+        return String.valueOf(vo.getSoftwareId());
     }
 
     public JsonResponse<String> reportReview(ProcessVo vo, String uuid) {
@@ -371,7 +399,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     public JsonResponse<String> certificateConfirmation(ProcessVo vo, String uuid) {
-        Software software = checkCommonProcess(vo, uuid,NodeEnum.CERTIFICATE_CONFIRMATION.getId());
+        Software software = checkCommonProcess(vo, uuid, NodeEnum.CERTIFICATE_CONFIRMATION.getId());
         updateNextSoftware(vo, software, uuid);
         return JsonResponse.success();
     }
@@ -390,32 +418,35 @@ public class SoftwareServiceImpl implements SoftwareService {
         return JsonResponse.success();
     }
 
+    /**
+     * 获取更新了下一节点的审批信息
+     *
+     * @param vo 审批信息
+     * @param software 审批信息
+     * @return 更新后的审批信息
+     */
     private Software getNextNode(ProcessVo vo, Software software) {
         Integer nextNodeNumber = software.getStatus();
         switch (vo.getHandlerResult()) {
-            case 1: //通过
-                // intel取消报告初审
-                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
-                    && Objects.equals(nextNodeNumber, NodeEnum.TESTING_PHASE.getId())) {
-                    nextNodeNumber++;
-                }
-                nextNodeNumber++;
+            case 1: // 通过
+                nextNodeNumber = getNextNodeNumber(software.getCpuVendor(), nextNodeNumber, true);
                 software.setStatus(nextNodeNumber);
                 getHandler(nextNodeNumber, software);
                 break;
-            case 2: //驳回
-                // intel取消报告初审
-                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())
-                    && Objects.equals(nextNodeNumber, NodeEnum.REPORT_RE_REVIEW.getId())) {
-                    nextNodeNumber--;
-                }
-                nextNodeNumber--;
+            case 2: // 驳回
+                nextNodeNumber = getNextNodeNumber(software.getCpuVendor(), nextNodeNumber, false);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 software.setStatus(nextNodeNumber);
                 getHandler(nextNodeNumber, software);
                 break;
-            case 3: //转审
+            case 3: // 转审
                 software.setReviewer(vo.getTransferredUser());
+                break;
+            case 4: // 撤回
+                nextNodeNumber = getNextNodeNumber(software.getCpuVendor(), nextNodeNumber, false);
+                software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已撤回");
+                software.setStatus(nextNodeNumber);
+                getHandler(nextNodeNumber, software);
                 break;
             default:
                 LOGGER.error("审批阶段错误:id:{},HandlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
@@ -424,26 +455,64 @@ public class SoftwareServiceImpl implements SoftwareService {
         return software;
     }
 
-    private Software getHandler(int nextNodeNameForNumber, Software software) {
-        switch (nextNodeNameForNumber) {
+    private Integer getNextNodeNumber(String cpuVendor, Integer curNode, boolean isAccept) {
+        boolean isIntelCpu = IntelTestEnum.CPU_VENDOR.getName().equals(cpuVendor);
+
+        if (isAccept) {
+            if (isIntelCpu && curNode.equals(NodeEnum.TESTING_PHASE.getId())) {
+                return curNode + 2;
+            }
+            return curNode + 1;
+        } else {
+            if (isIntelCpu && curNode.equals(NodeEnum.REPORT_RE_REVIEW.getId())) {
+                return curNode - 2;
+            }
+            return curNode - 1;
+        }
+    }
+
+    public String deleteSoftware(Integer id, String uuid) {
+        Software software = findById(id);
+        if (!Objects.equals(software.getUserUuid(), uuid)) {
+            LOGGER.error("软件不属于当前用户:id:{},uuid:{}", id, uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
+        }
+        if (!software.getStatus().equals(NodeEnum.APPLY.getId())) {
+            LOGGER.error("软件状态错误:id:{},status:{}", id, software.getStatus());
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
+        }
+        return String.valueOf(softwareMapper.deleteSoftware(id));
+    }
+
+    /**
+     * 获取下一个节点的审批人员
+     *
+     * @param nextNodeNumber 下一个节点
+     * @param software 审批流程
+     * @return 修改了审批人员的审批流程
+     */
+    private Software getHandler(int nextNodeNumber, Software software) {
+        switch (nextNodeNumber) {
             case 1: // 认证申请
             case 7: // 证书确认
                 setUserAsReviewer(software);
                 break;
             case 3: // 审批流程
                 if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
-                    setProgramReviewerAsReviewer(software);
+                    setProgramReviewerAsReviewer(software, NodeEnum.PROGRAM_REVIEW.getId());
                 } else {
                     setUserAsReviewer(software);
                 }
                 break;
             case 4:// 报告初审
-                setProgramReviewerAsReviewer(software);
+                setProgramReviewerAsReviewer(software, NodeEnum.PROGRAM_REVIEW.getId());
                 break;
             case 9:// 已完成
+                software.setReviewer(null);
+                software.setReviewRole(null);
                 break;
             default:
-                setApprovalAsReviewer(software, nextNodeNameForNumber);
+                setApprovalAsReviewer(software, nextNodeNumber);
                 break;
         }
         return software;
@@ -454,8 +523,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewRole(RoleEnum.USER.getRoleId());
     }
 
-    private void setProgramReviewerAsReviewer(Software software) {
-        Node node = nodeMapper.findLatestFinishedNode(software.getId(), NodeEnum.PROGRAM_REVIEW.getId());
+    private void setProgramReviewerAsReviewer(Software software, Integer status) {
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(), status);
         software.setReviewer(node.getHandler());
         software.setReviewRole(RoleEnum.EULER_IC.getRoleId());
     }
@@ -467,44 +536,51 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewRole(approvalPathNode.getRoleId());
     }
 
-    private Software checkCommonProcess(ProcessVo vo, String uuid,Integer nodeNumber) {
+    private Software checkCommonProcess(ProcessVo vo, String uuid, Integer nodeNumber) {
         Integer handlerResult = vo.getHandlerResult();
-        if (handlerResult < 1 || handlerResult > 3) {
+        if (!HandlerResultEnum.isValidId(handlerResult)) {
             LOGGER.error("非法的审核结果参数:id:{},result:{}", vo.getSoftwareId(), handlerResult);
-            throw new ParamException("非法的审核结果参数:" + vo.getSoftwareId());
+            throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
         if (StringUtils.isBlank(vo.getTransferredComments())
             || (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())
                 && StringUtils.isBlank(vo.getTransferredUser()))) {
             LOGGER.error("非法的审核参数:{}", vo.getSoftwareId());
-            throw new ParamException("非法的审核参数:" + vo.getSoftwareId());
+            throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
-        Software softwareInDb = softwareMapper.findById(vo.getSoftwareId());
-        if (softwareInDb == null) {
-            LOGGER.error("审核条目不存在:{}", vo.getSoftwareId());
-            throw new ParamException("审核条目不存在:" + vo.getSoftwareId());
-        }
+        Software softwareInDb = findById(vo.getSoftwareId());
         if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
+            if (Objects.equals(softwareInDb.getStatus(),getNextNodeNumber(softwareInDb.getCpuVendor(), nodeNumber, false) )) {
+                LOGGER.error("当前流程已经撤回:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
+                throw new ParamException(ErrorCodes.CANCELLED.getMessage());
+            }
             LOGGER.error("审批阶段错误:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
-            throw new ParamException("审批阶段错误");
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
-            LOGGER.error("非法的审核人:{}", uuid);
-            throw new ParamException("非法的审核人:" + uuid);
+            LOGGER.error("非法的审核人:softwareId:{},uuid:{}",vo.getSoftwareId(), uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         if (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())) {
             if (vo.getTransferredUser().equals(uuid)) {
                 LOGGER.error("转审人不能为自己:{}", uuid);
-                throw new ParamException("转审人不能为自己:" + uuid);
+                throw new ParamException(ErrorCodes.CANNOT_BE_SELF.getMessage());
             }
             if (!userService.isUserDataScopeByRole(Integer.valueOf(vo.getTransferredUser()), softwareInDb)) {
                 LOGGER.error("转审人没有权限:{}", Integer.valueOf(vo.getTransferredUser()));
-                throw new ParamException("转审人没有权限:{}" + Integer.valueOf(vo.getTransferredUser()));
+                throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
             }
         }
         return softwareInDb;
     }
 
+    /**
+     * 更新审批信息
+     *
+     * @param vo 节点审批信息
+     * @param software 审批信息
+     * @param uuid 用户uuid
+     */
     private void updateNextSoftware(ProcessVo vo, Software software, String uuid) {
         updateCurNode(vo, uuid);
         getNextNode(vo, software);
@@ -535,15 +611,15 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<SimpleUserVo> transferredUserList(Integer softwareId, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         List<String> userIdList = roleMapper.findUserByRole(software.getReviewRole(), software.getTestOrgId());
         List<UserInfo> eulerUsers = accountService.getUserInfoList(userIdList);
         List<SimpleUserVo> userVos = eulerUsers.stream().map(item -> {
             SimpleUserVo simpleUserVo = new SimpleUserVo();
             simpleUserVo.setUuid(item.getUuid());
-            if(StringUtils.isNotBlank(item.getNickName())) {
+            if (StringUtils.isNotBlank(item.getNickName())) {
                 simpleUserVo.setUsername(item.getNickName());
-            }else {
+            } else {
                 simpleUserVo.setUsername(item.getUserName());
             }
             return simpleUserVo;
@@ -598,12 +674,11 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<SoftwareListVo> reviewSoftwareList =
             softwareMapper.getReviewSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countReviewSoftwareList(selectSoftware);
-        Map<Integer, List<Integer>> roleMap = userService.getUserAllRole(Integer.valueOf(uuid));
-        updateSoftwareListStatus(reviewSoftwareList, roleMap);
+        updateSoftwareListStatus(reviewSoftwareList);
         return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
     }
 
-    private void updateSoftwareListStatus(List<SoftwareListVo> softwareList, Map<Integer, List<Integer>> roleMap) {
+    private void updateSoftwareListStatus(List<SoftwareListVo> softwareList) {
         softwareList.forEach(item -> {
             if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
                 item.setStatus(item.getAuthenticationStatus());
@@ -611,6 +686,16 @@ public class SoftwareServiceImpl implements SoftwareService {
                 item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
             }
             item.setReviewerName(accountService.getUserName(item.getReviewer()));
+            item.setApplicantName(accountService.getUserName(item.getApplicant()));
+            if (Objects.equals(item.getStatusId(), NodeEnum.FINISHED.getId())
+                || Objects.equals(item.getStatusId(), NodeEnum.APPLY.getId())) {
+                return;
+            }
+            Integer status = getNextNodeNumber(item.getCpuVendor(), item.getStatusId(), false);
+            Node node = nodeMapper.findLatestFinishedNode(item.getId(), status);
+            if (node != null) {
+                item.setPreReviewer(node.getHandler());
+            }
         });
     }
 
@@ -622,20 +707,21 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public IPage<AuditRecordsVo> getAuditRecordsListPage(Integer softwareId, String nodeName,
         IPage<AuditRecordsVo> page, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请审核信息");
         }
         IPage<AuditRecordsVo> iPage = softwareMapper.getAuditRecordsListPage(softwareId, nodeName, page);
         iPage.getRecords().forEach(item -> {
             item.setHandlerName(accountService.getUserName(item.getHandler()));
+            item.setHandlerResult(HandlerResultEnum.findById(item.getHandlerResultId()));
         });
         return iPage;
     }
 
     @Override
     public CertificateInfoVo certificateInfo(Integer softwareId, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请证书信息");
         }
@@ -644,7 +730,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限查询该测评申请节点信息");
         }
@@ -750,7 +836,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Override
     public JsonResponse<String> upload(MultipartFile file, Integer softwareId, Integer fileTypeCode, String fileType,
         String uuid) throws InputException, TestReportExceedMaxAmountException {
-        Software software = softwareMapper.findById(softwareId);
+        Software software = findById(softwareId);
         if (!uuid.equals(software.getReviewer())) {
             return JsonResponse.failed("不是当前处理人");
         }
@@ -779,10 +865,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     public List<AttachmentsVo> getAttachmentsNames(Integer softwareId, String fileType, String uuid) {
-        Software software = softwareMapper.findById(softwareId);
-        if (software == null) {
-            throw new ParamException("无权限获取该测评申请文件");
-        }
+        Software software = findById(softwareId);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException("无权限获取该测评申请文件");
         }
@@ -829,7 +912,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!Objects.equals(uuid, fileOwnerUuid)) {
             throw new ParamException("无权限删除当前文件");
         }
-        Software software = softwareMapper.findById(Integer.parseInt(attachments.getSoftwareId()));
+        Software software = findById(Integer.parseInt(attachments.getSoftwareId()));
         Integer status = software.getStatus();
         if ((isSignFile && status != 7) || (isTestReportFile && status != 3)) {
             throw new ParamException("无权限删除当前文件");

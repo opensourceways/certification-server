@@ -101,6 +101,10 @@ public class SoftwareListVo {
     @JsonIgnore
     private Integer reviewRole;
     /**
+     * 前审核人Id
+     */
+    private String preReviewer;
+    /**
      * 认证状态
      */
     private String status;

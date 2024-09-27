@@ -75,7 +75,7 @@
     <resultMap id="AuditRecordsVoMap" type="com.huawei.it.euler.model.vo.AuditRecordsVo">
         <result column="node_name" property="nodeName"/>
         <result column="handler" property="handler"/>
-        <result column="handler_result" property="handlerResult"/>
+        <result column="handler_result" property="handlerResultId"/>
         <result column="handler_time" property="handlerTime"/>
         <result column="transferred_comments" property="transferredComments"/>
     </resultMap>
@@ -89,7 +89,7 @@
     <sql id="insertFields">
         company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
         hashrate_platform, product_type, test_organization,test_org_id, status, update_time, application_time,
-        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code
+        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code,delete_flag
     </sql>
 
     <sql id="insertAttachFields">
@@ -98,6 +98,7 @@
 
     <sql id="whereSoftwareList">
         <where>
+            s.delete_flag = 0
             <if test="software.statusId != null and software.statusId.size() > 0">
                 and s.status in
                 <foreach collection="software.statusId" item="item" open="(" separator="," close=")">
@@ -141,6 +142,7 @@
     </sql>
     <sql id="whereReviewSoftwareList">
         <where>
+            s.delete_flag = 0
             <if test="software.status != null and software.status.size() > 0">
                 and s.status in (select id from node_name_t where node_name in
                 <foreach collection="software.status" item="item" open="(" separator="," close=")">
@@ -198,7 +200,7 @@
     <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
         <include refid="baseFields"/>
-        from software_t where id = #{id}
+        from software_t where id = #{id} and delete_flag = 0
     </select>
 
     <select id="findCommunityCheckList" resultMap="compatibilityMap">
@@ -219,7 +221,8 @@
 
     <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
         update software_t
-        set product_version   = #{productVersion},
+        set product_name      = #{productName},
+            product_version   = #{productVersion},
             os_name           = #{osName},
             os_version        = #{osVersion},
             hashrate_platform = #{jsonHashRatePlatform},
@@ -241,7 +244,7 @@
         #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
         #{productType}, #{testOrganization},#{testOrgId}, #{status}, #{updateTime}, #{applicationTime},
         #{reviewer},#{reviewRole},
-        #{userUuid}, #{cpuVendor}, #{asId},#{companyCode})
+        #{userUuid}, #{cpuVendor}, #{asId},#{companyCode},0)
     </insert>
 
     <update id="updateSoftware" parameterType="com.huawei.it.euler.model.entity.Software">
@@ -270,15 +273,8 @@
         s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id,s.certification_time
         from software_t AS s
         <include refid="whereSoftwareList"/>
-        order by
-        <choose>
-            <when test="software.sort != null and software.sort != ''">
-                ${software.sort},s.update_time DESC
-            </when>
-            <otherwise>
-                IF(user_uuid = #{software.applicant}, 0, 1),s.update_time DESC
-            </otherwise>
-        </choose>
+        order by IF(user_uuid = #{software.applicant}, 0, 1)
+        ,s.update_time DESC
         LIMIT #{offset}, #{pageSize}
     </select>
 
@@ -292,7 +288,7 @@
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
         s.hashrate_platform, s.test_organization,s.test_org_id,
-        s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor, s.user_uuid,s.certification_time
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
         order by
@@ -326,13 +322,7 @@
     </select>
 
     <select id="getAuditRecordsListPage" resultMap="AuditRecordsVoMap">
-        select node_name,handler, handler_time, transferred_comments, status,
-        case handler_result
-        when '0' then '待处理'
-        when '1' then '通过'
-        when '2' then '已驳回'
-        when '3' then '转审'
-        end as handler_result
+        select node_name,handler, handler_time, transferred_comments, status, handler_result
         from node_t AS n
         where software_id = #{softwareId}
         <if test="nodeName != null and nodeName != ''">
@@ -432,4 +422,10 @@
         select distinct name
         from innovation_center_t;
     </select>
+
+    <delete id="deleteSoftware">
+        update software_t
+        set delete_flag = 1
+        where id = #{id}
+    </delete>
 </mapper>
