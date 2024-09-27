@@ -83,7 +83,7 @@
     <sql id="baseFields">
         id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
         hashrate_platform, server_type, product_type, test_organization,test_org_id, status, update_time, application_time,
-        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code
+        reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code,certification_time
     </sql>
 
     <sql id="insertFields">
@@ -127,6 +127,15 @@
             </if>
             <if test="software.productName != null and software.productName != ''">
                 and lower(product_name) like lower(concat('%/',#{software.productName},'%')) escape '/'
+            </if>
+            <if test="software.applicant != null and software.applicant != ''">
+                and s.id not in (select software_id from software_display_t where uuid = #{software.applicant})
+            </if>
+            <if test="software.beginCertificationTime != null">
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginCertificationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.endCertificationTime != null">
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
         </where>
     </sql>
@@ -173,6 +182,15 @@
                 and concat(lower(product_name), lower(company_name)) like
                 lower(concat('%/',#{software.productName},'%')) escape
                 '/'
+            </if>
+            <if test="software.uuid != null and software.uuid != ''">
+                and s.id not in (select software_id from software_display_t where uuid = #{software.uuid})
+            </if>
+            <if test="software.beginCertificationTime != null">
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginCertificationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.endCertificationTime != null">
+                and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
         </where>
     </sql>
@@ -234,6 +252,9 @@
             authentication_status = #{authenticationStatus},
             review_role           = #{reviewRole},
             update_time           = now()
+            <if test="certificationTime != null">
+                , certification_time = #{certificationTime}
+            </if>
         where id = #{id}
     </update>
 
@@ -246,11 +267,18 @@
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
-        s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id
+        s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id,s.certification_time
         from software_t AS s
         <include refid="whereSoftwareList"/>
-        order by IF(user_uuid = #{software.applicant}, 0, 1)
-        ,s.update_time DESC
+        order by
+        <choose>
+            <when test="software.sort != null and software.sort != ''">
+                ${software.sort},s.update_time DESC
+            </when>
+            <otherwise>
+                IF(user_uuid = #{software.applicant}, 0, 1),s.update_time DESC
+            </otherwise>
+        </choose>
         LIMIT #{offset}, #{pageSize}
     </select>
 
@@ -264,11 +292,18 @@
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
         s.hashrate_platform, s.test_organization,s.test_org_id,
-        s.application_time,s.status,s.authentication_status,s.cpu_vendor
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
-        order by IF(reviewer = #{software.uuid}, 0, 1)
-        ,s.update_time DESC
+        order by
+        <choose>
+            <when test="software.sort != null and software.sort != ''">
+                ${software.sort},s.update_time DESC
+            </when>
+            <otherwise>
+                IF(reviewer = #{software.uuid}, 0, 1),s.update_time DESC
+            </otherwise>
+        </choose>
         LIMIT #{offset}, #{pageSize}
     </select>
 
