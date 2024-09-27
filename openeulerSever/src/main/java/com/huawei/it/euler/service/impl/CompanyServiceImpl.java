@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
-import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.service.AccountService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,6 +26,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +41,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloud.apigateway.sdk.utils.Client;
 import com.cloud.apigateway.sdk.utils.Request;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.CompanyMapper;
@@ -70,6 +72,7 @@ import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseRequest;
 import com.huaweicloud.sdk.ocr.v1.model.RecognizeBusinessLicenseResponse;
 import com.huaweicloud.sdk.ocr.v1.region.OcrRegion;
 
+import cn.hutool.core.util.ObjectUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +85,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class CompanyServiceImpl implements CompanyService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SoftwareServiceImpl.class);
+
     private static final String COMPANY_INFO_DUPLICATE_REGISTER = "当前用户已认证过企业";
 
     private static final String COMPANY_INFO_UNDER_REVIEW = "当前用户提交的企业信息正在审核中";
@@ -159,7 +165,7 @@ public class CompanyServiceImpl implements CompanyService {
         Company companyByCreditCode = companyMapper.findCompanyByCreditCode(companyVo.getCreditCode());
         if (companyByCreditCode != null) {
             company.setCompanyCode(companyByCreditCode.getCompanyCode());
-        }else{
+        } else {
             company.setCompanyCode(COMPANY_INIT_NUM + companyMapper.countCompany());
         }
         Date currentTime = new Date();
@@ -169,7 +175,8 @@ public class CompanyServiceImpl implements CompanyService {
         company.setUserUuid(uuid);
         if (!companyVerifyClient.checkCompanyInfo(company.getCompanyName(), company.getCreditCode(),
             company.getLegalPerson())) {
-            return JsonResponse.failed(COMPANY_VERIFY_FAILED);
+            LOGGER.error("企业工商注册校验不通过:{}", company.getCompanyName());
+            throw new ParamException(COMPANY_VERIFY_FAILED);
         }
         company.setIsCheckedPass(true);
         company.setStatus(0);
@@ -244,12 +251,13 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public CompanyVo findCompanyByUserUuid(String uuid) {
         Company company = companyMapper.findCompanyByUserUuid(uuid);
-        CompanyVo companyVo = new CompanyVo();
-        if (company != null) {
-            String companyMail = reduceSensitivity(company.getCompanyMail(), StringConstant.MAIL);
-            company.setCompanyMail(companyMail);
-            BeanUtils.copyProperties(company, companyVo);
+        if (ObjectUtil.isEmpty(company)) {
+            return null;
         }
+        CompanyVo companyVo = new CompanyVo();
+        String companyMail = reduceSensitivity(company.getCompanyMail(), StringConstant.MAIL);
+        company.setCompanyMail(companyMail);
+        BeanUtils.copyProperties(company, companyVo);
         return companyVo;
     }
 

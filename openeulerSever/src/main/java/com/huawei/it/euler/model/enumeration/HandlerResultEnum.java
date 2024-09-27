@@ -21,8 +21,8 @@ public enum HandlerResultEnum {
     REJECT(2, "已驳回"),
     // transfer
     TRANSFER(3, "转审"),
-    // revocation
-    REVOCATION(4, "已撤销");
+    // withdraw
+    WITHDRAW(4, "已撤销");
 
     private final Integer id; // id
 
@@ -33,7 +33,16 @@ public enum HandlerResultEnum {
         this.name = name;
     }
 
-    public boolean isValidId(Integer id) {
+    public static String findById(Integer id) {
+        for (HandlerResultEnum handlerResultEnum : HandlerResultEnum.values()) {
+            if (handlerResultEnum.getId().equals(id)) {
+                return handlerResultEnum.getName();
+            }
+        }
+        return null;
+    }
+
+    public static boolean isValidId(Integer id) {
         for (HandlerResultEnum handlerResultEnum : HandlerResultEnum.values()) {
             if (handlerResultEnum.getId().equals(id)) {
                 return true;

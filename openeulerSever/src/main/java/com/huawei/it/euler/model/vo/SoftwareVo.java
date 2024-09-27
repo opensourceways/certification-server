@@ -23,6 +23,9 @@ public class SoftwareVo {
     @NotNull(message = "认证id不能为空")
     private Integer id;
 
+    @NotNull(message = "产品名称不能为空")
+    private String productName;
+
     @NotNull(message = "产品版本不能为空")
     private String productVersion;
 

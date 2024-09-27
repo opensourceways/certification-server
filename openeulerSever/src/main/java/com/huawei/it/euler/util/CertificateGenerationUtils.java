@@ -338,7 +338,11 @@ public class CertificateGenerationUtils {
     private void getSecondLineProductName(XEasyPdfPage page, GenerateCertificate generateCertificate) {
         String productNameAndVersion =
             generateCertificate.getProductName() + " " + generateCertificate.getProductVersion();
-        processingOverlongFields(productNameAndVersion, 550f, 545f, page);
+        if (productNameAndVersion.length() > 40) {
+            processingFields(generateCertificate.getProductName(), generateCertificate.getProductVersion(), 545f, page);
+        } else {
+            processingOverlongFields(productNameAndVersion, 550f, 545f, page);
+        }
     }
 
     /**
@@ -362,6 +366,12 @@ public class CertificateGenerationUtils {
             page.addComponent(XEasyPdfHandler.Text.build(fields).setPosition(0, oldBeginY)
                 .setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
         }
+    }
+
+    private void processingFields(String field1, String field2, float BeginY, XEasyPdfPage page) {
+        page.addComponent(
+            XEasyPdfHandler.Text.build(field1.trim()).setPosition(0, BeginY).setHorizontalStyle(XEasyPdfPositionStyle.CENTER),
+            XEasyPdfHandler.Text.build(field2.trim()).setHorizontalStyle(XEasyPdfPositionStyle.CENTER));
     }
 
     /**
