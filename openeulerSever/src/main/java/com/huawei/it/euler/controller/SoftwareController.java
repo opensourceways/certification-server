@@ -83,8 +83,43 @@ public class SoftwareController {
     public JsonResponse<String> softwareRegister(@RequestBody @Valid Software software, HttpServletRequest request)
             throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
+        String lockKey = software.getCompanyCode() + "-" + software.getProductName() + "-" + uuid;
+        lockCacheConfig.acquireLock(lockKey);
         Integer id = softwareService.createSoftware(software, uuid);
+        lockCacheConfig.releaseLock(lockKey);
         return JsonResponse.success(id.toString());
+    }
+
+    /**
+     * 撤销评测
+     *
+     */
+    @PostMapping("/software/withdraw-software")
+    @PreAuthorize("hasAnyRole('user','euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
+    public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
+            throws  NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.withdrawSoftware(processVo, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
+    }
+
+    /**
+     * 删除评测
+     *
+     */
+    @DeleteMapping("/software/delete-register")
+    @PreAuthorize("hasRole('user')")
+    public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request)
+            throws  NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        String lockKey = String.valueOf(id);
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.deleteSoftware(id, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -95,7 +130,11 @@ public class SoftwareController {
     public JsonResponse<String> programReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.PROGRAM_REVIEW.getId());
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.commonProcess(processVo, uuid, NodeEnum.PROGRAM_REVIEW.getId());
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -106,7 +145,11 @@ public class SoftwareController {
     public JsonResponse<String> testingPhase(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.testingPhase(processVo, uuid);
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.testingPhase(processVo, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -117,7 +160,11 @@ public class SoftwareController {
     public JsonResponse<String> reportReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.reportReview(processVo, uuid);
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.reportReview(processVo, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -128,7 +175,11 @@ public class SoftwareController {
     public JsonResponse<String> reportReReview(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
         throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId());
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.commonProcess(processVo, uuid, NodeEnum.REPORT_RE_REVIEW.getId());
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -143,7 +194,11 @@ public class SoftwareController {
     public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.updateSoftware(software, uuid, request);
+        String lockKey = String.valueOf(software.getId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.reviewCertificate(software, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -154,7 +209,11 @@ public class SoftwareController {
     public JsonResponse<String> certificateConfirmation(@RequestBody @Validated ProcessVo processVo,
         HttpServletRequest request) throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.certificateConfirmation(processVo, uuid);
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.certificateConfirmation(processVo, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**
@@ -165,7 +224,11 @@ public class SoftwareController {
     public JsonResponse<String> certificateIssuance(@RequestBody @Validated ProcessVo processVo,
         HttpServletRequest request) throws Exception {
         String uuid = accountService.getLoginUuid(request);
-        return softwareService.certificateIssuance(processVo, uuid);
+        String lockKey = String.valueOf(processVo.getSoftwareId());
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.certificateIssuance(processVo, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
     }
 
     /**

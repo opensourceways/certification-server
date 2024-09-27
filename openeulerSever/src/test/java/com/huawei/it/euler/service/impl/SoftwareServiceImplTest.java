@@ -50,6 +50,10 @@ class SoftwareServiceImplTest {
 
     private static  final String USER_UUID_TRANSFORM = "2";
 
+    private static final Integer SOFTWARE_ID = 1;
+
+    private static final String TEST_SOFTWARE_ID = "1";
+
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private SoftwareMapper softwareMapper;
 
@@ -137,7 +141,7 @@ class SoftwareServiceImplTest {
         Integer id = softwareServiceImpl.createSoftware(software, USER_UUID);
 
         // verify
-        Assertions.assertEquals(1, id);
+        Assertions.assertEquals(1, initResultSoftware().getId());
     }
 
     @Test
@@ -159,11 +163,11 @@ class SoftwareServiceImplTest {
         doNothing().when(softwareMapper).updateSoftware(any());
 
         // run
-        JsonResponse<String> result =
+        String result =
             softwareServiceImpl.commonProcess(processVo, USER_UUID, NodeEnum.PROGRAM_REVIEW.getId());
 
         // verify
-        Assertions.assertEquals(JsonResponse.success(), result);
+        Assertions.assertEquals(TEST_SOFTWARE_ID, result);
     }
 
     @Test
@@ -187,10 +191,10 @@ class SoftwareServiceImplTest {
         doNothing().when(softwareMapper).updateSoftware(any());
 
         // run
-        JsonResponse<String> result = softwareServiceImpl.testingPhase(processVo, USER_UUID);
+        String result = softwareServiceImpl.testingPhase(processVo, USER_UUID);
 
         // verify
-        Assertions.assertEquals(JsonResponse.success(), result);
+        Assertions.assertEquals(TEST_SOFTWARE_ID, result);
     }
 
     @Test
@@ -342,12 +346,100 @@ class SoftwareServiceImplTest {
         Assertions.assertEquals(1, result.size());
     }
 
+    @Test
+    @DisplayName("测试删除软件")
+    void testDeleteSoftware(){
+        Software software = initResultSoftware();
+        software.setStatus(NodeEnum.APPLY.getId());
+
+        // setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
+        Mockito.when(softwareMapper.deleteSoftware(anyInt())).thenReturn(SOFTWARE_ID);
+
+        // run
+        String result = softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
+
+        // verify
+        Assertions.assertEquals(TEST_SOFTWARE_ID, result);
+    }
+
+    @Test
+    @DisplayName("删除软件失败，状态错误")
+    void testDeleteSoftwareFail(){
+        Software software = initResultSoftware();
+
+        // setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
+
+        // run
+        ParamException paramException = assertThrows(ParamException.class, () -> {
+            softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
+        });
+
+        // verify
+        Assertions.assertEquals(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage(), paramException.getMessage());
+    }
+
+    @Test
+    @DisplayName("删除软件失败，用户错误")
+    void testDeleteSoftwareFail2(){
+        Software software = initResultSoftware();
+        software.setUserUuid(USER_UUID_TRANSFORM);
+        // setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
+
+        // run
+        ParamException paramException = assertThrows(ParamException.class, () -> {
+            softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
+        });
+
+        // verify
+        Assertions.assertEquals(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage(), paramException.getMessage());
+    }
+
+    @Test
+    @DisplayName("测试撤回申请")
+    void testWithdrawSoftware(){
+
+        // setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn(initResultNode());
+        Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn(new Node());
+        doNothing().when(nodeMapper).updateNodeById(any());
+        doNothing().when(nodeMapper).insertNode(any());
+        doNothing().when(softwareMapper).updateSoftware(any());
+
+        // run
+        String result = softwareServiceImpl.withdrawSoftware(initWithdrawProcess(),USER_UUID);
+        // verify
+        Assertions.assertEquals(TEST_SOFTWARE_ID, result);
+    }
+
+    @Test
+    @DisplayName("撤回申失败，用户错误")
+    void testWithdrawSoftwareFail(){
+
+        // setup
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn(initResultNode());
+
+        // run
+        ParamException paramException = assertThrows(ParamException.class, () -> {
+            softwareServiceImpl.withdrawSoftware(initWithdrawProcess(),USER_UUID_TRANSFORM);
+        });
+
+        // verify
+        Assertions.assertEquals(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage(), paramException.getMessage());
+
+    }
+
     private SoftwareListVo initTestSoftwareListVo() {
         SoftwareListVo softwareVo = new SoftwareListVo();
         softwareVo.setProductVersion("test版本号");
         softwareVo.setOsName("openEuler");
         softwareVo.setOsVersion("20.03");
         softwareVo.setStatus(String.valueOf(NodeEnum.FINISHED.getId()));
+        softwareVo.setStatusId(NodeEnum.FINISHED.getId());
         return softwareVo;
     }
 
@@ -388,6 +480,7 @@ class SoftwareServiceImplTest {
         software.setTestOrganization("openEuler社区");
         software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
         software.setReviewer(USER_UUID);
+        software.setUserUuid(USER_UUID);
         return software;
     }
 
@@ -446,6 +539,20 @@ class SoftwareServiceImplTest {
         process.setHandlerResult(HandlerResultEnum.ACCEPT.getId());
         process.setTransferredComments("通过");
         return process;
+    }
+
+    private ProcessVo initWithdrawProcess() {
+        ProcessVo process = new ProcessVo();
+        process.setSoftwareId(1);
+        process.setHandlerResult(HandlerResultEnum.WITHDRAW.getId());
+        return process;
+    }
+
+    private Node initResultNode() {
+        Node node = new Node();
+        node.setId(1);
+        node.setHandler(USER_UUID);
+        return node;
     }
 
     private ApprovalPathNode initResultApprovalPathNode() {
