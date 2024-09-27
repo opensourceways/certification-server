@@ -4,12 +4,14 @@
 
 package com.huawei.it.euler.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -68,4 +70,26 @@ public class SelectSoftwareVo {
     @NotNull(message = "每页展示条数不能为空")
     @Range(min = 0, max = 100, message = "每页展示条数超出范围")
     private Integer pageSize;
+
+    /**
+     * 认证完成时间筛选-开始时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date beginCertificationTime;
+
+    /**
+     * 认证完成时间筛选-结束时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date endCertificationTime;
+
+    /**
+     * 正序排列字段集合
+     */
+    private List<String> ascSort;
+
+    /**
+     * 倒叙排列字段集合
+     */
+    private List<String> descSort;
 }

@@ -135,4 +135,9 @@ public class SoftwareListVo {
      * 测评场景id
      */
     private Integer asId;
+
+    /**
+     * 认证完成时间
+     */
+    private String certificationTime;
 }
