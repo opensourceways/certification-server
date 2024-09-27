@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.CaseFormat;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -60,6 +61,8 @@ public class SoftwareServiceImpl implements SoftwareService {
     private static final String FILE_TYPE_SIGN = "sign";
 
     private static final String FILE_TYPE_TEST_REPORT = "testReport";
+
+    private static final List<String> SORT_COLUMN = new ArrayList<>(Arrays.asList("applicationTime", "certificationTime"));
 
     @Autowired
     private SoftwareMapper softwareMapper;
@@ -409,6 +412,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             addNextNode(software);
         } else if (software.getStatus().equals(NodeEnum.FINISHED.getId())) {
             generateCertificate(vo.getSoftwareId());
+            software.setCertificationTime(new Date());
         }
         softwareMapper.updateSoftware(software);
         return JsonResponse.success();
@@ -638,6 +642,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         selectSoftware.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
         selectSoftware.setApplicant(uuid);
+        selectSoftware.setSort(parseSort(selectSoftwareVo));
         List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, selectSoftware);
         Long total = softwareMapper.countSoftwareList(selectSoftware);
         processFields(currentSoftwareList, uuid);
@@ -662,6 +667,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
         selectSoftware.setUuid(uuid);
         selectSoftware.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
+        selectSoftware.setSort(parseSort(selectSoftwareVo));
         int pageSize = selectSoftwareVo.getPageSize();
         int pageNum = selectSoftwareVo.getPageNum();
         int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
@@ -1091,5 +1097,22 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterCriteriaVo.setOsNames(osNames);
         filterCriteriaVo.setTestOrganizations(testOrganizations);
         return filterCriteriaVo;
+    }
+
+    public String parseSort(SelectSoftwareVo selectSoftwareVo){
+        List<String> sortStr = new ArrayList<>();
+        List<String> ascSort = selectSoftwareVo.getAscSort();
+        if (ascSort != null && !ascSort.isEmpty()){
+            sortStr.addAll(ascSort.stream().filter(SORT_COLUMN::contains)
+                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc")
+                    .toList());
+        }
+        List<String> descSort = selectSoftwareVo.getDescSort();
+        if (descSort != null && !descSort.isEmpty()){
+            sortStr.addAll(descSort.stream().filter(SORT_COLUMN::contains)
+                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc")
+                    .toList());
+        }
+        return String.join(",", sortStr);
     }
 }
