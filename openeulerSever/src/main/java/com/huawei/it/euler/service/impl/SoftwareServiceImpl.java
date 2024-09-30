@@ -41,6 +41,7 @@ import com.huawei.it.euler.model.query.AttachmentQuery;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.*;
 import com.huawei.it.euler.util.CertificateGenerationUtils;
+import com.huawei.it.euler.util.ExcelUtils;
 import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.ListPageUtils;
 
@@ -111,6 +112,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ExcelUtils excelUtils;
 
     @Override
     public Software findById(Integer id, String uuid) {
@@ -883,6 +886,11 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException("无权限下载当前文件");
         }
         fileUtils.downloadFile(fileId, attachments.getFileName(), response);
+    }
+
+    public void export(String fileId, HttpServletResponse response, String uuid) throws IOException {
+
+        excelUtils.export(fileId, response, uuid);
     }
 
     @Override
