@@ -81,7 +81,7 @@ public class SoftwareController {
     @PostMapping("/software/register")
     @PreAuthorize("hasRole('user')")
     public JsonResponse<String> softwareRegister(@RequestBody @Valid Software software, HttpServletRequest request)
-            throws InputException, NoLoginException {
+        throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = software.getCompanyCode() + "-" + software.getProductName() + "-" + uuid;
         lockCacheConfig.acquireLock(lockKey);
@@ -96,8 +96,8 @@ public class SoftwareController {
      */
     @PostMapping("/software/withdraw-software")
     @PreAuthorize("hasAnyRole('user','euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo, HttpServletRequest request)
-            throws  NoLoginException {
+    public JsonResponse<String> softwareWithdraw(@RequestBody @Validated ProcessVo processVo,
+        HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = String.valueOf(processVo.getSoftwareId());
         lockCacheConfig.acquireLock(lockKey);
@@ -112,8 +112,8 @@ public class SoftwareController {
      */
     @DeleteMapping("/software/delete-register")
     @PreAuthorize("hasRole('user')")
-    public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id, HttpServletRequest request)
-            throws  NoLoginException {
+    public JsonResponse<String> softwareDelete(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id,
+        HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = String.valueOf(id);
         lockCacheConfig.acquireLock(lockKey);
@@ -241,7 +241,8 @@ public class SoftwareController {
     @GetMapping("/software/transferredUserList")
     @PreAuthorize("hasAnyRole('euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<SimpleUserVo>> transferredUserList(
-        @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) throws NoLoginException {
+        @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request)
+        throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         List<SimpleUserVo> simpleUserVos = softwareService.transferredUserList(softwareId, uuid);
         return JsonResponse.success(simpleUserVos);
@@ -256,8 +257,9 @@ public class SoftwareController {
      */
     @GetMapping("/software/node")
     @PreAuthorize("hasAnyRole('euler_ic', 'program_review','report_review','certificate_issuance','openatom_intel', 'flag_store', 'user')")
-    public JsonResponse<List<AuditRecordsVo>> node(
-        @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<List<AuditRecordsVo>>
+        node(@RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request)
+            throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         List<AuditRecordsVo> nodeList = softwareService.getNodeList(softwareId, uuid);
         return JsonResponse.success(nodeList);
@@ -266,16 +268,16 @@ public class SoftwareController {
     /**
      * 伙伴侧查询申请列表
      *
-     * @param selectSoftwareVo selectSoftwareVo
+     * @param softwareQueryRequest selectSoftwareVo
      * @param request request
      * @return JsonResponse
      */
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user')")
-    public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo,
-        HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(
+            @RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(selectSoftwareVo, uuid);
+        PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(softwareQueryRequest, uuid);
         softwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
@@ -291,17 +293,16 @@ public class SoftwareController {
     /**
      * 华为侧查询申请列表
      *
-     * @param selectSoftwareVo selectSoftwareVo
+     * @param softwareQueryRequest selectSoftwareVo
      * @param request request
      * @return JsonResponse
      */
     @PostMapping("/software/reviewSoftwareList")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<PageResult<SoftwareListVo>>
-        getReviewSoftwareList(@RequestBody @Valid SelectSoftwareVo selectSoftwareVo, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<PageResult<SoftwareListVo>> getReviewSoftwareList(
+            @RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareListVo> reviewSoftwareList =
-            softwareService.getReviewSoftwareList(selectSoftwareVo, uuid);
+        PageResult<SoftwareListVo> reviewSoftwareList = softwareService.getReviewSoftwareList(softwareQueryRequest, uuid);
         reviewSoftwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
@@ -348,7 +349,8 @@ public class SoftwareController {
     @GetMapping("/software/certificateInfo")
     @PreAuthorize("hasAnyRole('user', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<CertificateInfoVo> certificateInfo(
-        @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request) throws NoLoginException {
+        @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId, HttpServletRequest request)
+        throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return new JsonResponse<>(softwareService.certificateInfo(softwareId, uuid));
     }
@@ -369,7 +371,7 @@ public class SoftwareController {
         @RequestParam("file") MultipartFile file,
         @RequestParam("fileTypeCode") @NotNull(message = "文件类型编码不能为空") Integer fileTypeCode,
         @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType, HttpServletRequest request)
-            throws TestReportExceedMaxAmountException, InputException, NoLoginException {
+        throws TestReportExceedMaxAmountException, InputException, NoLoginException {
         String lockKey = "upload-file-" + softwareId;
         String uuid = accountService.getLoginUuid(request);
         lockCacheConfig.acquireLock(lockKey);
@@ -390,7 +392,8 @@ public class SoftwareController {
     @PreAuthorize("hasAnyRole('user', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<List<AttachmentsVo>> getAttachmentsNames(
         @RequestParam("softwareId") @NotNull(message = "认证id不能为空") Integer softwareId,
-        @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType, HttpServletRequest request) throws NoLoginException {
+        @RequestParam("fileType") @NotBlank(message = "文件具体类型不能为空") String fileType, HttpServletRequest request)
+        throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return JsonResponse.success(softwareService.getAttachmentsNames(softwareId, fileType, uuid));
     }
@@ -405,7 +408,8 @@ public class SoftwareController {
     @GetMapping("/software/downloadAttachments")
     @PreAuthorize("hasAnyRole('user', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public void downloadAttachments(@RequestParam("fileId") @NotBlank(message = "附件id不能为空") String fileId,
-        HttpServletResponse response, HttpServletRequest request) throws InputException, UnsupportedEncodingException, NoLoginException {
+        HttpServletResponse response, HttpServletRequest request)
+        throws InputException, UnsupportedEncodingException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         softwareService.downloadAttachments(fileId, response, uuid);
     }
@@ -486,15 +490,15 @@ public class SoftwareController {
     /**
      * 附件下载
      *
-     * @param fileId fileId
+     * @param softwareQueryRequest fileId
      * @param response response
      * @param request request
      */
-    @GetMapping("/software/export")
-    @PreAuthorize("hasAnyRole('user', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
-    public void export(@RequestParam("fileId") @NotBlank(message = "附件id不能为空") String fileId,
-                                    HttpServletResponse response, HttpServletRequest request) throws InputException, IOException, NoLoginException {
+    @PostMapping("/software/export")
+    @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
+    public void export(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
+        HttpServletResponse response, HttpServletRequest request) throws InputException, IOException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        softwareService.export(fileId, response, uuid);
+        softwareService.export(softwareQueryRequest, response, uuid);
     }
 }
