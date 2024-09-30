@@ -143,7 +143,7 @@ public class CompanyController {
      */
     @PostMapping("/companies/company/audit")
     @PreAuthorize("hasRole('china_region')")
-    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo,HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<String> approveCompany(@Valid @RequestBody CompanyAuditVo companyAuditVo,HttpServletRequest request) throws Exception {
         String uuid = accountService.getLoginUuid(request);
         return companyService.approveCompany(companyAuditVo);
     }

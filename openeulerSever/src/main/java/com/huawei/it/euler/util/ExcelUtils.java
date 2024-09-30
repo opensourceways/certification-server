@@ -5,12 +5,14 @@
 package com.huawei.it.euler.util;
 
 
-import com.alibaba.fastjson.JSONObject;
-import com.huawei.it.euler.mapper.SoftwareMapper;
-import com.huawei.it.euler.model.entity.Attachments;
-import com.huawei.it.euler.model.entity.CompatibleDataInfo;
-import com.huawei.it.euler.model.vo.CompatibleDataVo;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.net.URLEncoder;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.BeanUtils;
@@ -18,15 +20,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import com.alibaba.excel.util.MapUtils;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.huawei.it.euler.mapper.SoftwareMapper;
+import com.huawei.it.euler.model.entity.Attachments;
+import com.huawei.it.euler.model.entity.CompatibleDataInfo;
+import com.huawei.it.euler.model.vo.CompatibleDataVo;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * excel处理工具类
@@ -188,5 +191,29 @@ public class ExcelUtils {
             return beanPropertyTypes;
         }
         return null;
+    }
+
+    public void export(String fileId, HttpServletResponse response, String uuid) throws IOException {
+        {
+            try {
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                response.setCharacterEncoding("utf-8");
+                // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+                String fileName = URLEncoder.encode("测试", "UTF-8").replaceAll("\\+", "%20");
+                response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+                // 这里需要设置不关闭流
+//                EasyExcel.write(response.getOutputStream(), DownloadData.class).autoCloseStream(Boolean.FALSE).sheet("模板")
+//                        .doWrite(data());
+            } catch (Exception e) {
+                // 重置response
+                response.reset();
+                response.setContentType("application/json");
+                response.setCharacterEncoding("utf-8");
+                Map<String, String> map = MapUtils.newHashMap();
+                map.put("status", "failure");
+                map.put("message", "下载文件失败" + e.getMessage());
+                response.getWriter().println(JSON.toJSONString(map));
+            }
+        }
     }
 }

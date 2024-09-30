@@ -482,4 +482,19 @@ public class SoftwareController {
         PageVo<CompatibilityVo> communityCheckList = softwareService.findCommunityCheckList(vo);
         return JsonResponse.success(communityCheckList);
     }
+
+    /**
+     * 附件下载
+     *
+     * @param fileId fileId
+     * @param response response
+     * @param request request
+     */
+    @GetMapping("/software/export")
+    @PreAuthorize("hasAnyRole('user', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    public void export(@RequestParam("fileId") @NotBlank(message = "附件id不能为空") String fileId,
+                                    HttpServletResponse response, HttpServletRequest request) throws InputException, IOException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        softwareService.export(fileId, response, uuid);
+    }
 }
