@@ -89,20 +89,20 @@ public interface SoftwareService {
     /**
      * 查询兼容性认证申请列表
      *
-     * @param selectSoftwareVo 筛选条件
+     * @param softwareQueryRequest 筛选条件
      * @param uuid uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
+    PageResult<SoftwareListVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
 
     /**
      * 华为侧查询兼容性认证申请列表
      *
-     * @param selectSoftwareVo 筛选条件
+     * @param softwareQueryRequest 筛选条件
      * @param uuid uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
+    PageResult<SoftwareListVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
 
     /**
      * 认证审核记录
