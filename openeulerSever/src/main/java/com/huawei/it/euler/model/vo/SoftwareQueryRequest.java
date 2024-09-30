@@ -4,15 +4,17 @@
 
 package com.huawei.it.euler.model.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Data;
+import java.util.Date;
+import java.util.List;
+
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
-import java.util.Date;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Data;
 
 /**
  * SelectSoftwareVo
@@ -20,7 +22,7 @@ import java.util.List;
  * @since 2024/07/03
  */
 @Data
-public class SelectSoftwareVo {
+public class SoftwareQueryRequest {
     /**
      * 产品名称
      */

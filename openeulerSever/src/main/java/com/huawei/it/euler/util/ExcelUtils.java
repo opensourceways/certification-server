@@ -20,10 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.it.euler.mapper.SoftwareMapper;
+import com.huawei.it.euler.model.dto.SoftwareDTO;
 import com.huawei.it.euler.model.entity.Attachments;
 import com.huawei.it.euler.model.entity.CompatibleDataInfo;
 import com.huawei.it.euler.model.vo.CompatibleDataVo;
@@ -193,7 +195,7 @@ public class ExcelUtils {
         return null;
     }
 
-    public void export(String fileId, HttpServletResponse response, String uuid) throws IOException {
+    public void export(List<SoftwareDTO> data, HttpServletResponse response) throws IOException {
         {
             try {
                 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -202,8 +204,8 @@ public class ExcelUtils {
                 String fileName = URLEncoder.encode("测试", "UTF-8").replaceAll("\\+", "%20");
                 response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
                 // 这里需要设置不关闭流
-//                EasyExcel.write(response.getOutputStream(), DownloadData.class).autoCloseStream(Boolean.FALSE).sheet("模板")
-//                        .doWrite(data());
+                EasyExcel.write(response.getOutputStream(), SoftwareDTO.class).autoCloseStream(Boolean.FALSE).sheet("模板")
+                        .doWrite(data);
             } catch (Exception e) {
                 // 重置response
                 response.reset();

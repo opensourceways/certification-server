@@ -35,6 +35,9 @@ import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.mapper.*;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
+import com.huawei.it.euler.model.converter.SoftwareQueryRequest2QueryConverter;
+import com.huawei.it.euler.model.converter.SoftwareVOToDTOConverter;
+import com.huawei.it.euler.model.dto.SoftwareDTO;
 import com.huawei.it.euler.model.entity.*;
 import com.huawei.it.euler.model.enumeration.*;
 import com.huawei.it.euler.model.query.AttachmentQuery;
@@ -632,22 +635,22 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
-        SelectSoftware selectSoftware = new SelectSoftware();
-        BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        int pageSize = selectSoftwareVo.getPageSize();
-        int pageNum = selectSoftwareVo.getPageNum();
-        int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
+    public PageResult<SoftwareListVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
+        SoftwareQuery softwareQuery = new SoftwareQuery();
+        BeanUtils.copyProperties(softwareQueryRequest, softwareQuery);
+        int pageSize = softwareQueryRequest.getPageSize();
+        int pageNum = softwareQueryRequest.getPageNum();
+        int offset = (softwareQueryRequest.getPageNum() - 1) * softwareQueryRequest.getPageSize();
         Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(uuid);
         if (ObjectUtils.isEmpty(company)) {
             return new PageResult<>(Collections.emptyList(), 0L, pageNum, pageSize);
         }
-        selectSoftware.setCompanyName(company.getCompanyName());
+        softwareQuery.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
-        selectSoftware.setApplicant(uuid);
-        selectSoftware.setSort(parseSort(selectSoftwareVo));
-        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, selectSoftware);
-        Long total = softwareMapper.countSoftwareList(selectSoftware);
+        softwareQuery.setApplicant(uuid);
+        softwareQuery.setSort(parseSort(softwareQueryRequest));
+        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
+        Long total = softwareMapper.countSoftwareList(softwareQuery);
         processFields(currentSoftwareList, uuid);
         return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
     }
@@ -665,18 +668,18 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid) {
-        SelectSoftware selectSoftware = new SelectSoftware();
-        BeanUtils.copyProperties(selectSoftwareVo, selectSoftware);
-        selectSoftware.setUuid(uuid);
-        selectSoftware.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
-        selectSoftware.setSort(parseSort(selectSoftwareVo));
-        int pageSize = selectSoftwareVo.getPageSize();
-        int pageNum = selectSoftwareVo.getPageNum();
-        int offset = (selectSoftwareVo.getPageNum() - 1) * selectSoftwareVo.getPageSize();
+    public PageResult<SoftwareListVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
+        SoftwareQuery softwareQuery = new SoftwareQuery();
+        BeanUtils.copyProperties(softwareQueryRequest, softwareQuery);
+        softwareQuery.setUuid(uuid);
+        softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
+        softwareQuery.setSort(parseSort(softwareQueryRequest));
+        int pageSize = softwareQueryRequest.getPageSize();
+        int pageNum = softwareQueryRequest.getPageNum();
+        int offset = (softwareQueryRequest.getPageNum() - 1) * softwareQueryRequest.getPageSize();
         List<SoftwareListVo> reviewSoftwareList =
-            softwareMapper.getReviewSoftwareList(offset, pageSize, selectSoftware);
-        Long total = softwareMapper.countReviewSoftwareList(selectSoftware);
+            softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
+        Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
         updateSoftwareListStatus(reviewSoftwareList);
         return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
     }
@@ -888,9 +891,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         fileUtils.downloadFile(fileId, attachments.getFileName(), response);
     }
 
-    public void export(String fileId, HttpServletResponse response, String uuid) throws IOException {
-
-        excelUtils.export(fileId, response, uuid);
+    public void export(SoftwareQueryRequest softwareVo, HttpServletResponse response, String uuid) throws IOException {
+        SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
+        List<SoftwareListVo> reviewSoftwareList =
+                softwareMapper.getExportSoftwareList(softwareQuery);
+        List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
+        excelUtils.export(softwareDTOList, response);
     }
 
     @Override
@@ -1107,15 +1113,15 @@ public class SoftwareServiceImpl implements SoftwareService {
         return filterCriteriaVo;
     }
 
-    public String parseSort(SelectSoftwareVo selectSoftwareVo){
+    public String parseSort(SoftwareQueryRequest softwareQueryRequest){
         List<String> sortStr = new ArrayList<>();
-        List<String> ascSort = selectSoftwareVo.getAscSort();
+        List<String> ascSort = softwareQueryRequest.getAscSort();
         if (ascSort != null && !ascSort.isEmpty()){
             sortStr.addAll(ascSort.stream().filter(SORT_COLUMN::contains)
                     .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc")
                     .toList());
         }
-        List<String> descSort = selectSoftwareVo.getDescSort();
+        List<String> descSort = softwareQueryRequest.getDescSort();
         if (descSort != null && !descSort.isEmpty()){
             sortStr.addAll(descSort.stream().filter(SORT_COLUMN::contains)
                     .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc")
