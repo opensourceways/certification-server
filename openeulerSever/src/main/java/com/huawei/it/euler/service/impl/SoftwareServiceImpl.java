@@ -893,6 +893,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     public void export(SoftwareQueryRequest softwareVo, HttpServletResponse response, String uuid) throws IOException {
         SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
+        softwareQuery.setUuid(uuid);
+        softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         List<SoftwareListVo> reviewSoftwareList =
                 softwareMapper.getExportSoftwareList(softwareQuery);
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
