@@ -6,6 +6,7 @@ package com.huawei.it.euler.model.dto;
 
 import java.util.List;
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
@@ -18,6 +19,7 @@ import lombok.Data;
  * @since 2024/07/01
  */
 @Data
+@ExcelIgnoreUnannotated
 public class SoftwareDTO {
     /**
      * 软件id
