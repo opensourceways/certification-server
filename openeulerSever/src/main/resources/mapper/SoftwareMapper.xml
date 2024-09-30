@@ -273,8 +273,16 @@
         s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id,s.certification_time
         from software_t AS s
         <include refid="whereSoftwareList"/>
-        order by IF(user_uuid = #{software.applicant}, 0, 1)
-        ,s.update_time DESC
+        order by
+        <choose>
+            <when test="software.sort != null and software.sort != ''">
+                ${software.sort},s.update_time DESC
+            </when>
+            <otherwise>
+                IF(reviewer = #{software.applicant}, 0, 1),
+                IF(user_uuid = #{software.applicant}, 0, 1),s.update_time DESC
+            </otherwise>
+        </choose>
         LIMIT #{offset}, #{pageSize}
     </select>
 
@@ -288,7 +296,7 @@
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,
         s.hashrate_platform, s.test_organization,s.test_org_id,
-        s.application_time,s.status,s.authentication_status,s.cpu_vendor, s.user_uuid,s.certification_time
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time, s.user_uuid
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
         order by
