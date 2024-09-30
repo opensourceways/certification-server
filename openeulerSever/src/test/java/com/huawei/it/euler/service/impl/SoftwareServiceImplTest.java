@@ -298,16 +298,16 @@ class SoftwareServiceImplTest {
     @Test
     @DisplayName("测试获取软件列表")
      void testGetSoftwareList(){
-        SelectSoftwareVo selectSoftwareVo = new SelectSoftwareVo();
-        selectSoftwareVo.setPageNum(1);
-        selectSoftwareVo.setPageSize(10);
+        SoftwareQueryRequest softwareQueryRequest = new SoftwareQueryRequest();
+        softwareQueryRequest.setPageNum(1);
+        softwareQueryRequest.setPageSize(10);
         List<SoftwareListVo> currentSoftwareList = List.of(initTestSoftwareListVo());
         // setup
         Mockito.when(companyMapper.findRegisterSuccessCompanyByUserUuid(any())).thenReturn(initResultCompany());
         Mockito.when(softwareMapper.getSoftwareList(anyInt(),anyInt(),any())).thenReturn(currentSoftwareList);
         Mockito.when(softwareMapper.countSoftwareList(any())).thenReturn(1L);
         // run
-        PageResult<SoftwareListVo> result = softwareServiceImpl.getSoftwareList(selectSoftwareVo,USER_UUID);
+        PageResult<SoftwareListVo> result = softwareServiceImpl.getSoftwareList(softwareQueryRequest,USER_UUID);
 
         // verify
         Assertions.assertEquals(1, result.getList().size());
@@ -316,16 +316,16 @@ class SoftwareServiceImplTest {
     @Test
     @DisplayName("测试获取待测评软件列表")
     void testGetReviewSoftwareList() {
-        SelectSoftwareVo selectSoftwareVo = new SelectSoftwareVo();
-        selectSoftwareVo.setPageNum(1);
-        selectSoftwareVo.setPageSize(10);
+        SoftwareQueryRequest softwareQueryRequest = new SoftwareQueryRequest();
+        softwareQueryRequest.setPageNum(1);
+        softwareQueryRequest.setPageSize(10);
         List<SoftwareListVo> currentSoftwareList = List.of(initTestSoftwareListVo());
         // setup
         Mockito.when(companyMapper.findRegisterSuccessCompanyByUserUuid(any())).thenReturn(initResultCompany());
         Mockito.when(softwareMapper.getReviewSoftwareList(anyInt(),anyInt(),any())).thenReturn(currentSoftwareList);
         Mockito.when(softwareMapper.countReviewSoftwareList(any())).thenReturn(1L);
         // run
-        PageResult<SoftwareListVo> result = softwareServiceImpl.getReviewSoftwareList(selectSoftwareVo,USER_UUID);
+        PageResult<SoftwareListVo> result = softwareServiceImpl.getReviewSoftwareList(softwareQueryRequest,USER_UUID);
 
         // verify
         Assertions.assertEquals(1, result.getList().size());

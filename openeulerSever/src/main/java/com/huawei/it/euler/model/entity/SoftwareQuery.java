@@ -4,10 +4,10 @@
 
 package com.huawei.it.euler.model.entity;
 
-import lombok.Data;
-
 import java.util.Date;
 import java.util.List;
+
+import lombok.Data;
 
 /**
  * SelectSoftware
@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2024/07/01
  */
 @Data
-public class SelectSoftware {
+public class SoftwareQuery {
     /**
      * 产品名称
      */
