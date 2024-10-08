@@ -19,7 +19,7 @@ public class SoftwareVOPopulater implements Populater<SoftwareVo> {
 
     @Override
     public SoftwareVo populate(SoftwareVo source) {
-        List<ComputingPlatformVo> platforms = JSON.parseArray(source.getHashratePlatform(), ComputingPlatformVo.class);
+        List<ComputingPlatformVo> platforms = JSON.parseArray(source.getJsonHashRatePlatform(), ComputingPlatformVo.class);
         source.setHashratePlatformList(platforms);
         source.setHashratePlatformNameList(joinPlatformNames(platforms));
         source.setPlatforms(formatPlatforms(platforms));
