@@ -219,7 +219,7 @@
         </if>
     </select>
 
-    <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
+    <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.entity.Software">
         update software_t
         set product_name      = #{productName},
             product_version   = #{productVersion},

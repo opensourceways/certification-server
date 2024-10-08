@@ -48,7 +48,7 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return 流程id
      */
-    String reviewCertificate(SoftwareVo software, String uuid) throws IOException;
+    String reviewCertificate(Software software, String uuid) throws IOException;
 
     /**
      * 新增软件信息

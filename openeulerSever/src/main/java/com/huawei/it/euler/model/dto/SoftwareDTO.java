@@ -83,13 +83,11 @@ public class SoftwareDTO {
     /**
      * 申请人姓名
      */
-    @ExcelProperty("申请人姓名")
     private String applicantName;
 
     /**
      * 审核人姓名
      */
-    @ExcelProperty("审核人姓名")
     private String reviewerName;
 
     /**

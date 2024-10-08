@@ -20,10 +20,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.security.LockCacheConfig;
+import com.huawei.it.euler.controller.converter.SoftwareCreateToEntityConverter;
+import com.huawei.it.euler.controller.converter.SoftwareModifyToEntityConverter;
+import com.huawei.it.euler.controller.request.SoftwareCreateRequest;
+import com.huawei.it.euler.controller.request.SoftwareModifyRequest;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
+import com.huawei.it.euler.model.converter.SoftwareToDTOConverter;
+import com.huawei.it.euler.model.dto.SoftwareDTO;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.*;
@@ -64,11 +70,11 @@ public class SoftwareController {
      */
     @GetMapping("/software/findById")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<Software> findById(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id,
+    public JsonResponse<SoftwareDTO> findById(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         Software software = softwareService.findById(id, uuid);
-        return JsonResponse.success(software);
+        return JsonResponse.success(SoftwareToDTOConverter.INSTANCE.convert(software));
     }
 
     /**
@@ -80,12 +86,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/register")
     @PreAuthorize("hasRole('user')")
-    public JsonResponse<String> softwareRegister(@RequestBody @Valid Software software, HttpServletRequest request)
-        throws InputException, NoLoginException {
+    public JsonResponse<String> softwareRegister(@RequestBody @Valid SoftwareCreateRequest software,
+        HttpServletRequest request) throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = software.getCompanyCode() + "-" + software.getProductName() + "-" + uuid;
         lockCacheConfig.acquireLock(lockKey);
-        Integer id = softwareService.createSoftware(software, uuid);
+        Integer id = softwareService.createSoftware(SoftwareCreateToEntityConverter.INSTANCE.convert(software), uuid);
         lockCacheConfig.releaseLock(lockKey);
         return JsonResponse.success(id.toString());
     }
@@ -191,12 +197,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/certificateReview")
     @PreAuthorize("hasAnyRole('flag_store')")
-    public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareVo software,
+    public JsonResponse<String> certificateReview(@RequestBody @Validated SoftwareModifyRequest software,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = String.valueOf(software.getId());
         lockCacheConfig.acquireLock(lockKey);
-        softwareService.reviewCertificate(software, uuid);
+        softwareService.reviewCertificate(SoftwareModifyToEntityConverter.INSTANCE.convert(software), uuid);
         lockCacheConfig.releaseLock(lockKey);
         return JsonResponse.success();
     }
@@ -274,8 +280,9 @@ public class SoftwareController {
      */
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user')")
-    public JsonResponse<PageResult<SoftwareListVo>> getSoftwareList(
-            @RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<PageResult<SoftwareListVo>>
+        getSoftwareList(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
+            throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(softwareQueryRequest, uuid);
         softwareList.getList().forEach(softwareListVo -> {
@@ -299,10 +306,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/reviewSoftwareList")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<PageResult<SoftwareListVo>> getReviewSoftwareList(
-            @RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<PageResult<SoftwareListVo>>
+        getReviewSoftwareList(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
+            throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareListVo> reviewSoftwareList = softwareService.getReviewSoftwareList(softwareQueryRequest, uuid);
+        PageResult<SoftwareListVo> reviewSoftwareList =
+            softwareService.getReviewSoftwareList(softwareQueryRequest, uuid);
         reviewSoftwareList.getList().forEach(softwareListVo -> {
             List<ComputingPlatformVo> platformVos =
                 JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
@@ -496,8 +505,8 @@ public class SoftwareController {
      */
     @PostMapping("/software/export")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
-    public void export(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
-        HttpServletResponse response, HttpServletRequest request) throws InputException, IOException, NoLoginException {
+    public void export(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletResponse response,
+        HttpServletRequest request) throws InputException, IOException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         softwareService.export(softwareQueryRequest, response, uuid);
     }

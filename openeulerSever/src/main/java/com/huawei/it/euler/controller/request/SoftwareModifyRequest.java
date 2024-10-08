@@ -1,25 +1,18 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
+package com.huawei.it.euler.controller.request;
 
-package com.huawei.it.euler.model.vo;
-
-import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.huawei.it.euler.model.vo.ComputingPlatformVo;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-/**
- * SoftwareVo
- *
- * @since 2024/07/01
- */
 @Data
-public class SoftwareVo {
+public class SoftwareModifyRequest {
 
     @NotNull(message = "认证id不能为空")
     private Integer id;
@@ -38,23 +31,4 @@ public class SoftwareVo {
 
     @NotNull(message = "算力平台不能为空")
     private List<@Valid ComputingPlatformVo> hashratePlatformList;
-
-    @JsonIgnore
-    private String jsonHashRatePlatform;
-
-    @JsonIgnore
-    private String reviewer;
-
-    @JsonIgnore
-    private Integer reviewRole;
-
-    @JsonIgnore
-    private Integer status;
-
-    @JsonIgnore
-    private Date updateTime;
-
-    private Integer testOrgId;
-    @JsonIgnore
-    private String authenticationStatus;
 }

@@ -34,7 +34,7 @@ public interface SoftwareMapper {
      *
      * @param software 软件信息
      */
-    void updateSoftwareById(SoftwareVo software);
+    void updateSoftwareById(Software software);
 
     /**
      * 更新证书信息
