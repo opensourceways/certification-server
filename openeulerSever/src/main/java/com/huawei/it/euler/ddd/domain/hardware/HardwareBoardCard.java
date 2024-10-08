@@ -1,0 +1,144 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ */
+
+package com.huawei.it.euler.ddd.domain.hardware;
+
+import lombok.Data;
+
+import java.util.Date;
+
+@Data
+public class HardwareBoardCard {
+
+    private Integer id;
+
+    /**
+     * 板卡四元组vendor id
+     */
+    private String vendorId;
+
+    /**
+     * 板卡四元组device id
+     */
+    private String deviceId;
+
+    /**
+     * 板卡四元组sv id
+     */
+    private String svId;
+
+    /**
+     * 板卡四元组ss id
+     */
+    private String ssId;
+
+    /**
+     * CPU架构
+     */
+    private String architecture;
+
+    /**
+     * 操作系统版本
+     */
+    private String os;
+
+    /**
+     * 驱动名称
+     */
+    private String driverName;
+
+    /**
+     * 驱动版本
+     */
+    private String version;
+
+    /**
+     * 驱动大小
+     */
+    private String driverSize;
+
+    /**
+     * 驱动的sha256
+     */
+    private String sha256;
+
+    /**
+     * 驱动下载链接；内核驱动，填写inbox
+     */
+    private String downloadLink;
+
+    /**
+     * 板卡类型
+     */
+    private String type;
+
+    /**
+     * 认证日期
+     */
+    private String date;
+
+    /**
+     * 芯片厂商
+     */
+    private String chipVendor;
+
+    /**
+     * 芯片型号
+     */
+    private String chipModel;
+
+    /**
+     * 板卡型号
+     */
+    private String boardModel;
+
+    /**
+     * 编码
+     */
+    private String item;
+
+    /**
+     * 状态
+     */
+    private String status;
+
+    /**
+     * 申请人uuid
+     */
+    private String userUuid;
+
+    /**
+     * 申请时间
+     */
+    private Date applyTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    public HardwareBoardCard create() {
+        this.setStatus(HardwareStatus.WAIT_APPLY.getStatus());
+        this.setApplyTime(new Date());
+        return this;
+    }
+
+    public HardwareBoardCard apply() {
+        this.setStatus(HardwareStatus.WAIT_APPROVE.getStatus());
+        this.setUpdateTime(new Date());
+        return this;
+    }
+
+    public HardwareBoardCard pass() {
+        this.setStatus(HardwareStatus.PASS.getStatus());
+        this.setUpdateTime(new Date());
+        return this;
+    }
+
+    public HardwareBoardCard reject() {
+        this.setStatus(HardwareStatus.REJECT.getStatus());
+        this.setUpdateTime(new Date());
+        return this;
+    }
+}
