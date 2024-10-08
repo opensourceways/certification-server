@@ -36,10 +36,12 @@ import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
 import com.huawei.it.euler.mapper.*;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.converter.SoftwareQueryRequest2QueryConverter;
+import com.huawei.it.euler.model.converter.SoftwareToVOConverter;
 import com.huawei.it.euler.model.converter.SoftwareVOToDTOConverter;
 import com.huawei.it.euler.model.dto.SoftwareDTO;
 import com.huawei.it.euler.model.entity.*;
 import com.huawei.it.euler.model.enumeration.*;
+import com.huawei.it.euler.model.populater.SoftwareVOPopulater;
 import com.huawei.it.euler.model.query.AttachmentQuery;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.*;
@@ -66,7 +68,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     private static final String FILE_TYPE_TEST_REPORT = "testReport";
 
-    private static final List<String> SORT_COLUMN = new ArrayList<>(Arrays.asList("applicationTime", "certificationTime"));
+    private static final List<String> SORT_COLUMN =
+        new ArrayList<>(Arrays.asList("applicationTime", "certificationTime"));
 
     @Autowired
     private SoftwareMapper softwareMapper;
@@ -118,27 +121,22 @@ public class SoftwareServiceImpl implements SoftwareService {
     @Autowired
     private ExcelUtils excelUtils;
 
+    @Autowired
+    private SoftwareVOPopulater softwareVOPopulater;
+
     @Override
     public Software findById(Integer id, String uuid) {
         Software software = findById(id);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException(ErrorCodes.UNAUTHORIZED.getMessage());
         }
-        String jsonHashRatePlatform = software.getJsonHashRatePlatform();
-        JSONArray jsonArray = JSON.parseArray(jsonHashRatePlatform);
-        List<ComputingPlatformVo> computingPlatformVos = new ArrayList<>();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            ComputingPlatformVo computingPlatformVo = JSON.toJavaObject(jsonObject, ComputingPlatformVo.class);
-            computingPlatformVos.add(computingPlatformVo);
-        }
-        software.setHashratePlatformList(computingPlatformVos);
-        List<String> platformString = computingPlatformVos.stream().map(item -> {
-            String platform = String.join("、", item.getServerTypes());
-            return item.getPlatformName() + "/" + item.getServerProvider() + "/" + platform;
-        }).collect(Collectors.toList());
-        software.setPlatforms(platformString);
+        softwareVOPopulater.populate(SoftwareToVOConverter.INSTANCE.convert(software));
         return software;
+    }
+
+    private List<String> formatPlatforms(List<ComputingPlatformVo> platforms) {
+        return platforms.stream().map(p -> String.format("%s/%s/%s", p.getPlatformName(), p.getServerProvider(),
+            String.join("、", p.getServerTypes()))).collect(Collectors.toList());
     }
 
     @Override
@@ -556,7 +554,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         Software softwareInDb = findById(vo.getSoftwareId());
         if (!Objects.equals(softwareInDb.getStatus(), nodeNumber)) {
-            if (Objects.equals(softwareInDb.getStatus(),getNextNodeNumber(softwareInDb.getCpuVendor(), nodeNumber, false) )) {
+            if (Objects.equals(softwareInDb.getStatus(),
+                getNextNodeNumber(softwareInDb.getCpuVendor(), nodeNumber, false))) {
                 LOGGER.error("当前流程已经撤回:id:{},status:{}", vo.getSoftwareId(), softwareInDb.getStatus());
                 throw new ParamException(ErrorCodes.CANCELLED.getMessage());
             }
@@ -564,7 +563,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         if (!userService.isUserDataScopeByRole(Integer.valueOf(uuid), softwareInDb)) {
-            LOGGER.error("非法的审核人:softwareId:{},uuid:{}",vo.getSoftwareId(), uuid);
+            LOGGER.error("非法的审核人:softwareId:{},uuid:{}", vo.getSoftwareId(), uuid);
             throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
         if (handlerResult.equals(HandlerResultEnum.TRANSFER.getId())) {
@@ -677,8 +676,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         int pageSize = softwareQueryRequest.getPageSize();
         int pageNum = softwareQueryRequest.getPageNum();
         int offset = (softwareQueryRequest.getPageNum() - 1) * softwareQueryRequest.getPageSize();
-        List<SoftwareListVo> reviewSoftwareList =
-            softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
+        List<SoftwareListVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
         Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
         updateSoftwareListStatus(reviewSoftwareList);
         return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
@@ -895,8 +893,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
-        List<SoftwareListVo> reviewSoftwareList =
-                softwareMapper.getExportSoftwareList(softwareQuery);
+        List<SoftwareListVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
         excelUtils.export(softwareDTOList, response);
     }
@@ -1115,19 +1112,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         return filterCriteriaVo;
     }
 
-    public String parseSort(SoftwareQueryRequest softwareQueryRequest){
+    public String parseSort(SoftwareQueryRequest softwareQueryRequest) {
         List<String> sortStr = new ArrayList<>();
         List<String> ascSort = softwareQueryRequest.getAscSort();
-        if (ascSort != null && !ascSort.isEmpty()){
+        if (ascSort != null && !ascSort.isEmpty()) {
             sortStr.addAll(ascSort.stream().filter(SORT_COLUMN::contains)
-                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc")
-                    .toList());
+                .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc").toList());
         }
         List<String> descSort = softwareQueryRequest.getDescSort();
-        if (descSort != null && !descSort.isEmpty()){
+        if (descSort != null && !descSort.isEmpty()) {
             sortStr.addAll(descSort.stream().filter(SORT_COLUMN::contains)
-                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc")
-                    .toList());
+                .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc").toList());
         }
         return String.join(",", sortStr);
     }

@@ -7,10 +7,6 @@ package com.huawei.it.euler.model.vo;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -21,40 +17,38 @@ import lombok.Data;
 @Data
 public class SoftwareVo {
 
-    @NotNull(message = "认证id不能为空")
     private Integer id;
 
-    @NotNull(message = "产品名称不能为空")
     private String productName;
 
-    @NotNull(message = "产品版本不能为空")
     private String productVersion;
 
-    @NotNull(message = "os名称不能为空")
     private String osName;
 
-    @NotNull(message = "os版本不能为空")
     private String osVersion;
 
-    @NotNull(message = "算力平台不能为空")
-    private List<@Valid ComputingPlatformVo> hashratePlatformList;
+    private List<ComputingPlatformVo> hashratePlatformList;
 
-    @JsonIgnore
+    /**
+     * 获取算力平台集合字符串
+     */
+    private String hashratePlatform;
+    /**
+     * 算力平台名称
+     */
+    private String hashratePlatformNameList;
+    private List<String> platforms;
     private String jsonHashRatePlatform;
 
-    @JsonIgnore
     private String reviewer;
 
-    @JsonIgnore
     private Integer reviewRole;
 
-    @JsonIgnore
     private Integer status;
 
-    @JsonIgnore
     private Date updateTime;
 
     private Integer testOrgId;
-    @JsonIgnore
+
     private String authenticationStatus;
 }
