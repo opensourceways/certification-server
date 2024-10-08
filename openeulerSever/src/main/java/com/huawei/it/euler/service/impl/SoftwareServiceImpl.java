@@ -153,7 +153,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     @Transactional
-    public String reviewCertificate(SoftwareVo software, String uuid) {
+    public String reviewCertificate(Software software, String uuid) {
         Software softwareDb = findById(software.getId());
         if (!Objects.equals(softwareDb.getStatus(), NodeEnum.CERTIFICATE_REVIEW.getId())) {
             LOGGER.error("软件状态错误:id:{},status:{}", softwareDb.getId(), softwareDb.getStatus());
