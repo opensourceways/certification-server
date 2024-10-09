@@ -893,7 +893,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
-        List<String> fileKeys = softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
+        List<FileModel> fileKeys = softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
         return fileUtils.streamFiles(fileKeys);
     }
 

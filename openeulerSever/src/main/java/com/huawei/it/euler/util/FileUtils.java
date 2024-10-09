@@ -293,11 +293,11 @@ public class FileUtils {
         download(fileId, response);
     }
 
-    public ResponseEntity<StreamingResponseBody> streamFiles(List<String> fileKeys) {
+    public ResponseEntity<StreamingResponseBody> streamFiles(List<FileModel> fileKeys) {
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
-                for (String fileKey : fileKeys) {
-                    addFileToZip(zipOut, fileKey);
+                for (FileModel file : fileKeys) {
+                    addFileToZip(zipOut, file.getFileId(),file.getFileName());
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Error in zip file streaming", e);
@@ -313,10 +313,10 @@ public class FileUtils {
                 .body(responseBody);
     }
 
-    private void addFileToZip(ZipOutputStream zipOut,  String fileKey) throws IOException {
+    private void addFileToZip(ZipOutputStream zipOut,  String fileKey,String fileName) throws IOException {
         try (InputStream inputStream = s3Utils.downloadFile(fileKey)) {
 
-            ZipEntry zipEntry = new ZipEntry(fileKey);
+            ZipEntry zipEntry = new ZipEntry(fileName);
             zipOut.putNextEntry(zipEntry);
 
             byte[] bytes = new byte[1024];

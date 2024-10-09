@@ -440,8 +440,8 @@
         from innovation_center_t;
     </select>
 
-    <select id="getCertificationIds" resultType="java.lang.String">
-        select fileid
+    <select id="getCertificationIds" resultType="com.huawei.it.euler.model.entity.FileModel">
+        select fileid, filename
         from attachments_t
         where  file_type = 'certificates'
         <if test="softwareIds != null and softwareIds.size() > 0">
