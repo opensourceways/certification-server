@@ -73,17 +73,23 @@ public class SoftwareDTO {
     @ExcelProperty("测试机构")
     private String testOrganization;
 
+    private String testOrgId;
     /**
      * 申请时间
      */
     @ExcelProperty("申请时间")
     private String applicationTime;
 
+    private String applicant;
     /**
      * 申请人姓名
      */
+    @ExcelProperty("申请人姓名")
     private String applicantName;
 
+    private String reviewer;
+
+    private String preReviewer;
     /**
      * 审核人姓名
      */
