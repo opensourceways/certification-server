@@ -39,6 +39,18 @@ public class SoftwareDTO {
     private String productName;
 
     /**
+     * 产品功能介绍
+     */
+    @ExcelProperty("产品功能介绍")
+    private String productFunctionDesc;
+
+    /**
+     * 产品使用场景
+     */
+    @ExcelProperty("产品使用场景")
+    private String usageScenesDesc;
+
+    /**
      * 产品类型
      */
     @ExcelProperty("产品类型")
@@ -106,6 +118,12 @@ public class SoftwareDTO {
      */
     @ExcelProperty("算力平台名称")
     private String hashratePlatformNameList;
+
+    /**
+     * 平台集合
+     */
+    @ExcelProperty("平台集合")
+    private List<String> platforms;
 
     /**
      * 硬件厂商
