@@ -877,6 +877,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
+        softwareVOPopulater.populate(reviewSoftwareList);
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
         excelUtils.export(softwareDTOList, response);
     }
