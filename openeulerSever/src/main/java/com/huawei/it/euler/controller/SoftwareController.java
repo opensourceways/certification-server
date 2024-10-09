@@ -10,10 +10,12 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -486,5 +488,13 @@ public class SoftwareController {
         HttpServletRequest request) throws InputException, IOException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         softwareService.export(softwareQueryRequest, response, uuid);
+    }
+
+    @PostMapping("/software/certifyExport")
+    @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
+    public ResponseEntity<StreamingResponseBody> certifyExport(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
+                                                               HttpServletRequest request) throws InputException, IOException, NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        return softwareService.streamFiles(softwareQueryRequest, uuid);
     }
 }

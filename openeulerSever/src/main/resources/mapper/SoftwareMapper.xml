@@ -438,6 +438,18 @@
         from innovation_center_t;
     </select>
 
+    <select id="getCertificationIds" resultType="java.lang.String">
+        select fileid
+        from attachments_t
+        where  file_type = 'certificates'
+        <if test="softwareIds != null and softwareIds.size() > 0">
+            and attachments_t.software_id in
+            <foreach collection="softwareIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
     <delete id="deleteSoftware">
         update software_t
         set delete_flag = 1

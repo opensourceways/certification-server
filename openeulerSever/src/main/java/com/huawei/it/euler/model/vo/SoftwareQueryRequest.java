@@ -8,12 +8,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.Range;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 /**
@@ -62,15 +59,15 @@ public class SoftwareQueryRequest {
     /**
      * 当前页
      */
-    @NotNull(message = "页码不能为空")
-    @PositiveOrZero(message = "页码错误")
+//    @NotNull(message = "页码不能为空")
+//    @PositiveOrZero(message = "页码错误")
     private Integer pageNum;
 
     /**
      * 每页条数
      */
-    @NotNull(message = "每页展示条数不能为空")
-    @Range(min = 0, max = 100, message = "每页展示条数超出范围")
+//    @NotNull(message = "每页展示条数不能为空")
+//    @Range(min = 0, max = 100, message = "每页展示条数超出范围")
     private Integer pageSize;
 
     /**

@@ -4,29 +4,37 @@
 
 package com.huawei.it.euler.util;
 
-import cn.hutool.core.io.FileTypeUtil;
-import cn.hutool.core.util.HexUtil;
-import com.huawei.it.euler.exception.InputException;
-import com.huawei.it.euler.model.entity.FileModel;
-import com.obs.services.internal.ServiceException;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import com.google.common.collect.Lists;
+import com.huawei.it.euler.exception.InputException;
+import com.huawei.it.euler.model.entity.FileModel;
+import com.obs.services.internal.ServiceException;
+
+import cn.hutool.core.io.FileTypeUtil;
+import cn.hutool.core.util.HexUtil;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * FileUtils
@@ -283,5 +291,41 @@ public class FileUtils {
         response.setDateHeader("Expires", 0);
         response.setContentType("image/jpeg");
         download(fileId, response);
+    }
+
+    public ResponseEntity<StreamingResponseBody> streamFiles(List<String> fileKeys) {
+        StreamingResponseBody responseBody = outputStream -> {
+            try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
+                for (String fileKey : fileKeys) {
+                    addFileToZip(zipOut, fileKey);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Error in zip file streaming", e);
+            }
+        };
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=download.zip");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(responseBody);
+    }
+
+    private void addFileToZip(ZipOutputStream zipOut,  String fileKey) throws IOException {
+        try (InputStream inputStream = s3Utils.downloadFile(fileKey)) {
+
+            ZipEntry zipEntry = new ZipEntry(fileKey);
+            zipOut.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = inputStream.read(bytes)) != -1) {
+                zipOut.write(bytes, 0, length);
+            }
+
+            zipOut.closeEntry();
+        }
     }
 }
