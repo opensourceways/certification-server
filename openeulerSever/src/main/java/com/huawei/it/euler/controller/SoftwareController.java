@@ -15,22 +15,20 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.config.security.LockCacheConfig;
-import com.huawei.it.euler.controller.converter.SoftwareCreateToEntityConverter;
-import com.huawei.it.euler.controller.converter.SoftwareModifyToEntityConverter;
+import com.huawei.it.euler.controller.converter.SoftwareCreateToVOConverter;
+import com.huawei.it.euler.controller.converter.SoftwareModifyToVOConverter;
 import com.huawei.it.euler.controller.request.SoftwareCreateRequest;
 import com.huawei.it.euler.controller.request.SoftwareModifyRequest;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.exception.TestReportExceedMaxAmountException;
-import com.huawei.it.euler.model.converter.SoftwareToDTOConverter;
+import com.huawei.it.euler.model.converter.SoftwareVOToDTOConverter;
 import com.huawei.it.euler.model.dto.SoftwareDTO;
-import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.impl.SoftwareServiceImpl;
@@ -41,14 +39,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * SoftwareController
  *
  * @since 2024/07/05
  */
-@Slf4j
 @RestController
 @Validated
 public class SoftwareController {
@@ -73,8 +69,8 @@ public class SoftwareController {
     public JsonResponse<SoftwareDTO> findById(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        Software software = softwareService.findById(id, uuid);
-        return JsonResponse.success(SoftwareToDTOConverter.INSTANCE.convert(software));
+        SoftwareVo software = softwareService.findById(id, uuid);
+        return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(software));
     }
 
     /**
@@ -91,9 +87,9 @@ public class SoftwareController {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = software.getCompanyCode() + "-" + software.getProductName() + "-" + uuid;
         lockCacheConfig.acquireLock(lockKey);
-        Integer id = softwareService.createSoftware(SoftwareCreateToEntityConverter.INSTANCE.convert(software), uuid);
+        Integer id = softwareService.createSoftware(SoftwareCreateToVOConverter.INSTANCE.convert(software), uuid);
         lockCacheConfig.releaseLock(lockKey);
-        return JsonResponse.success(id.toString());
+        return JsonResponse.success(String.valueOf(id));
     }
 
     /**
@@ -202,7 +198,7 @@ public class SoftwareController {
         String uuid = accountService.getLoginUuid(request);
         String lockKey = String.valueOf(software.getId());
         lockCacheConfig.acquireLock(lockKey);
-        softwareService.reviewCertificate(SoftwareModifyToEntityConverter.INSTANCE.convert(software), uuid);
+        softwareService.reviewCertificate(SoftwareModifyToVOConverter.INSTANCE.convert(software), uuid);
         lockCacheConfig.releaseLock(lockKey);
         return JsonResponse.success();
     }
@@ -280,21 +276,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user')")
-    public JsonResponse<PageResult<SoftwareListVo>>
+    public JsonResponse<PageResult<SoftwareDTO>>
         getSoftwareList(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
             throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareListVo> softwareList = softwareService.getSoftwareList(softwareQueryRequest, uuid);
-        softwareList.getList().forEach(softwareListVo -> {
-            List<ComputingPlatformVo> platformVos =
-                JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
-            softwareListVo.setHashratePlatformList(platformVos);
-            StringBuffer buffer = new StringBuffer();
-            platformVos.stream().map(ComputingPlatformVo::getPlatformName)
-                .forEach(item -> buffer.append(item).append("/"));
-            softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
-        });
-        return JsonResponse.success(softwareList);
+        PageResult<SoftwareVo> softwareList = softwareService.getSoftwareList(softwareQueryRequest, uuid);
+        return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(softwareList));
     }
 
     /**
@@ -306,22 +293,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/reviewSoftwareList")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<PageResult<SoftwareListVo>>
+    public JsonResponse<PageResult<SoftwareDTO>>
         getReviewSoftwareList(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
             throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareListVo> reviewSoftwareList =
-            softwareService.getReviewSoftwareList(softwareQueryRequest, uuid);
-        reviewSoftwareList.getList().forEach(softwareListVo -> {
-            List<ComputingPlatformVo> platformVos =
-                JSONObject.parseArray(softwareListVo.getHashratePlatform()).toJavaList(ComputingPlatformVo.class);
-            softwareListVo.setHashratePlatformList(platformVos);
-            StringBuffer buffer = new StringBuffer();
-            platformVos.stream().map(ComputingPlatformVo::getPlatformName)
-                .forEach(item -> buffer.append(item).append("/"));
-            softwareListVo.setHashratePlatformaNameList(buffer.substring(0, buffer.lastIndexOf("/")));
-        });
-        return JsonResponse.success(reviewSoftwareList);
+        PageResult<SoftwareVo> reviewSoftwareList = softwareService.getReviewSoftwareList(softwareQueryRequest, uuid);
+        return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList));
     }
 
     /**

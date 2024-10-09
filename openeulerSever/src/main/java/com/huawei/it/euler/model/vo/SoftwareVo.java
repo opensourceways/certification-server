@@ -103,10 +103,14 @@ public class SoftwareVo {
     private Integer testOrgId;
 
     /**
-     * 节点状态
+     * 节点状态id
      */
     private Integer status;
 
+    /**
+     * 节点状态
+     */
+    private String statusName;
     /**
      * 更新时间
      */
@@ -118,10 +122,19 @@ public class SoftwareVo {
     private Date applicationTime;
 
     /**
+     * 前审核人Id
+     */
+    private String preReviewer;
+
+    /**
      * 审核人
      */
     private String reviewer;
 
+    /**
+     * 审核人名称
+     */
+    private String reviewerName;
     /**
      * 审核权限
      */
@@ -146,6 +159,11 @@ public class SoftwareVo {
      * 用户uuid
      */
     private String userUuid;
+
+    /**
+     * 用户名称
+     */
+    private String applicantName;
 
     /**
      * 公司编号
