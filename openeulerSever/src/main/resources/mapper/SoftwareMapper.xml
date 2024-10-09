@@ -45,6 +45,8 @@
         <result column="cpu_vendor" property="cpuVendor"/>
         <result column="user_uuid" property="userUuid"/>
         <result column="as_id" property="asId"/>
+        <result column="product_function_desc" property="productFunctionDesc"/>
+        <result column="usage_scenes_desc" property="usageScenesDesc"/>
     </resultMap>
 
     <resultMap id="compatibilityMap" type="com.huawei.it.euler.model.entity.Compatibility">
@@ -313,7 +315,7 @@
     <select id="getExportSoftwareList" resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.reviewer,s.review_role,s.hashrate_platform, s.test_organization,s.test_org_id,
-        s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time, s.user_uuid
+        s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time, s.user_uuid,s.product_function_desc,s.usage_scenes_desc
         from software_t AS s
         <include refid="whereReviewSoftwareList"/>
     </select>
