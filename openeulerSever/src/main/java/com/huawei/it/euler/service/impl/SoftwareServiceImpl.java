@@ -38,6 +38,7 @@ import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.converter.SoftwareQueryRequest2QueryConverter;
 import com.huawei.it.euler.model.converter.SoftwareToVOConverter;
 import com.huawei.it.euler.model.converter.SoftwareVOToDTOConverter;
+import com.huawei.it.euler.model.converter.SoftwareVOToEntityConverter;
 import com.huawei.it.euler.model.dto.SoftwareDTO;
 import com.huawei.it.euler.model.entity.*;
 import com.huawei.it.euler.model.enumeration.*;
@@ -73,9 +74,6 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private SoftwareMapper softwareMapper;
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired
     private CompanyMapper companyMapper;
@@ -125,18 +123,12 @@ public class SoftwareServiceImpl implements SoftwareService {
     private SoftwareVOPopulater softwareVOPopulater;
 
     @Override
-    public Software findById(Integer id, String uuid) {
+    public SoftwareVo findById(Integer id, String uuid) {
         Software software = findById(id);
         if (!userService.isUserPermission(Integer.valueOf(uuid), software)) {
             throw new ParamException(ErrorCodes.UNAUTHORIZED.getMessage());
         }
-        softwareVOPopulater.populate(SoftwareToVOConverter.INSTANCE.convert(software));
-        return software;
-    }
-
-    private List<String> formatPlatforms(List<ComputingPlatformVo> platforms) {
-        return platforms.stream().map(p -> String.format("%s/%s/%s", p.getPlatformName(), p.getServerProvider(),
-            String.join("、", p.getServerTypes()))).collect(Collectors.toList());
+        return softwareVOPopulater.populate(SoftwareToVOConverter.INSTANCE.convert(software));
     }
 
     @Override
@@ -151,7 +143,7 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Override
     @Transactional
-    public String reviewCertificate(Software software, String uuid) {
+    public String reviewCertificate(SoftwareVo software, String uuid) {
         Software softwareDb = findById(software.getId());
         if (!Objects.equals(softwareDb.getStatus(), NodeEnum.CERTIFICATE_REVIEW.getId())) {
             LOGGER.error("软件状态错误:id:{},status:{}", softwareDb.getId(), softwareDb.getStatus());
@@ -173,7 +165,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         processVo.setHandlerResult(1);
         processVo.setTransferredComments("通过");
         commonProcess(processVo, uuid, NodeEnum.CERTIFICATE_REVIEW.getId());
-        softwareMapper.updateSoftwareById(software);
+        softwareMapper.updateSoftwareById(SoftwareVOToEntityConverter.INSTANCE.convert(software));
         // 证书信息修改
         CertificateInfoVo certificateInfoVo = new CertificateInfoVo();
         certificateInfoVo.setSoftwareId(software.getId());
@@ -230,17 +222,20 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public Integer createSoftware(Software software, String uuid) throws InputException {
+    public Integer createSoftware(SoftwareVo software, String uuid) {
         CompanyVo companyVo = companyService.findCompanyByUserUuid(uuid);
-        if (companyVo == null || !Objects.equals(companyVo.getStatus(), CompanyStatusConstant.COMPANY_PASSED)) {
-            throw new InputException(ErrorCodes.COMPANY_NOT_APPROVED.getMessage());
+        if (ObjectUtils.isEmpty(companyVo)
+            || !Objects.equals(companyVo.getStatus(), CompanyStatusConstant.COMPANY_PASSED)) {
+            throw new ParamException(ErrorCodes.COMPANY_NOT_APPROVED.getMessage());
         }
+
         // 校验是否签署协议
         Protocol protocol =
             protocolMapper.selectProtocolDesc(ProtocolEnum.TECHNICAL_EVALUATION_AGREEMENT.getProtocolType(), uuid);
-        if (protocol == null || Objects.equals(protocol.getStatus(), 0)) {
-            throw new InputException(ErrorCodes.PROTOCOL_NOT_SIGNED.getMessage());
+        if (ObjectUtils.isEmpty(protocol) || Objects.equals(protocol.getStatus(), 0)) {
+            throw new ParamException(ErrorCodes.PROTOCOL_NOT_SIGNED.getMessage());
         }
+
         initSoftware(software, uuid, companyVo);
         // 获取测评流程
         List<ApprovalPathNode> approvalPath =
@@ -249,10 +244,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         Integer softwareId = software.getId();
         // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
         if (softwareId == null || softwareId == 0) {
-            softwareMapper.insertSoftware(software);
+            softwareMapper.insertSoftware(SoftwareVOToEntityConverter.INSTANCE.convert(software));
             softwareId = software.getId();
         } else {
-            softwareMapper.recommit(software);
+            softwareMapper.recommit(SoftwareVOToEntityConverter.INSTANCE.convert(software));
             // 调用审核接口
             ProcessVo processVo = new ProcessVo();
             processVo.setSoftwareId(software.getId());
@@ -270,7 +265,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewer(nextNode.getHandler());
         software.setReviewRole(approvalPath.get(0).getRoleId());
         // 更新软件信息表
-        softwareMapper.updateSoftware(software);
+        softwareMapper.updateSoftware(SoftwareVOToEntityConverter.INSTANCE.convert(software));
         // 发送邮件通知
         sendEmail(software, uuid);
         return softwareId;
@@ -284,7 +279,7 @@ public class SoftwareServiceImpl implements SoftwareService {
      * @param companyVo 用户对应的公司信息
      * @return 测评流程
      */
-    private Software initSoftware(Software software, String uuid, CompanyVo companyVo) {
+    private SoftwareVo initSoftware(SoftwareVo software, String uuid, CompanyVo companyVo) {
         software.setCompanyName(companyVo.getCompanyName());
         software.setCompanyId(companyVo.getId());
         software.setCompanyCode(companyVo.getCompanyCode());
@@ -304,6 +299,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
         checkParam(software);
+        // 获取测评流程
+        List<ApprovalPathNode> approvalPath =
+                approvalScenarioService.findApprovalPath(software.getTestOrganization(), software.getCpuVendor());
+        software.setAsId(approvalPath.get(0).getAsId());
         return software;
     }
 
@@ -322,7 +321,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         nodeMapper.insertNode(curNode);
     }
 
-    private void setNextNode(Software software, Node nextNode, List<ApprovalPathNode> approvalPath) {
+    private void setNextNode(SoftwareVo software, Node nextNode, List<ApprovalPathNode> approvalPath) {
         nextNode.setNodeName(NodeEnum.PROGRAM_REVIEW.getName());
         nextNode.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
         nextNode.setHandlerResult(HandlerResultEnum.PENDING.getId());
@@ -334,7 +333,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         nodeMapper.insertNode(nextNode);
     }
 
-    private void checkParam(Software software) {
+    private void checkParam(SoftwareVo software) {
         checkCertificateInfo(software.getOsName(), software.getOsVersion(), software.getJsonHashRatePlatform());
         checkIntelParam(software.getCpuVendor(), software.getTestOrganization(), software.getJsonHashRatePlatform());
         String productTypeStr = software.getProductType();
@@ -634,7 +633,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public PageResult<SoftwareListVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
+    public PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
         SoftwareQuery softwareQuery = new SoftwareQuery();
         BeanUtils.copyProperties(softwareQueryRequest, softwareQuery);
         int pageSize = softwareQueryRequest.getPageSize();
@@ -648,26 +647,14 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 通过uuid直接查询该用户下所有认证列表
         softwareQuery.setApplicant(uuid);
         softwareQuery.setSort(parseSort(softwareQueryRequest));
-        List<SoftwareListVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
+        List<SoftwareVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
         Long total = softwareMapper.countSoftwareList(softwareQuery);
-        processFields(currentSoftwareList, uuid);
+        softwareVOPopulater.populate(currentSoftwareList);
         return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
     }
 
-    private void processFields(List<SoftwareListVo> currentSoftwareList, String userUuid) {
-        currentSoftwareList.forEach(item -> {
-            if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
-                item.setStatus(item.getAuthenticationStatus());
-            } else {
-                item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
-            }
-            item.setReviewerName(accountService.getUserName(item.getReviewer()));
-            item.setApplicantName(accountService.getUserName(item.getApplicant()));
-        });
-    }
-
     @Override
-    public PageResult<SoftwareListVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
+    public PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
         SoftwareQuery softwareQuery = new SoftwareQuery();
         BeanUtils.copyProperties(softwareQueryRequest, softwareQuery);
         softwareQuery.setUuid(uuid);
@@ -676,26 +663,20 @@ public class SoftwareServiceImpl implements SoftwareService {
         int pageSize = softwareQueryRequest.getPageSize();
         int pageNum = softwareQueryRequest.getPageNum();
         int offset = (softwareQueryRequest.getPageNum() - 1) * softwareQueryRequest.getPageSize();
-        List<SoftwareListVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
+        List<SoftwareVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
         Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
+        softwareVOPopulater.populate(reviewSoftwareList);
         updateSoftwareListStatus(reviewSoftwareList);
         return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
     }
 
-    private void updateSoftwareListStatus(List<SoftwareListVo> softwareList) {
+    private void updateSoftwareListStatus(List<SoftwareVo> softwareList) {
         softwareList.forEach(item -> {
-            if (StringUtils.isNotEmpty(item.getAuthenticationStatus())) {
-                item.setStatus(item.getAuthenticationStatus());
-            } else {
-                item.setStatus(NodeEnum.findById(Integer.parseInt(item.getStatus())));
-            }
-            item.setReviewerName(accountService.getUserName(item.getReviewer()));
-            item.setApplicantName(accountService.getUserName(item.getApplicant()));
-            if (Objects.equals(item.getStatusId(), NodeEnum.FINISHED.getId())
-                || Objects.equals(item.getStatusId(), NodeEnum.APPLY.getId())) {
+            if (Objects.equals(item.getStatus(), NodeEnum.FINISHED.getId())
+                || Objects.equals(item.getStatus(), NodeEnum.APPLY.getId())) {
                 return;
             }
-            Integer status = getNextNodeNumber(item.getCpuVendor(), item.getStatusId(), false);
+            Integer status = getNextNodeNumber(item.getCpuVendor(), item.getStatus(), false);
             Node node = nodeMapper.findLatestFinishedNode(item.getId(), status);
             if (node != null) {
                 item.setPreReviewer(node.getHandler());
@@ -893,7 +874,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
-        List<SoftwareListVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
+        List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
         excelUtils.export(softwareDTOList, response);
     }
@@ -962,7 +943,7 @@ public class SoftwareServiceImpl implements SoftwareService {
      *
      * @param software test info
      */
-    private void sendEmail(Software software, String uuid) {
+    private void sendEmail(SoftwareVo software, String uuid) {
         ApprovalScenario approvalScenario = approvalScenarioService.findById(software.getAsId());
         if (approvalScenario == null) {
             return;
