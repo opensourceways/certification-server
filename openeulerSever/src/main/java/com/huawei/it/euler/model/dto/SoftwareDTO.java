@@ -105,12 +105,7 @@ public class SoftwareDTO {
      * 算力平台名称
      */
     @ExcelProperty("算力平台名称")
-    private String hashratePlatformaNameList;
-
-    /**
-     * 获取算力平台集合字符串
-     */
-    private String hashratePlatform;
+    private String hashratePlatformNameList;
 
     /**
      * 硬件厂商
