@@ -888,12 +888,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (ObjectUtils.isNotEmpty(statusList) && !statusList.contains(String.valueOf(NodeEnum.FINISHED.getId()))) {
             throw new ParamException("无权限获取该测评申请文件");
         }else {
-            softwareQuery.setStatus(List.of(String.valueOf(NodeEnum.FINISHED.getId())));
+            softwareQuery.setStatusId(List.of(NodeEnum.FINISHED.getId()));
         }
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
-        List<String> fileKeys = softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
+        List<FileModel> fileKeys = softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
         return fileUtils.streamFiles(fileKeys);
     }
 
