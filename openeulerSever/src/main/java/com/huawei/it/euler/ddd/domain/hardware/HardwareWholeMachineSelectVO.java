@@ -6,7 +6,6 @@ package com.huawei.it.euler.ddd.domain.hardware;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +16,7 @@ import java.util.List;
  * @since 2024-09-30
  */
 @Data
-public class HardwareBoardCardSelectVO implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class HardwareWholeMachineSelectVO {
 
     /**
      * id
@@ -32,49 +29,34 @@ public class HardwareBoardCardSelectVO implements Serializable {
     private List<String> idList;
 
     /**
+     * 硬件厂商
+     */
+    private String hardwareFactory;
+
+    /**
+     * 硬件型号
+     */
+    private String hardwareModel;
+
+    /**
+     * 操作系统版本
+     */
+    private String osVersion;
+
+    /**
      * CPU架构
      */
     private String architecture;
 
     /**
-     * 操作系统版本
+     * CPU型号
      */
-    private String os;
-
-    /**
-     * 驱动名称
-     */
-    private String driverName;
-
-    /**
-     * 板卡类型
-     */
-    private String type;
+    private String cpu;
 
     /**
      * 认证日期
      */
     private String date;
-
-    /**
-     * 芯片厂商
-     */
-    private String chipVendor;
-
-    /**
-     * 芯片型号
-     */
-    private String chipModel;
-
-    /**
-     * 板卡型号
-     */
-    private String boardModel;
-
-    /**
-     * 申请人uuid
-     */
-    private String userUuid;
 
     /**
      * 状态
@@ -85,6 +67,11 @@ public class HardwareBoardCardSelectVO implements Serializable {
      * 状态集合
      */
     private List<String> statusList;
+
+    /**
+     * 申请人uuid
+     */
+    private String userUuid;
 
     /**
      * 申请时间

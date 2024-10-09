@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
 import java.util.Date;
@@ -119,26 +120,35 @@ public class HardwareBoardCard {
     private Date updateTime;
 
     public HardwareBoardCard create() {
-        this.setStatus(HardwareStatus.WAIT_APPLY.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         this.setApplyTime(new Date());
         return this;
     }
 
     public HardwareBoardCard apply() {
-        this.setStatus(HardwareStatus.WAIT_APPROVE.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareBoardCard pass() {
-        this.setStatus(HardwareStatus.PASS.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_PASS.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareBoardCard reject() {
-        this.setStatus(HardwareStatus.REJECT.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_REJECT.getValue());
         this.setUpdateTime(new Date());
         return this;
+    }
+
+    public String toSimpleJsonString(){
+        JSONObject simple = new JSONObject();
+        simple.put("os", this.getOs());
+        simple.put("architecture", this.getArchitecture());
+        simple.put("boardModel", this.getBoardModel());
+        simple.put("chipModel", this.getChipModel());
+        return simple.toJSONString();
     }
 }

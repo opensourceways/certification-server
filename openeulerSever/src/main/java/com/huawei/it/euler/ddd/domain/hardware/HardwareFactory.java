@@ -19,6 +19,19 @@ import java.util.List;
  */
 @Component
 public class HardwareFactory {
+
+    public HardwareApprovalNode createApprovalNode(HardwareApprovalNodePO approvalNodePO) {
+        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
+        BeanUtils.copyProperties(approvalNodePO, approvalNode);
+        return approvalNode;
+    }
+
+    public HardwareApprovalNodePO createApprovalNodePO(HardwareApprovalNode approvalNode) {
+        HardwareApprovalNodePO approvalNodePO = new HardwareApprovalNodePO();
+        BeanUtils.copyProperties(approvalNode, approvalNodePO);
+        return approvalNodePO;
+    }
+
     public HardwareBoardCard createBoardCard(HardwareBoardCardPO boardCardPO) {
         HardwareBoardCard boardCard = new HardwareBoardCard();
         BeanUtils.copyProperties(boardCardPO, boardCard);
@@ -39,6 +52,12 @@ public class HardwareFactory {
         return boardCardList.stream().map(this::createBoardCardPO).toList();
     }
 
+    public HardwareBoardCardSelectVO createBoardCardSelectVO(HardwareBoardCard boardCard) {
+        HardwareBoardCardSelectVO boardCardSelectVO = new HardwareBoardCardSelectVO();
+        BeanUtils.copyProperties(boardCard, boardCardSelectVO);
+        return boardCardSelectVO;
+    }
+
     public HardwareWholeMachine createWholeMachine(HardwareWholeMachinePO wholeMachinePO) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
@@ -48,7 +67,7 @@ public class HardwareFactory {
         return wholeMachine;
     }
 
-    public List<HardwareWholeMachine> createWholeMachineList(List<HardwareWholeMachinePO> wholeMachinePOList){
+    public List<HardwareWholeMachine> createWholeMachineList(List<HardwareWholeMachinePO> wholeMachinePOList) {
         List<HardwareWholeMachine> wholeMachineList = new ArrayList<>();
         for (HardwareWholeMachinePO wholeMachinePO : wholeMachinePOList) {
             HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
@@ -60,7 +79,7 @@ public class HardwareFactory {
 
     public HardwareWholeMachinePO createWholeMachinePO(HardwareWholeMachine wholeMachine) {
         HardwareWholeMachinePO wholeMachinePO = new HardwareWholeMachinePO();
-        BeanUtils.copyProperties(wholeMachine,wholeMachinePO);
+        BeanUtils.copyProperties(wholeMachine, wholeMachinePO);
         BeanUtils.copyProperties(wholeMachine.getCompatibilityConfiguration(), wholeMachinePO);
         List<Integer> boardCardIdList = wholeMachine.getBoardCardList().stream().map(HardwareBoardCard::getId).toList();
         wholeMachinePO.setBoardCards(StringUtils.join(boardCardIdList, ","));
@@ -71,4 +90,9 @@ public class HardwareFactory {
         return wholeMachineList.stream().map(this::createWholeMachinePO).toList();
     }
 
+    public HardwareWholeMachineSelectVO createWholeMachineSelectVO(HardwareWholeMachine wholeMachine) {
+        HardwareWholeMachineSelectVO wholeMachineSelectVO = new HardwareWholeMachineSelectVO();
+        BeanUtils.copyProperties(wholeMachine, wholeMachineSelectVO);
+        return wholeMachineSelectVO;
+    }
 }
