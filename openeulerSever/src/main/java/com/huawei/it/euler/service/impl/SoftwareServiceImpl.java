@@ -17,9 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -301,7 +303,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         checkParam(software);
         // 获取测评流程
         List<ApprovalPathNode> approvalPath =
-                approvalScenarioService.findApprovalPath(software.getTestOrganization(), software.getCpuVendor());
+            approvalScenarioService.findApprovalPath(software.getTestOrganization(), software.getCpuVendor());
         software.setAsId(approvalPath.get(0).getAsId());
         return software;
     }
@@ -877,6 +879,21 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
         excelUtils.export(softwareDTOList, response);
+    }
+
+    public ResponseEntity<StreamingResponseBody> streamFiles(SoftwareQueryRequest softwareVo, String uuid) {
+        SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
+        List<String> statusList = softwareQuery.getStatus();
+        if (ObjectUtils.isNotEmpty(statusList) && !statusList.contains(String.valueOf(NodeEnum.FINISHED.getId()))) {
+            throw new ParamException("无权限获取该测评申请文件");
+        }else {
+            softwareQuery.setStatus(List.of(String.valueOf(NodeEnum.FINISHED.getId())));
+        }
+        softwareQuery.setUuid(uuid);
+        softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
+        List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
+        List<String> fileKeys = softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
+        return fileUtils.streamFiles(fileKeys);
     }
 
     @Override
