@@ -4,6 +4,20 @@
 
 package com.huawei.it.euler.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.google.common.collect.Maps;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
@@ -15,29 +29,22 @@ import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
 import com.huawei.it.euler.model.constant.CompatibleOperationConstant;
 import com.huawei.it.euler.model.constant.CompatibleStatusConstant;
-import com.huawei.it.euler.model.entity.*;
+import com.huawei.it.euler.model.entity.CompatibleDataApproval;
+import com.huawei.it.euler.model.entity.CompatibleDataInfo;
+import com.huawei.it.euler.model.entity.FileModel;
+import com.huawei.it.euler.model.entity.Protocol;
 import com.huawei.it.euler.model.enumeration.ProtocolEnum;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.CompanyService;
 import com.huawei.it.euler.service.CompatibleDataService;
-import com.huawei.it.euler.util.*;
+import com.huawei.it.euler.util.ExcelUtils;
+import com.huawei.it.euler.util.FileUtils;
+import com.huawei.it.euler.util.ListPageUtils;
+import com.huawei.it.euler.util.MyObjectUtils;
+
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * CompatibleDataServiceImpl
@@ -222,7 +229,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
             String companyName = dataInfo.getCompanyName();
             CompatibleSimilarVo vo = new CompatibleSimilarVo();
             BeanUtils.copyProperties(dataInfo, vo);
-            if (!ObjectUtils.checkFieldAllNull(dataInfo) && !DEFAULT_COMPANY_NAME.equals(companyName)) {
+            if (!MyObjectUtils.checkFieldAllNull(dataInfo) && !DEFAULT_COMPANY_NAME.equals(companyName)) {
                 if (!checkDataInfo(dataInfo)) {
                     failedRows++; // 失败的为必填项为null，内容与下拉选择不符，字符过长
                     failedData.add(row);
