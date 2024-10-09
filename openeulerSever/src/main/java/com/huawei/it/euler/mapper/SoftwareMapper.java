@@ -64,7 +64,7 @@ public interface SoftwareMapper {
      * @param softwareQuery 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+    List<SoftwareVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
                                          @Param("software") SoftwareQuery softwareQuery);
 
     Long countSoftwareList(@Param("software") SoftwareQuery softwareQuery);
@@ -74,12 +74,12 @@ public interface SoftwareMapper {
      * @param softwareQuery 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+    List<SoftwareVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
         @Param("software") SoftwareQuery softwareQuery);
 
     Long countReviewSoftwareList(@Param("software") SoftwareQuery softwareQuery);
 
-    List<SoftwareListVo> getExportSoftwareList(@Param("software") SoftwareQuery softwareQuery);
+    List<SoftwareVo> getExportSoftwareList(@Param("software") SoftwareQuery softwareQuery);
 
     /**
      * 审核节点记录

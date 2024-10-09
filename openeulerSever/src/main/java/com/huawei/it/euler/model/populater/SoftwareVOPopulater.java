@@ -7,15 +7,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.huawei.it.euler.ddd.service.AccountService;
+import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
 import com.huawei.it.euler.model.vo.SoftwareVo;
 
 @Component
 public class SoftwareVOPopulater implements Populater<SoftwareVo> {
+
+    @Autowired
+    private AccountService accountService;
 
     @Override
     public SoftwareVo populate(SoftwareVo source) {
@@ -23,6 +30,13 @@ public class SoftwareVOPopulater implements Populater<SoftwareVo> {
         source.setHashratePlatformList(platforms);
         source.setHashratePlatformNameList(joinPlatformNames(platforms));
         source.setPlatforms(formatPlatforms(platforms));
+        if (StringUtils.isNotEmpty(source.getAuthenticationStatus())) {
+            source.setStatusName(source.getAuthenticationStatus());
+        } else {
+            source.setStatusName(NodeEnum.findById(source.getStatus()));
+        }
+        source.setReviewerName(accountService.getUserName(source.getReviewer()));
+        source.setApplicantName(accountService.getUserName(source.getUserUuid()));
         return source;
     }
 

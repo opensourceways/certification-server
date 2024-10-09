@@ -7,11 +7,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 import com.huawei.it.euler.controller.request.SoftwareModifyRequest;
-import com.huawei.it.euler.model.entity.Software;
+import com.huawei.it.euler.model.vo.SoftwareVo;
 import com.huawei.it.euler.util.Converter;
 
 @Mapper
-public abstract class SoftwareModifyToEntityConverter implements Converter<SoftwareModifyRequest, Software> {
-    public static final SoftwareModifyToEntityConverter INSTANCE =
-        Mappers.getMapper(SoftwareModifyToEntityConverter.class);
+public abstract class SoftwareModifyToVOConverter implements Converter<SoftwareModifyRequest, SoftwareVo> {
+    public static final SoftwareModifyToVOConverter INSTANCE =
+        Mappers.getMapper(SoftwareModifyToVOConverter.class);
 }

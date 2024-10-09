@@ -28,11 +28,11 @@ public interface SoftwareService {
     /**
      * 根据id查询软件认证信息
      *
-     * @param id 软件id
+     * @param id   软件id
      * @param uuid uuid
      * @return 软件信息
      */
-    Software findById(Integer id, String uuid);
+    SoftwareVo findById(Integer id, String uuid);
 
     /**
      * 根据id查询软件认证信息
@@ -48,7 +48,7 @@ public interface SoftwareService {
      * @param uuid uuid
      * @return 流程id
      */
-    String reviewCertificate(Software software, String uuid) throws IOException;
+    String reviewCertificate(SoftwareVo software, String uuid) throws IOException;
 
     /**
      * 新增软件信息
@@ -56,7 +56,7 @@ public interface SoftwareService {
      * @param software 软件信息
      * @param uuid uuid
      */
-    Integer createSoftware(Software software, String uuid) throws InputException, IOException;
+    Integer createSoftware(SoftwareVo software, String uuid) throws InputException, IOException;
 
     /**
      * 通用的审批流程
@@ -90,19 +90,19 @@ public interface SoftwareService {
      * 查询兼容性认证申请列表
      *
      * @param softwareQueryRequest 筛选条件
-     * @param uuid uuid
+     * @param uuid                 uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
+    PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
 
     /**
      * 华为侧查询兼容性认证申请列表
      *
      * @param softwareQueryRequest 筛选条件
-     * @param uuid uuid
+     * @param uuid                 uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
+    PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
 
     /**
      * 认证审核记录
