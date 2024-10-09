@@ -884,8 +884,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     public ResponseEntity<StreamingResponseBody> streamFiles(SoftwareQueryRequest softwareVo, String uuid) {
         SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
-        List<String> statusList = softwareQuery.getStatus();
-        if (ObjectUtils.isNotEmpty(statusList) && !statusList.contains(String.valueOf(NodeEnum.FINISHED.getId()))) {
+        List<Integer> statusList = softwareQuery.getStatusId();
+        if (ObjectUtils.isNotEmpty(statusList) && !statusList.contains(NodeEnum.FINISHED.getId())) {
             throw new ParamException("无权限获取该测评申请文件");
         }else {
             softwareQuery.setStatusId(List.of(NodeEnum.FINISHED.getId()));
