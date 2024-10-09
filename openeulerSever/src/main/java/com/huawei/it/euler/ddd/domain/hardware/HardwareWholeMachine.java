@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -26,12 +27,12 @@ public class HardwareWholeMachine implements Serializable {
     /**
      * 硬件厂商
      */
-    private String HardwareFactory;
+    private String hardwareFactory;
 
     /**
      * 硬件型号
      */
-    private String HardwareModel;
+    private String hardwareModel;
 
     /**
      * 操作系统版本
@@ -84,26 +85,37 @@ public class HardwareWholeMachine implements Serializable {
     private Date updateTime;
 
     public HardwareWholeMachine create(){
-        this.setStatus(HardwareStatus.WAIT_APPLY.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         this.setApplyTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine apply() {
-        this.setStatus(HardwareStatus.WAIT_APPROVE.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine pass() {
-        this.setStatus(HardwareStatus.PASS.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_PASS.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine reject() {
-        this.setStatus(HardwareStatus.REJECT.getStatus());
+        this.setStatus(HardwareValueEnum.NODE_REJECT.getValue());
         this.setUpdateTime(new Date());
         return this;
+    }
+
+    public String toSimpleJsonString() {
+        JSONObject simple = new JSONObject();
+        simple.put("hardwareFactory", this.getHardwareFactory());
+        simple.put("hardwareModel", this.getHardwareModel());
+        simple.put("osVersion", this.getOsVersion());
+        simple.put("architecture", this.getArchitecture());
+        simple.put("date", this.getDate());
+        simple.put("status", this.getStatus());
+        return simple.toJSONString();
     }
 }

@@ -5,14 +5,14 @@
 package com.huawei.it.euler.exception;
 
 /**
- * 未登录异常
+ * 业务异常
  */
-public class NoLoginException extends Exception{
+public class BusinessException extends RuntimeException{
 
-    public NoLoginException() {
+    public BusinessException() {
     }
 
-    public NoLoginException(String message) {
+    public BusinessException(String message) {
         super(message);
     }
 }
