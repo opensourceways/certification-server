@@ -122,13 +122,16 @@ public class SoftwareDTO {
     /**
      * 平台集合
      */
-    @ExcelProperty("平台集合")
     private List<String> platforms;
 
     /**
+     * 平台集合字符串
+     */
+    @ExcelProperty("算力平台详情")
+    private String platformsList;
+    /**
      * 硬件厂商
      */
-    @ExcelProperty("硬件厂商")
     private String cpuVendor;
 
     /**

@@ -30,6 +30,7 @@ public class SoftwareVOPopulater implements Populater<SoftwareVo> {
         source.setHashratePlatformList(platforms);
         source.setHashratePlatformNameList(joinPlatformNames(platforms));
         source.setPlatforms(formatPlatforms(platforms));
+        source.setPlatformsList(StringUtils.join(source.getPlatforms(), "\n"));
         if (StringUtils.isNotEmpty(source.getAuthenticationStatus())) {
             source.setStatusName(source.getAuthenticationStatus());
         } else {
