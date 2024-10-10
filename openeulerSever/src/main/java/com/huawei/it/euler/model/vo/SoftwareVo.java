@@ -82,6 +82,7 @@ public class SoftwareVo {
      */
     private List<String> platforms;
 
+    private String platformsList;
     /**
      * 服务器型号
      */
