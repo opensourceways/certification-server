@@ -33,7 +33,8 @@ public enum HardwareValueEnum {
     NODE_WAIT_APPLY("1", "数据提交"),
     NODE_WAIT_APPROVE("2", "数据审核"),
     NODE_PASS("3", "已通过"),
-    NODE_REJECT("-1", "已驳回");
+    NODE_REJECT("-1", "已驳回"),
+    NODE_DELETE("-2", "已删除");
     private final String value;
 
     private final String text;

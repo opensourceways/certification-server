@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class HardwareWholeMachineApplicationService {
         List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCardList();
         for (HardwareBoardCard hardwareBoardCard : boardCardList) {
             boolean cardExist = boardCardService.exist(hardwareBoardCard);
-            if (cardExist){
+            if (cardExist) {
                 List<HardwareBoardCard> cardList = boardCardService.getList(hardwareBoardCard);
                 saveBoardCardList.add(cardList.get(0));
             } else {
@@ -60,7 +61,7 @@ public class HardwareWholeMachineApplicationService {
         wholeMachine.setApplyTime(new Date());
 
         boolean insert = wholeMachineService.insert(wholeMachine);
-        if (!insert){
+        if (!insert) {
             String errMsg = String.format("当前整机[%s]申请失败！", wholeMachine.toSimpleJsonString());
             throw new BusinessException(errMsg);
         }
@@ -141,11 +142,60 @@ public class HardwareWholeMachineApplicationService {
     }
 
     public void edit(HardwareWholeMachine wholeMachine) {
+        HardwareWholeMachine byId = wholeMachineService.getById(wholeMachine.getId());
+        if (byId == null) {
+            throw new ParamException("当前整机数据不存在！");
+        }
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行编辑操作！");
+        }
+        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCardList();
+        for (HardwareBoardCard hardwareBoardCard : boardCardList) {
+            try {
+                if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(hardwareBoardCard.getStatus())) {
+                    throw new BusinessException("当前板卡数据状态无法进行编辑操作！");
+                }
+                boardCardService.updateById(hardwareBoardCard);
+            } catch (Exception e) {
+                log.error("板卡更新失败,id:" + byId.getId() + ">>>>" + e.getMessage());
+            }
+        }
         wholeMachineService.updateById(wholeMachine);
+    }
+
+    public void delete(HardwareApprovalNode approvalNode) {
+        HardwareWholeMachine byId = wholeMachineService.getById(approvalNode.getHardwareId());
+        if (byId == null) {
+            throw new ParamException("当前整机数据不存在！");
+        }
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(byId.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行删除操作！");
+        }
+        HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
+        selectVO.setIdList(Arrays.stream(byId.getBoardCards().split(",")).toList());
+        List<HardwareBoardCard> boardCardList = boardCardService.getList(selectVO);
+        for (HardwareBoardCard boardCard : boardCardList) {
+            int refCount = boardCard.getRefCount();
+            if (refCount == 1) {
+                boardCard.setRefCount(0);
+                boardCardService.delete(boardCard);
+            } else if (refCount > 1) {
+                boardCard.setRefCount(refCount - 1);
+                boardCardService.updateById(boardCard);
+            }
+        }
+        wholeMachineService.updateById(byId.delete());
     }
 
     public void apply(HardwareApprovalNode approvalNode) {
         HardwareWholeMachine wholeMachine = wholeMachineService.getById(approvalNode.getHardwareId());
+        if (wholeMachine == null){
+            throw new ParamException("当前整机数据不存在！");
+        }
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(wholeMachine.getStatus())){
+            throw new BusinessException("当前整机数据状态无法进行申请操作！");
+        }
         wholeMachineService.apply(wholeMachine);
         approvalNode.apply(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue());
         approvalNodeService.insert(approvalNode);
@@ -153,7 +203,13 @@ public class HardwareWholeMachineApplicationService {
 
     public void approval(HardwareApprovalNode approvalNode) {
         HardwareWholeMachine wholeMachine = wholeMachineService.getById(approvalNode.getHardwareId());
-        if (HardwareValueEnum.RESULT_PASS.getValue().equals(approvalNode.getHandlerResult())){
+        if (wholeMachine == null){
+            throw new ParamException("当前整机数据不存在！");
+        }
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(wholeMachine.getStatus())){
+            throw new BusinessException("当前整机数据状态无法进行审批操作！");
+        }
+        if (HardwareValueEnum.RESULT_PASS.getValue().equals(approvalNode.getHandlerResult())) {
             wholeMachineService.pass(wholeMachine);
         } else if (HardwareValueEnum.RESULT_REJECT.getValue().equals(approvalNode.getHandlerResult())) {
             wholeMachineService.reject(wholeMachine);

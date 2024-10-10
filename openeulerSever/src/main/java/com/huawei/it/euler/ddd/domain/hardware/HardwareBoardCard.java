@@ -100,6 +100,11 @@ public class HardwareBoardCard {
     private String item;
 
     /**
+     * 关联整机数量
+     */
+    private int refCount;
+
+    /**
      * 状态
      */
     private String status;
@@ -122,6 +127,12 @@ public class HardwareBoardCard {
     public HardwareBoardCard create() {
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         this.setApplyTime(new Date());
+        return this;
+    }
+
+    public HardwareBoardCard delete(){
+        this.setStatus(HardwareValueEnum.NODE_DELETE.getValue());
+        this.setUpdateTime(new Date());
         return this;
     }
 

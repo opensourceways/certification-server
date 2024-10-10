@@ -132,6 +132,12 @@ public class HardwareBoardCardPO implements Serializable {
     private String item;
 
     /**
+     * 关联整机数量
+     */
+    @TableField("ref_count")
+    private int refCount;
+
+    /**
      * 申请人uuid
      */
     @TableField("user_uuid")
