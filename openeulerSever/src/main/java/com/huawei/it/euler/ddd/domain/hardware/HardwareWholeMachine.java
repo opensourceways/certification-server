@@ -55,6 +55,11 @@ public class HardwareWholeMachine implements Serializable {
     private String friendlyLink;
 
     /**
+     * 板卡信息id集合:1,2,3
+     */
+    private String boardCards;
+
+    /**
      * 板卡信息集合
      */
     private List<HardwareBoardCard> boardCardList;
@@ -84,9 +89,15 @@ public class HardwareWholeMachine implements Serializable {
      */
     private Date updateTime;
 
-    public HardwareWholeMachine create(){
+    public HardwareWholeMachine create() {
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         this.setApplyTime(new Date());
+        return this;
+    }
+
+    public HardwareWholeMachine delete() {
+        this.setStatus(HardwareValueEnum.NODE_DELETE.getValue());
+        this.setUpdateTime(new Date());
         return this;
     }
 

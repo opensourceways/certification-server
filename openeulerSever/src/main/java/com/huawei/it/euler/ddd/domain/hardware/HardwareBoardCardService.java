@@ -123,6 +123,11 @@ public class HardwareBoardCardService {
         return boardCardRepository.saveBatch(boardCardPOList);
     }
 
+    public void delete(HardwareBoardCard boardCard){
+        HardwareBoardCardPO boardCardPO = hardwareFactory.createBoardCardPO(boardCard.delete());
+        boardCardRepository.saveOrUpdate(boardCardPO);
+    }
+
     public void apply(HardwareBoardCard boardCard) {
         HardwareBoardCardPO boardCardPO = hardwareFactory.createBoardCardPO(boardCard.apply());
         boardCardRepository.saveOrUpdate(boardCardPO);
