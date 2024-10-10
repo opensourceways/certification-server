@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import com.google.common.collect.Lists;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.model.entity.FileModel;
+import com.obs.services.exception.ObsException;
 import com.obs.services.internal.ServiceException;
 
 import cn.hutool.core.io.FileTypeUtil;
@@ -326,6 +327,8 @@ public class FileUtils {
             }
 
             zipOut.closeEntry();
+        }catch (ObsException | IOException e) {
+            log.error("downloadFile error", e);
         }
     }
 }
