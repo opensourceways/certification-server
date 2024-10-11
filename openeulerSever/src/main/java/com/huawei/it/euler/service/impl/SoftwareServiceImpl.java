@@ -892,7 +892,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
         List<Integer> statusList = softwareQuery.getStatusId();
         if (ObjectUtils.isNotEmpty(statusList) && !statusList.contains(NodeEnum.FINISHED.getId())) {
-            throw new ParamException("无权限获取该测评申请文件");
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         softwareQuery.setStatusId(List.of(NodeEnum.FINISHED.getId()));
         softwareQuery.setUuid(uuid);
