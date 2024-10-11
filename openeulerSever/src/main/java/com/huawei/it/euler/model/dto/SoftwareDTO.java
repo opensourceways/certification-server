@@ -23,14 +23,8 @@ public class SoftwareDTO {
     /**
      * 软件id
      */
-    @ExcelProperty("流程序号")
+    @ExcelProperty("序号")
     private Integer id;
-
-    /**
-     * 公司名称
-     */
-    @ExcelProperty("公司名称")
-    private String companyName;
 
     /**
      * 产品名称
@@ -39,27 +33,21 @@ public class SoftwareDTO {
     private String productName;
 
     /**
-     * 产品功能介绍
+     * 公司名称
      */
-    @ExcelProperty("产品功能介绍")
-    private String productFunctionDesc;
-
-    /**
-     * 产品使用场景
-     */
-    @ExcelProperty("产品使用场景")
-    private String usageScenesDesc;
+    @ExcelProperty("企业名称")
+    private String companyName;
 
     /**
      * 产品类型
      */
-    @ExcelProperty("产品类型")
+    @ExcelProperty("测评类型")
     private String productType;
 
     /**
      * 产品版本
      */
-    @ExcelProperty("产品版本")
+    @ExcelProperty("测评版本")
     private String productVersion;
 
     /**
@@ -75,6 +63,18 @@ public class SoftwareDTO {
     private String osVersion;
 
     /**
+     * 产品功能介绍
+     */
+    @ExcelProperty("产品功能介绍")
+    private String productFunctionDesc;
+
+    /**
+     * 产品使用场景
+     */
+    @ExcelProperty("产品使用场景")
+    private String usageScenesDesc;
+
+    /**
      * 算力平台集合
      */
     private List<ComputingPlatformVo> hashratePlatformList;
@@ -86,18 +86,32 @@ public class SoftwareDTO {
     private String testOrganization;
 
     private String testOrgId;
+
+    /**
+     * 算力平台名称
+     */
+    @ExcelProperty("算力平台名称")
+    private String hashratePlatformNameList;
+
+    /**
+     * 申请人姓名
+     */
+    @ExcelProperty("申请人姓名")
+    private String applicantName;
+
     /**
      * 申请时间
      */
     @ExcelProperty("申请时间")
     private String applicationTime;
 
-    private String applicant;
     /**
-     * 申请人姓名
+     * 认证完成时间
      */
-    @ExcelProperty("申请人姓名")
-    private String applicantName;
+    @ExcelProperty("认证完成时间")
+    private String certificationTime;
+
+    private String applicant;
 
     private String reviewer;
 
@@ -114,12 +128,6 @@ public class SoftwareDTO {
     private String status;
 
     /**
-     * 算力平台名称
-     */
-    @ExcelProperty("算力平台名称")
-    private String hashratePlatformNameList;
-
-    /**
      * 平台集合
      */
     private List<String> platforms;
@@ -133,10 +141,4 @@ public class SoftwareDTO {
      * 硬件厂商
      */
     private String cpuVendor;
-
-    /**
-     * 认证完成时间
-     */
-    @ExcelProperty("认证完成时间")
-    private String certificationTime;
 }
