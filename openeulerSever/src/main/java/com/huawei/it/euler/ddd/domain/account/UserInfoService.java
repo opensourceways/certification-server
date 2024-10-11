@@ -33,6 +33,9 @@ public class UserInfoService implements UserDetailsService {
     @Autowired
     private OidcAuthService oidcAuthService;
 
+    @Autowired
+    private UserInfoFactory userInfoFactory;
+
     public void saveUser(UserInfo userInfo){
         List<Role> roleInfoList = roleService.getRoleInfoByUuid(userInfo.getUuid());
         if (roleInfoList.isEmpty()) {
@@ -48,6 +51,9 @@ public class UserInfoService implements UserDetailsService {
         Object ifPresent = persistentCache.getIfPresent(uuid);
         if (ifPresent == null){
             UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
+            if (userInfo == null){
+                userInfo = userInfoFactory.createDeregisterUser(uuid);
+            }
             saveUser(userInfo);
             return userInfo;
         }
