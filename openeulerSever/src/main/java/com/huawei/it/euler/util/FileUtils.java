@@ -295,7 +295,7 @@ public class FileUtils {
         download(fileId, response);
     }
 
-    public ResponseEntity<StreamingResponseBody> streamFiles(List<Attachments> fileKeys) {
+    public ResponseEntity<StreamingResponseBody> streamFiles(List<Attachments> fileKeys) throws UnsupportedEncodingException {
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
                 for (Attachments file : fileKeys) {
@@ -306,8 +306,9 @@ public class FileUtils {
             }
         };
 
+        String fileName = URLEncoder.encode(s3Utils.generateFileName("证书导出"), "UTF-8").replaceAll("\\+", "%20");
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=download.zip");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileName + ".zip");
 
         return ResponseEntity.ok()
                 .headers(headers)

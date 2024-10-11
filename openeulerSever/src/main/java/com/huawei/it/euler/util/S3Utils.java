@@ -5,17 +5,21 @@
 package com.huawei.it.euler.util;
 
 
-import com.obs.services.ObsClient;
-import com.obs.services.ObsConfiguration;
-import com.obs.services.exception.ObsException;
-import com.obs.services.model.ObsObject;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.obs.services.ObsClient;
+import com.obs.services.ObsConfiguration;
+import com.obs.services.exception.ObsException;
+import com.obs.services.model.ObsObject;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * S3Utils
@@ -84,5 +88,12 @@ public class S3Utils {
         config.setEndPoint(endPoint);
         config.setPathStyle(pathStyle);
         return new ObsClient(ak, sk, config);
+    }
+
+    public String generateFileName(String baseName) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+        String timestamp = now.format(formatter);
+        return baseName + "_" + timestamp + ".xlsx";
     }
 }
