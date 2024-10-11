@@ -94,6 +94,12 @@ public class SoftwareDTO {
     private String hashratePlatformNameList;
 
     /**
+     * 平台集合字符串
+     */
+    @ExcelProperty("算力平台详情")
+    private String platformsList;
+
+    /**
      * 申请人姓名
      */
     @ExcelProperty("申请人姓名")
@@ -110,6 +116,18 @@ public class SoftwareDTO {
      */
     @ExcelProperty("认证完成时间")
     private String certificationTime;
+
+    /**
+     * 证书有效期
+     */
+    @ExcelProperty("证书有效期")
+    private String validityPeriod;
+
+    /**
+     * 证书编号
+     */
+    @ExcelProperty("证书编号")
+    private String certificateId;
 
     private String applicant;
 
@@ -132,11 +150,6 @@ public class SoftwareDTO {
      */
     private List<String> platforms;
 
-    /**
-     * 平台集合字符串
-     */
-    @ExcelProperty("算力平台详情")
-    private String platformsList;
     /**
      * 硬件厂商
      */
