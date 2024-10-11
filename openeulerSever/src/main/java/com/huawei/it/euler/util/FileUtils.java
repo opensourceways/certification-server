@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import com.google.common.collect.Lists;
 import com.huawei.it.euler.exception.InputException;
+import com.huawei.it.euler.model.entity.Attachments;
 import com.huawei.it.euler.model.entity.FileModel;
 import com.obs.services.exception.ObsException;
 import com.obs.services.internal.ServiceException;
@@ -294,10 +295,10 @@ public class FileUtils {
         download(fileId, response);
     }
 
-    public ResponseEntity<StreamingResponseBody> streamFiles(List<FileModel> fileKeys) {
+    public ResponseEntity<StreamingResponseBody> streamFiles(List<Attachments> fileKeys) {
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
-                for (FileModel file : fileKeys) {
+                for (Attachments file : fileKeys) {
                     addFileToZip(zipOut, file.getFileId(),file.getFileName());
                 }
             } catch (IOException e) {
