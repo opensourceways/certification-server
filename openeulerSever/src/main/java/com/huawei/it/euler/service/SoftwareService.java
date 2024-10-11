@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.it.euler.common.JsonResponse;
@@ -233,4 +235,21 @@ public interface SoftwareService {
     PageVo<CompatibilityVo> findCommunityCheckList(SoftwareFilterVo vo);
 
     FilterCriteriaVo filterCeriteria();
+
+    /**
+     * 导出软件清单
+     *
+     * @param softwareVo 筛选条件
+     * @param uuid uuid
+     */
+    void export(SoftwareQueryRequest softwareVo, HttpServletResponse response, String uuid) throws IOException;
+
+    /**
+     * 导出证书
+     *
+     * @param softwareVo 筛选条件
+     * @param uuid uuid
+     * @return 文件流
+     */
+    ResponseEntity<StreamingResponseBody> streamFiles(SoftwareQueryRequest softwareVo, String uuid) throws IOException;
 }

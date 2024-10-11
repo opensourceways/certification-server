@@ -295,7 +295,7 @@ public class FileUtils {
         download(fileId, response);
     }
 
-    public ResponseEntity<StreamingResponseBody> streamFiles(List<Attachments> fileKeys) throws UnsupportedEncodingException {
+    public ResponseEntity<StreamingResponseBody> streamFiles(List<Attachments> fileKeys) throws IOException {
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
                 for (Attachments file : fileKeys) {
