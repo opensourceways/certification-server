@@ -147,7 +147,7 @@
         <dependency>
             <groupId>com.huaweicloud</groupId>
             <artifactId>esdk-obs-java-bundle</artifactId>
-            <version>3.23.9.1</version>
+            <version>3.24.9</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
