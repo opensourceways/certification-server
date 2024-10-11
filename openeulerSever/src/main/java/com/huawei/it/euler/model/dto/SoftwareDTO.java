@@ -126,7 +126,7 @@ public class SoftwareDTO {
     /**
      * 证书编号
      */
-    @ExcelProperty("证书编号")
+    @ExcelProperty("证书名称")
     private String certificateId;
 
     private String applicant;
