@@ -881,15 +881,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
         List<Attachments> fileKeys =
             softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
-        Map<String, String> softwareIdToFileIdMap = fileKeys.stream()
-                .collect(Collectors.toMap(
-                        Attachments::getSoftwareId,
-                        Attachments::getFileId,
-                        (existing, replacement) -> existing
-                ));
-        softwareDTOList.forEach(softwareDTO ->
-                softwareDTO.setCertificateId(softwareIdToFileIdMap.get(softwareDTO.getId()))
-        );
+        Map<String, String> softwareIdToFileIdMap = fileKeys.stream().collect(Collectors
+            .toMap(Attachments::getSoftwareId, Attachments::getFileName, (existing, replacement) -> existing));
+        softwareDTOList.forEach(softwareDTO -> softwareDTO
+            .setCertificateId(softwareIdToFileIdMap.get(String.valueOf(softwareDTO.getId()))));
         excelUtils.export(softwareDTOList, response);
     }
 
