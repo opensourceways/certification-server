@@ -888,7 +888,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         excelUtils.export(softwareDTOList, response);
     }
 
-    public ResponseEntity<StreamingResponseBody> streamFiles(SoftwareQueryRequest softwareVo, String uuid) throws UnsupportedEncodingException {
+    public ResponseEntity<StreamingResponseBody> streamFiles(SoftwareQueryRequest softwareVo, String uuid) throws IOException {
         SoftwareQuery softwareQuery = SoftwareQueryRequest2QueryConverter.INSTANCE.convert(softwareVo);
         List<Integer> statusList = softwareQuery.getStatusId();
         if (ObjectUtils.isNotEmpty(statusList) && !statusList.contains(NodeEnum.FINISHED.getId())) {
