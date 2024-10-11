@@ -53,6 +53,13 @@ RUN dnf install -y wget \
     && rm OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz \
     && chown -R certification:certification jdk-17.0.12+7-jre
 
+RUN dnf install -y \
+    fontconfig \
+    freetype \
+    wget \
+    zip \
+    && dnf clean all \
+
 RUN rm -rf `find / -iname "*tcpdump*"` \
     && rm -rf `find / -iname "*sniffer*"` \
     && rm -rf `find / -iname "*wireshark*"` \
