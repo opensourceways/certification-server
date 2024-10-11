@@ -65,7 +65,7 @@ public class WebSecurityConfig {
     public class AsyncConfig implements WebMvcConfigurer {
         @Override
         public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
-            configurer.setDefaultTimeout(120000); // 设置异步请求超时时间为30秒
+            configurer.setDefaultTimeout(180000); // 设置异步请求超时时间为30秒
             configurer.registerCallableInterceptors(timeoutInterceptor());
         }
     }
