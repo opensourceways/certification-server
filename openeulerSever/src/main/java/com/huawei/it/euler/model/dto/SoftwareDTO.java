@@ -137,6 +137,7 @@ public class SoftwareDTO {
     /**
      * 审核人姓名
      */
+    @ExcelProperty("审核人姓名")
     private String reviewerName;
 
     /**
