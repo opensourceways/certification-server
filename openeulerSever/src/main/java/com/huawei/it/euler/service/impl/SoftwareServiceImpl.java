@@ -879,12 +879,12 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
         softwareVOPopulater.populate(reviewSoftwareList);
         List<SoftwareDTO> softwareDTOList = SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList);
-        List<FileModel> fileKeys =
+        List<Attachments> fileKeys =
             softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
-        Map<Integer, String> softwareIdToFileIdMap = fileKeys.stream()
+        Map<String, String> softwareIdToFileIdMap = fileKeys.stream()
                 .collect(Collectors.toMap(
-                        FileModel::getSoftwareId,
-                        FileModel::getFileId,
+                        Attachments::getSoftwareId,
+                        Attachments::getFileId,
                         (existing, replacement) -> existing
                 ));
         softwareDTOList.forEach(softwareDTO ->
@@ -903,7 +903,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
-        List<FileModel> fileKeys =
+        List<Attachments> fileKeys =
             softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
         return fileUtils.streamFiles(fileKeys);
     }
