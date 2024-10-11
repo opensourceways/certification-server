@@ -154,7 +154,7 @@ public class SoftwareVo {
     /**
      * 证书有效期
      */
-    private Date validityPeriod;
+    private String validityPeriod;
 
     /**
      * 用户uuid
