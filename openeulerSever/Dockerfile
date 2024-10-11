@@ -58,7 +58,7 @@ RUN dnf install -y \
     freetype \
     wget \
     zip \
-    && dnf clean all \
+    && dnf clean all
 
 RUN rm -rf `find / -iname "*tcpdump*"` \
     && rm -rf `find / -iname "*sniffer*"` \
