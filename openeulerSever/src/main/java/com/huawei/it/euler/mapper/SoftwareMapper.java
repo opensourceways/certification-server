@@ -169,7 +169,7 @@ public interface SoftwareMapper {
      */
     String getSignedFileId(Integer softwareId);
 
-    List<FileModel> getCertificationIds(@Param("softwareIds") List<Integer> softwareIds);
+    List<Attachments> getCertificationIds(@Param("softwareIds") List<Integer> softwareIds);
     /**
      * 查询社区软件清单
      * 

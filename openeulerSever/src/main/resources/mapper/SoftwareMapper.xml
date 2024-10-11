@@ -67,6 +67,7 @@
         <result column="file_path" property="filePath"/>
         <result column="software_id" property="softwareId"/>
         <result column="file_type" property="fileType"/>
+        <result column="fileid" property="fileId"/>
     </resultMap>
 
     <resultMap id="AttachmentsVoMap" type="com.huawei.it.euler.model.vo.AttachmentsVo">
@@ -441,8 +442,8 @@
         from innovation_center_t;
     </select>
 
-    <select id="getCertificationIds" resultType="com.huawei.it.euler.model.entity.FileModel">
-        select fileid, filename
+    <select id="getCertificationIds" resultMap="AttachmentsMap">
+        select fileid, filename,software_id
         from attachments_t
         where  file_type = 'certificates'
         <if test="softwareIds != null and softwareIds.size() > 0">
