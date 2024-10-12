@@ -4,14 +4,15 @@
 
 package com.huawei.it.euler.util;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * ObjectUtils
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class ObjectUtils {
+public class MyObjectUtils {
     /**
      * 检验对象的所有属性是否为null
      *
