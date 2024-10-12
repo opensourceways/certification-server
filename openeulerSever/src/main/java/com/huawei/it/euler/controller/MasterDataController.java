@@ -4,18 +4,20 @@
 
 package com.huawei.it.euler.controller;
 
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.model.vo.HashRatePlatformVo;
 import com.huawei.it.euler.model.vo.OsVo;
 import com.huawei.it.euler.model.vo.ProductVo;
 import com.huawei.it.euler.service.MasterDataService;
+
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * MasterDataController
@@ -34,7 +36,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllOs")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<List<OsVo>> findAllOs() {
         return JsonResponse.success(masterDataService.findAllOs());
     }
@@ -45,7 +47,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllComputingPlatform")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<List<HashRatePlatformVo>> findAllComputingPlatform() {
         return JsonResponse.success(masterDataService.findAllComputingPlatform());
     }
@@ -56,7 +58,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllProduct")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<List<ProductVo>> findAllProduct() {
         return JsonResponse.success(masterDataService.findAllProduct());
     }
@@ -78,7 +80,7 @@ public class MasterDataController {
      * @return JsonResponse
      */
     @GetMapping("/software/findAllCPUVendor")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
     public JsonResponse<List<String>> findAllCPUVendor() {
         return JsonResponse.success(masterDataService.findAllCPUVendor());
     }

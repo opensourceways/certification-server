@@ -33,7 +33,10 @@ public enum RoleEnum {
     // report review
     REPORT_REVIEW(11, "report_review", "报告复审"),
     // certificate issuance
-    CERTIFICATE_ISSUANCE(12, "certificate_issuance", "证书签发");
+    CERTIFICATE_ISSUANCE(12, "certificate_issuance", "证书签发"),
+    //operator
+    OPERATOR(13, "operator", "运维人员"),
+    ;
 
     private final Integer roleId; // 角色id
 
