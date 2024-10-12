@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.context.request.async.TimeoutCallableProcessingInterceptor;
@@ -55,6 +56,11 @@ public class WebSecurityConfig {
 
     @Autowired
     private SecurityFilter securityFilter;
+
+    @Bean
+    public RequestAttributeSecurityContextRepository getRequestAttributeSecurityContextRepository() {
+        return new RequestAttributeSecurityContextRepository();
+    }
 
     @Bean
     public TimeoutCallableProcessingInterceptor timeoutInterceptor() {
