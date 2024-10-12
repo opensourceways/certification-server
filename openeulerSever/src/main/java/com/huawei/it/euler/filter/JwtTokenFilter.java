@@ -4,23 +4,26 @@
 
 package com.huawei.it.euler.filter;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import com.huawei.it.euler.config.CookieConfig;
 import com.huawei.it.euler.ddd.domain.account.WhiteListService;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.util.RequestUtils;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-
-import java.io.IOException;
 
 /**
  * Jwt拦截器
@@ -31,6 +34,9 @@ import java.io.IOException;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenFilter.class);
+
+    @Autowired
+    private RequestAttributeSecurityContextRepository repository;
 
     @Autowired
     private CookieConfig cookieConfig;
@@ -60,6 +66,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         accountService.refreshLogin(request);
 
         accountService.setAuthentication(request);
+        repository.saveContext(SecurityContextHolder.getContext(),request, response);
         chain.doFilter(request, response);
     }
 }
