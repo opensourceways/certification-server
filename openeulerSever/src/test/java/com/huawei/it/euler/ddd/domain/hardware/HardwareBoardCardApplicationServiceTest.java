@@ -44,7 +44,7 @@ public class HardwareBoardCardApplicationServiceTest {
         boardCard.setId(HARDWARE_ID);
 
         Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(boardCard)).thenReturn(true);
+        Mockito.when(boardCardService.insert(boardCard)).thenReturn(boardCard);
 
         HardwareBoardCard insert = boardCardApplicationService.insert(boardCard, USER_UUID);
 
@@ -71,7 +71,7 @@ public class HardwareBoardCardApplicationServiceTest {
         boardCard.setId(HARDWARE_ID);
 
         Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(boardCard)).thenReturn(false);
+        Mockito.when(boardCardService.insert(boardCard)).thenReturn(boardCard);
 
         BusinessException businessException = assertThrows(BusinessException.class,
                 () -> boardCardApplicationService.insert(boardCard, USER_UUID));

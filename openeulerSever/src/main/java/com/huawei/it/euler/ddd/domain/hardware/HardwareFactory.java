@@ -79,10 +79,13 @@ public class HardwareFactory {
 
     public HardwareWholeMachinePO createWholeMachinePO(HardwareWholeMachine wholeMachine) {
         HardwareWholeMachinePO wholeMachinePO = new HardwareWholeMachinePO();
+        wholeMachinePO.setFactoryZy(wholeMachine.getHardwareFactory());
+        wholeMachinePO.setFactoryEn(wholeMachine.getHardwareFactory());
+        wholeMachinePO.setModel(wholeMachine.getHardwareModel());
         BeanUtils.copyProperties(wholeMachine, wholeMachinePO);
         BeanUtils.copyProperties(wholeMachine.getCompatibilityConfiguration(), wholeMachinePO);
-        List<Integer> boardCardIdList = wholeMachine.getBoardCardList().stream().map(HardwareBoardCard::getId).toList();
-        wholeMachinePO.setBoardCards(StringUtils.join(boardCardIdList, ","));
+        List<Integer> boardCardIdList = wholeMachine.getBoardCards().stream().map(HardwareBoardCard::getId).toList();
+        wholeMachinePO.setBoardCardIds(StringUtils.join(boardCardIdList, ","));
         return wholeMachinePO;
     }
 

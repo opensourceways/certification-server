@@ -12,7 +12,7 @@ public class WhiteListService {
         String[] writeUrlArr = whitelist.split(",");
         for (String writeUrl : writeUrlArr) {
             writeUrl = writeUrl.replaceAll("\\*", "\\.\\*");
-            if (writeUrl.matches(url)) {
+            if (url.matches(writeUrl)) {
                 return true;
             }
         }

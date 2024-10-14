@@ -51,11 +51,11 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         Mockito.when(wholeMachineService.exist(any())).thenReturn(false);
         Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(any())).thenReturn(true);
+        Mockito.when(boardCardService.insert(any())).thenReturn(boardCard);
         Mockito.when(wholeMachineService.insert(wholeMachine)).thenReturn(true);
 
         HardwareWholeMachine insert = wholeMachineApplicationService.insert(wholeMachine, USER_UUID);
@@ -87,11 +87,11 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         Mockito.when(wholeMachineService.exist(any())).thenReturn(false);
         Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(any())).thenReturn(true);
+        Mockito.when(boardCardService.insert(any())).thenReturn(boardCard);
         Mockito.when(wholeMachineService.insert(wholeMachine)).thenReturn(false);
 
         BusinessException businessException = assertThrows(BusinessException.class,
@@ -110,14 +110,14 @@ public class HardwareWholeMachineApplicationServiceTest {
         
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
         
         List<HardwareWholeMachine> wholeMachineList = new ArrayList<>();
         wholeMachineList.add(wholeMachine);
 
         Mockito.when(wholeMachineService.exist(any())).thenReturn(false);
         Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(any())).thenReturn(true);
+        Mockito.when(boardCardService.insert(any())).thenReturn(boardCard);
         Mockito.when(wholeMachineService.batchInsert(wholeMachineList)).thenReturn(true);
 
         List<HardwareWholeMachine> batchInsert = wholeMachineApplicationService.batchInsert(wholeMachineList, USER_UUID);
@@ -159,7 +159,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         wholeMachine.setId(HARDWARE_ID);
         wholeMachine.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
-        wholeMachine.setBoardCards(String.valueOf(HARDWARE_ID));
+        wholeMachine.setBoardCardIds(String.valueOf(HARDWARE_ID));
 
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         approvalNode.setHardwareId(HARDWARE_ID);
@@ -229,7 +229,7 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         Mockito.when(wholeMachineService.getById(any())).thenReturn(wholeMachine);
         wholeMachine.setOsVersion("2");
@@ -249,7 +249,7 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         approvalNode.setHardwareId(HARDWARE_ID);
@@ -318,7 +318,7 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         approvalNode.setHardwareId(HARDWARE_ID);
@@ -349,7 +349,7 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         approvalNode.setHardwareId(HARDWARE_ID);
@@ -397,7 +397,7 @@ public class HardwareWholeMachineApplicationServiceTest {
 
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        wholeMachine.setBoardCardList(boardCardList);
+        wholeMachine.setBoardCards(boardCardList);
 
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         approvalNode.setHardwareId(HARDWARE_ID);
