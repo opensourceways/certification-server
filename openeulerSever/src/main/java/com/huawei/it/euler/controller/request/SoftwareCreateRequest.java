@@ -3,12 +3,10 @@
  */
 package com.huawei.it.euler.controller.request;
 
-import java.util.Date;
 import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
 
 import jakarta.validation.Valid;
@@ -20,11 +18,6 @@ import lombok.Data;
 public class SoftwareCreateRequest {
 
     private Integer id;
-
-    @NotBlank(message = "公司名称不能为空")
-    private String companyName;
-
-    private Integer companyId;
 
     @NotBlank(message = "产品名称不能为空")
     @Length(max = 64, message = "产品名称最大不超过{max}个字符")
@@ -53,8 +46,6 @@ public class SoftwareCreateRequest {
     @NotNull(message = "算力平台不能为空")
     private List<@Valid ComputingPlatformVo> hashratePlatformList;
 
-    private String jsonHashRatePlatform;
-
     @NotBlank(message = "产品类型不能为空")
     @Length(max = 50, message = "产品类型最大不超过{max}个字符")
     private String productType;
@@ -63,28 +54,5 @@ public class SoftwareCreateRequest {
     @Length(max = 50, message = "测试机构最大不超过{max}个字符")
     private String testOrganization;
 
-    private Integer testOrgId;
-
     private String cpuVendor;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date applicationTime;
-
-    private String userTelephone;
-
-    private String reviewer;
-
-    private Integer reviewRole;
-
-    private String userUuid;
-
-    private Integer companyCode;
-
-    private List<String> platforms;
-
-    private String authenticationStatus;
-
-    private Integer asId;
-
-    private Date certificationTime;
 }

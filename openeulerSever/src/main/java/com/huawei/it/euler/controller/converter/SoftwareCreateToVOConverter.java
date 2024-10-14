@@ -12,6 +12,5 @@ import com.huawei.it.euler.util.Converter;
 
 @Mapper
 public abstract class SoftwareCreateToVOConverter implements Converter<SoftwareCreateRequest, SoftwareVo> {
-    public static final SoftwareCreateToVOConverter INSTANCE =
-        Mappers.getMapper(SoftwareCreateToVOConverter.class);
+    public static final SoftwareCreateToVOConverter INSTANCE = Mappers.getMapper(SoftwareCreateToVOConverter.class);
 }

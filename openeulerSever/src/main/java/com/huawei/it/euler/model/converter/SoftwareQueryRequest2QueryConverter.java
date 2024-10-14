@@ -12,7 +12,7 @@ import com.huawei.it.euler.model.vo.SoftwareQueryRequest;
 import com.huawei.it.euler.util.Converter;
 
 @Mapper
-public  abstract class SoftwareQueryRequest2QueryConverter implements Converter<SoftwareQueryRequest, SoftwareQuery> {
-    public static final SoftwareQueryRequest2QueryConverter INSTANCE = Mappers.getMapper( SoftwareQueryRequest2QueryConverter.class );
+public abstract class SoftwareQueryRequest2QueryConverter implements Converter<SoftwareQueryRequest, SoftwareQuery> {
+    public static final SoftwareQueryRequest2QueryConverter INSTANCE =
+        Mappers.getMapper(SoftwareQueryRequest2QueryConverter.class);
 }
-

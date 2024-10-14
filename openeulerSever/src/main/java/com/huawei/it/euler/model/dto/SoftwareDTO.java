@@ -13,7 +13,7 @@ import com.huawei.it.euler.model.vo.ComputingPlatformVo;
 import lombok.Data;
 
 /**
- * SoftwareVo
+ * SoftwareDTO
  *
  * @since 2024/07/01
  */

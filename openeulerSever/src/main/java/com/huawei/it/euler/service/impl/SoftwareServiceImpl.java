@@ -1122,12 +1122,14 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<String> ascSort = softwareQueryRequest.getAscSort();
         if (ascSort != null && !ascSort.isEmpty()) {
             sortStr.addAll(ascSort.stream().filter(SORT_COLUMN::contains)
-                .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc").toList());
+                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " asc")
+                    .toList());
         }
         List<String> descSort = softwareQueryRequest.getDescSort();
         if (descSort != null && !descSort.isEmpty()) {
             sortStr.addAll(descSort.stream().filter(SORT_COLUMN::contains)
-                .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc").toList());
+                    .map(item -> CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, item) + " desc")
+                    .toList());
         }
         return String.join(",", sortStr);
     }
