@@ -14,15 +14,12 @@ import com.huawei.it.euler.model.vo.SoftwareVo;
 import com.huawei.it.euler.util.Converter;
 
 @Mapper
-public  abstract class SoftwareVOToDTOConverter implements Converter<SoftwareVo, SoftwareDTO> {
-    public static final SoftwareVOToDTOConverter INSTANCE = Mappers.getMapper( SoftwareVOToDTOConverter.class );
+public abstract class SoftwareVOToDTOConverter implements Converter<SoftwareVo, SoftwareDTO> {
+    public static final SoftwareVOToDTOConverter INSTANCE = Mappers.getMapper(SoftwareVOToDTOConverter.class);
 
     @Override
-    @Mappings({@Mapping(source = "userUuid", target = "applicant"),
-            @Mapping(source = "statusName", target = "status"),
-            @Mapping(source = "certificationTime", target = "certificationTime",dateFormat = "yyyy-MM-dd HH:mm:ss"),
-            @Mapping(source = "applicationTime", target = "applicationTime",dateFormat = "yyyy-MM-dd HH:mm:ss")
-    })
+    @Mappings({@Mapping(source = "userUuid", target = "applicant"), @Mapping(source = "statusName", target = "status"),
+        @Mapping(source = "certificationTime", target = "certificationTime", dateFormat = "yyyy-MM-dd HH:mm:ss"),
+        @Mapping(source = "applicationTime", target = "applicationTime", dateFormat = "yyyy-MM-dd HH:mm:ss")})
     public abstract SoftwareDTO convert(SoftwareVo source);
 }
-
