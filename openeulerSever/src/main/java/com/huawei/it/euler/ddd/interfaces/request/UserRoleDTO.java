@@ -4,5 +4,9 @@
 
 package com.huawei.it.euler.ddd.interfaces.request;
 
+import lombok.Data;
+
+@Data
 public class UserRoleDTO {
+    private Integer id;
 }

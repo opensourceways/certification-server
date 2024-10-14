@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 @Data
-@TableName("user_role_map_t")
+@TableName("user_role_mapping_t")
 public class UserRole {
     /**
      * 主键id
@@ -31,7 +31,7 @@ public class UserRole {
     /**
      * 用户uuid
      */
-    @TableField(value = "user_uuid")
+    @TableField(value = "uuid")
     private String uuid;
 
     /**
