@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.huawei.it.euler.ddd.domain.account.WhiteListService;
@@ -76,7 +76,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
         boolean isRefererInclude = true;
         if (!isVerifyReferer) {
-            if (ObjectUtils.isEmpty(referer)) {
+            if (StringUtils.isEmpty(referer)) {
                 isRefererInclude = false;
             } else {
                 isRefererInclude = refererCheck.equals(referer);
@@ -100,7 +100,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (isVerifyOrigin) {
             return HttpStatus.OK.value();
         }
-        if (!ObjectUtils.isEmpty(origin)) {
+        if (!StringUtils.isEmpty(origin)) {
             boolean isIncludeOrigin = originCheck.equals(origin);
             if (!isIncludeOrigin) {
                 LOGGER.info("The Origin is not found or the verification fails: {}", shortUri);

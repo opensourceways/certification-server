@@ -87,7 +87,7 @@ public class SoftwareController {
     public JsonResponse<String> softwareRegister(@RequestBody @Valid SoftwareCreateRequest software,
         HttpServletRequest request) throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        String lockKey = software.getCompanyCode() + "-" + software.getProductName() + "-" + uuid;
+        String lockKey = software.getTestOrganization() + "-" + software.getProductName() + "-" + uuid;
         lockCacheConfig.acquireLock(lockKey);
         Integer id = softwareService.createSoftware(SoftwareCreateToVOConverter.INSTANCE.convert(software), uuid);
         lockCacheConfig.releaseLock(lockKey);
@@ -278,9 +278,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/softwareList")
     @PreAuthorize("hasAnyRole('user')")
-    public JsonResponse<PageResult<SoftwareDTO>>
-        getSoftwareList(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
-            throws NoLoginException {
+    public JsonResponse<PageResult<SoftwareDTO>> getSoftwareList(
+        @RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
+        @RequestParam("curPage") @NotNull(message = "页码不能为空") @PositiveOrZero(message = "页码错误") Integer curPage,
+        @RequestParam("pageSize") @NotNull(message = "每页展示条数不能为空") @Range(min = 0, max = 100,
+            message = "每页展示条数超出范围") Integer pageSize,
+        HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         PageResult<SoftwareVo> softwareList = softwareService.getSoftwareList(softwareQueryRequest, uuid);
         return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(softwareList));
@@ -295,9 +298,12 @@ public class SoftwareController {
      */
     @PostMapping("/software/reviewSoftwareList")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
-    public JsonResponse<PageResult<SoftwareDTO>>
-        getReviewSoftwareList(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
-            throws NoLoginException {
+    public JsonResponse<PageResult<SoftwareDTO>> getReviewSoftwareList(
+        @RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
+        @RequestParam("curPage") @NotNull(message = "页码不能为空") @PositiveOrZero(message = "页码错误") Integer curPage,
+        @RequestParam("pageSize") @NotNull(message = "每页展示条数不能为空") @Range(min = 0, max = 100,
+            message = "每页展示条数超出范围") Integer pageSize,
+        HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         PageResult<SoftwareVo> reviewSoftwareList = softwareService.getReviewSoftwareList(softwareQueryRequest, uuid);
         return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList));
@@ -476,7 +482,7 @@ public class SoftwareController {
     }
 
     /**
-     * 附件下载
+     * 方案导出
      *
      * @param softwareQueryRequest fileId
      * @param response response
@@ -490,10 +496,18 @@ public class SoftwareController {
         softwareService.export(softwareQueryRequest, response, uuid);
     }
 
+    /**
+     * 证书导出
+     *
+     * @param softwareQueryRequest fileId
+     * @param request request
+     * @return StreamingResponseBody
+     */
     @PostMapping("/software/certifyExport")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
-    public ResponseEntity<StreamingResponseBody> certifyExport(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
-                                                               HttpServletRequest request) throws InputException, IOException, NoLoginException {
+    public ResponseEntity<StreamingResponseBody>
+        certifyExport(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
+            throws InputException, IOException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return softwareService.streamFiles(softwareQueryRequest, uuid);
     }

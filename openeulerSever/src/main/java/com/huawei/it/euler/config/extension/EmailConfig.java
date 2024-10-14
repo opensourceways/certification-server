@@ -1,6 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
- */
 package com.huawei.it.euler.config.extension;
 
 import java.io.IOException;
