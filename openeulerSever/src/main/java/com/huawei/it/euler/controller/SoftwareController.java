@@ -87,7 +87,7 @@ public class SoftwareController {
     public JsonResponse<String> softwareRegister(@RequestBody @Valid SoftwareCreateRequest software,
         HttpServletRequest request) throws InputException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        String lockKey = software.getCompanyCode() + "-" + software.getProductName() + "-" + uuid;
+        String lockKey = software.getTestOrganization() + "-" + software.getProductName() + "-" + uuid;
         lockCacheConfig.acquireLock(lockKey);
         Integer id = softwareService.createSoftware(SoftwareCreateToVOConverter.INSTANCE.convert(software), uuid);
         lockCacheConfig.releaseLock(lockKey);
@@ -476,7 +476,7 @@ public class SoftwareController {
     }
 
     /**
-     * 附件下载
+     * 方案导出
      *
      * @param softwareQueryRequest fileId
      * @param response response
@@ -490,10 +490,18 @@ public class SoftwareController {
         softwareService.export(softwareQueryRequest, response, uuid);
     }
 
+    /**
+     * 证书导出
+     *
+     * @param softwareQueryRequest fileId
+     * @param request request
+     * @return StreamingResponseBody
+     */
     @PostMapping("/software/certifyExport")
     @PreAuthorize("hasAnyRole( 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store')")
-    public ResponseEntity<StreamingResponseBody> certifyExport(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest,
-                                                               HttpServletRequest request) throws InputException, IOException, NoLoginException {
+    public ResponseEntity<StreamingResponseBody>
+        certifyExport(@RequestBody @Valid SoftwareQueryRequest softwareQueryRequest, HttpServletRequest request)
+            throws InputException, IOException, NoLoginException {
         String uuid = accountService.getLoginUuid(request);
         return softwareService.streamFiles(softwareQueryRequest, uuid);
     }
