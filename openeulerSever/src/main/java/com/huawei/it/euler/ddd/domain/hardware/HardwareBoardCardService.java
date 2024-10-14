@@ -112,9 +112,10 @@ public class HardwareBoardCardService {
         boardCardRepository.updateById(wholeMachinePO);
     }
 
-    public boolean insert(HardwareBoardCard boardCard) {
+    public HardwareBoardCard insert(HardwareBoardCard boardCard) {
         HardwareBoardCardPO boardCardPO = hardwareFactory.createBoardCardPO(boardCard.create());
-        return boardCardRepository.save(boardCardPO);
+        boardCardRepository.save(boardCardPO);
+        return hardwareFactory.createBoardCard(boardCardPO);
     }
 
     public boolean batchInsert(List<HardwareBoardCard> boardCardList) {

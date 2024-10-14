@@ -57,12 +57,12 @@ public class HardwareWholeMachine implements Serializable {
     /**
      * 板卡信息id集合:1,2,3
      */
-    private String boardCards;
+    private String boardCardIds;
 
     /**
      * 板卡信息集合
      */
-    private List<HardwareBoardCard> boardCardList;
+    private List<HardwareBoardCard> boardCards;
 
     /**
      * 兼容性配置

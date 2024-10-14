@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -26,32 +27,32 @@ public class HardwareBoardCardPO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
      * 板卡四元组vendor id
      */
     @TableField("vendor_id")
-    private String vendorId;
+    private String vendorID;
 
     /**
      * 板卡四元组device id
      */
     @TableField("device_id")
-    private String deviceId;
+    private String deviceID;
 
     /**
      * 板卡四元组sv id
      */
     @TableField("sv_id")
-    private String svId;
+    private String svID;
 
     /**
      * 板卡四元组ss id
      */
     @TableField("ss_id")
-    private String ssId;
+    private String ssID;
 
     /**
      * CPU架构

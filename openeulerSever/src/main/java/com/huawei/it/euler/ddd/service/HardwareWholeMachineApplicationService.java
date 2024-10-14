@@ -40,22 +40,19 @@ public class HardwareWholeMachineApplicationService {
         }
 
         List<HardwareBoardCard> saveBoardCardList = new ArrayList<>();
-        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCardList();
+        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
         for (HardwareBoardCard hardwareBoardCard : boardCardList) {
             boolean cardExist = boardCardService.exist(hardwareBoardCard);
             if (cardExist) {
                 List<HardwareBoardCard> cardList = boardCardService.getList(hardwareBoardCard);
                 saveBoardCardList.add(cardList.get(0));
             } else {
-                boolean insert = boardCardService.insert(hardwareBoardCard);
-                if (!insert) {
-                    String errMsg = String.format("整机板卡[%s]申请失败！", hardwareBoardCard.toSimpleJsonString());
-                    throw new BusinessException(errMsg);
-                }
-                saveBoardCardList.add(hardwareBoardCard);
+                hardwareBoardCard.setRefCount(1);
+                HardwareBoardCard insert = boardCardService.insert(hardwareBoardCard);
+                saveBoardCardList.add(insert);
             }
         }
-        wholeMachine.setBoardCardList(saveBoardCardList);
+        wholeMachine.setBoardCards(saveBoardCardList);
 
         wholeMachine.setUserUuid(uuid);
         wholeMachine.setApplyTime(new Date());
@@ -92,23 +89,18 @@ public class HardwareWholeMachineApplicationService {
                 continue;
             }
             List<HardwareBoardCard> saveBoardCardList = new ArrayList<>();
-            List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCardList();
+            List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
             for (HardwareBoardCard hardwareBoardCard : boardCardList) {
                 boolean cardExist = boardCardService.exist(hardwareBoardCard);
                 if (cardExist) {
                     List<HardwareBoardCard> cardList = boardCardService.getList(hardwareBoardCard);
                     saveBoardCardList.add(cardList.get(0));
                 } else {
-                    boolean insert = boardCardService.insert(hardwareBoardCard);
-                    if (!insert) {
-                        String errMsg = String.format("整机板卡[%s]申请失败！", hardwareBoardCard.toSimpleJsonString());
-                        log.error(errMsg);
-                        continue outer;
-                    }
-                    saveBoardCardList.add(hardwareBoardCard);
+                    HardwareBoardCard insert = boardCardService.insert(hardwareBoardCard);
+                    saveBoardCardList.add(insert);
                 }
             }
-            wholeMachine.setBoardCardList(saveBoardCardList);
+            wholeMachine.setBoardCards(saveBoardCardList);
 
             wholeMachine.setUserUuid(uuid);
             wholeMachine.setApplyTime(new Date());
@@ -149,7 +141,7 @@ public class HardwareWholeMachineApplicationService {
         if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())) {
             throw new BusinessException("当前整机数据状态无法进行编辑操作！");
         }
-        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCardList();
+        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
         for (HardwareBoardCard hardwareBoardCard : boardCardList) {
             try {
                 if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(hardwareBoardCard.getStatus())) {
@@ -173,7 +165,7 @@ public class HardwareWholeMachineApplicationService {
             throw new BusinessException("当前整机数据状态无法进行删除操作！");
         }
         HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
-        selectVO.setIdList(Arrays.stream(byId.getBoardCards().split(",")).toList());
+        selectVO.setIdList(Arrays.stream(byId.getBoardCardIds().split(",")).toList());
         List<HardwareBoardCard> boardCardList = boardCardService.getList(selectVO);
         for (HardwareBoardCard boardCard : boardCardList) {
             int refCount = boardCard.getRefCount();

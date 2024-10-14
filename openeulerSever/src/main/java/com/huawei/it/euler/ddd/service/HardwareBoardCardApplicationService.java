@@ -38,12 +38,7 @@ public class HardwareBoardCardApplicationService {
         boardCard.setUserUuid(uuid);
         boardCard.setApplyTime(new Date());
 
-        boolean insert = boardCardService.insert(boardCard);
-        if (!insert) {
-            String errMsg = String.format("当前板卡[%s]申请失败！", boardCard.toSimpleJsonString());
-            throw new BusinessException(errMsg);
-        }
-        return boardCard;
+        return boardCardService.insert(boardCard);
     }
 
     @Transactional

@@ -17,22 +17,22 @@ public class HardwareBoardCard {
     /**
      * 板卡四元组vendor id
      */
-    private String vendorId;
+    private String vendorID;
 
     /**
      * 板卡四元组device id
      */
-    private String deviceId;
+    private String deviceID;
 
     /**
      * 板卡四元组sv id
      */
-    private String svId;
+    private String svID;
 
     /**
      * 板卡四元组ss id
      */
-    private String ssId;
+    private String ssID;
 
     /**
      * CPU架构

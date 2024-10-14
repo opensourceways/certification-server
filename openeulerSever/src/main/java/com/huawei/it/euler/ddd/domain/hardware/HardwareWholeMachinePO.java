@@ -76,7 +76,7 @@ public class HardwareWholeMachinePO implements Serializable {
      * 板卡信息id集合
      */
     @TableField("board_cards")
-    private String boardCards;
+    private String boardCardIds;
 
     /**
      * 服务器产品信息链接
@@ -94,7 +94,7 @@ public class HardwareWholeMachinePO implements Serializable {
      * 适配commit-id
      */
     @TableField("commit_id")
-    private String commitId;
+    private String commitID;
 
     /**
      * 主板型号
