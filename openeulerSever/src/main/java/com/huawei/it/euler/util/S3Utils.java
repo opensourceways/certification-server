@@ -94,6 +94,6 @@ public class S3Utils {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
         String timestamp = now.format(formatter);
-        return baseName + "_" + timestamp + ".xlsx";
+        return baseName + "_" + timestamp;
     }
 }
