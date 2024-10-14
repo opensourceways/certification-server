@@ -635,15 +635,13 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     @Override
-    public PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
+    public PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize) {
         SoftwareQuery softwareQuery = new SoftwareQuery();
         BeanUtils.copyProperties(softwareQueryRequest, softwareQuery);
-        int pageSize = softwareQueryRequest.getPageSize();
-        int pageNum = softwareQueryRequest.getPageNum();
-        int offset = (softwareQueryRequest.getPageNum() - 1) * softwareQueryRequest.getPageSize();
+        int offset = (curPage - 1) * pageSize;
         Company company = companyMapper.findRegisterSuccessCompanyByUserUuid(uuid);
         if (ObjectUtils.isEmpty(company)) {
-            return new PageResult<>(Collections.emptyList(), 0L, pageNum, pageSize);
+            return new PageResult<>(Collections.emptyList(), 0L, curPage, pageSize);
         }
         softwareQuery.setCompanyName(company.getCompanyName());
         // 通过uuid直接查询该用户下所有认证列表
@@ -652,24 +650,22 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<SoftwareVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
         Long total = softwareMapper.countSoftwareList(softwareQuery);
         softwareVOPopulater.populate(currentSoftwareList);
-        return new PageResult<>(currentSoftwareList, total, pageNum, pageSize);
+        return new PageResult<>(currentSoftwareList, total, curPage, pageSize);
     }
 
     @Override
-    public PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid) {
+    public PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize) {
         SoftwareQuery softwareQuery = new SoftwareQuery();
         BeanUtils.copyProperties(softwareQueryRequest, softwareQuery);
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         softwareQuery.setSort(parseSort(softwareQueryRequest));
-        int pageSize = softwareQueryRequest.getPageSize();
-        int pageNum = softwareQueryRequest.getPageNum();
-        int offset = (softwareQueryRequest.getPageNum() - 1) * softwareQueryRequest.getPageSize();
+        int offset = (curPage - 1) * pageSize;
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
         Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
         softwareVOPopulater.populate(reviewSoftwareList);
         updateSoftwareListStatus(reviewSoftwareList);
-        return new PageResult<>(reviewSoftwareList, total, pageNum, pageSize);
+        return new PageResult<>(reviewSoftwareList, total, curPage, pageSize);
     }
 
     private void updateSoftwareListStatus(List<SoftwareVo> softwareList) {

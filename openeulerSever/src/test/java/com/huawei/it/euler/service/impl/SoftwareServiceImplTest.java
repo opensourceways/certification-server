@@ -299,8 +299,8 @@ class SoftwareServiceImplTest {
     @DisplayName("测试获取软件列表")
      void testGetSoftwareList(){
         SoftwareQueryRequest softwareQueryRequest = new SoftwareQueryRequest();
-        softwareQueryRequest.setPageNum(1);
-        softwareQueryRequest.setPageSize(10);
+//        softwareQueryRequest.setPageNum(1);
+//        softwareQueryRequest.setPageSize(10);
         List<SoftwareListVo> currentSoftwareList = List.of(initTestSoftwareListVo());
         // setup
         Mockito.when(companyMapper.findRegisterSuccessCompanyByUserUuid(any())).thenReturn(initResultCompany());
@@ -317,8 +317,8 @@ class SoftwareServiceImplTest {
     @DisplayName("测试获取待测评软件列表")
     void testGetReviewSoftwareList() {
         SoftwareQueryRequest softwareQueryRequest = new SoftwareQueryRequest();
-        softwareQueryRequest.setPageNum(1);
-        softwareQueryRequest.setPageSize(10);
+//        softwareQueryRequest.setPageNum(1);
+//        softwareQueryRequest.setPageSize(10);
         List<SoftwareListVo> currentSoftwareList = List.of(initTestSoftwareListVo());
         // setup
         Mockito.when(companyMapper.findRegisterSuccessCompanyByUserUuid(any())).thenReturn(initResultCompany());

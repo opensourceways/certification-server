@@ -57,20 +57,6 @@ public class SoftwareQueryRequest {
     private List<@Length(max = 5, message = "筛选申请人错误") String> selectMyApplication;
 
     /**
-     * 当前页
-     */
-//    @NotNull(message = "页码不能为空")
-//    @PositiveOrZero(message = "页码错误")
-    private Integer pageNum;
-
-    /**
-     * 每页条数
-     */
-//    @NotNull(message = "每页展示条数不能为空")
-//    @Range(min = 0, max = 100, message = "每页展示条数超出范围")
-    private Integer pageSize;
-
-    /**
      * 认证完成时间筛选-开始时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
