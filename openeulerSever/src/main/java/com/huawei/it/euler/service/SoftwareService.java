@@ -95,7 +95,7 @@ public interface SoftwareService {
      * @param uuid                 uuid
      * @return 列表
      */
-    PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
+    PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize);
 
     /**
      * 华为侧查询兼容性认证申请列表
@@ -104,7 +104,7 @@ public interface SoftwareService {
      * @param uuid                 uuid
      * @return 列表
      */
-    PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid);
+    PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize);
 
     /**
      * 认证审核记录
