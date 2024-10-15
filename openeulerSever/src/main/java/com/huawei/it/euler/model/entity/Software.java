@@ -5,17 +5,7 @@
 package com.huawei.it.euler.model.entity;
 
 import java.util.Date;
-import java.util.List;
 
-import org.hibernate.validator.constraints.Length;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.huawei.it.euler.model.vo.ComputingPlatformVo;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -25,86 +15,154 @@ import lombok.Data;
  */
 @Data
 public class Software {
+    /**
+     * 主键id
+     */
     private Integer id;
 
-    @NotBlank(message = "公司名称不能为空")
+    /**
+     * 企业名称
+     */
     private String companyName;
 
-    @JsonIgnore
+    /**
+     * 企业id
+     */
     private Integer companyId;
 
-    @NotBlank(message = "产品名称不能为空")
-    @Length(max = 64, message = "产品名称最大不超过{max}个字符")
+    /**
+     * 产品名称
+     */
     private String productName;
 
-    @NotBlank(message = "产品功能介绍不能为空")
-    @Length(max = 1000, message = "产品功能介绍最大不超过{max}个字符")
+    /**
+     * 产品功能介绍
+     */
     private String productFunctionDesc;
 
-    @NotBlank(message = "使用场景介绍不能为空")
-    @Length(max = 1000, message = "使用场景介绍最大不超过{max}个字符")
+    /**
+     * 产品使用场景
+     */
     private String usageScenesDesc;
 
-    @NotBlank(message = "产品版本不能为空")
-    @Length(max = 64, message = "产品版本最大不超过{max}个字符")
+    /**
+     * 产品版本
+     */
     private String productVersion;
 
-    @NotBlank(message = "os名称不能为空")
-    @Length(max = 50, message = "os名称最大不超过{max}个字符")
+    /**
+     * os名称
+     */
     private String osName;
 
-    @NotBlank(message = "os版本不能为空")
-    @Length(max = 50, message = "os版本最大不超过{max}个字符")
+    /**
+     * os版本
+     */
     private String osVersion;
 
-    @NotNull(message = "算力平台不能为空")
-    private List<@Valid ComputingPlatformVo> hashratePlatformList;
-
-    @JsonIgnore
+    /**
+     * 算力平台
+     */
     private String jsonHashRatePlatform;
 
-    @NotBlank(message = "产品类型不能为空")
-    @Length(max = 50, message = "产品类型最大不超过{max}个字符")
+    /**
+     * 服务器型号
+     */
+    private String serverType;
+
+    /**
+     * 产品类型
+     */
     private String productType;
 
-    @NotBlank(message = "测试机构不能为空")
-    @Length(max = 50, message = "测试机构最大不超过{max}个字符")
+    /**
+     * 测试机构
+     */
     private String testOrganization;
 
+    /**
+     * 测试机构id
+     */
     private Integer testOrgId;
 
-    private String cpuVendor;
-
-    @JsonIgnore
+    /**
+     * 节点状态
+     */
     private Integer status;
 
-    @JsonIgnore
+    /**
+     * 更新时间
+     */
     private Date updateTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    /**
+     * 申请时间
+     */
     private Date applicationTime;
 
-    @JsonIgnore
-    private String userTelephone;
-
-    @JsonIgnore
+    /**
+     * 审核人
+     */
     private String reviewer;
 
-    @JsonIgnore
+    /**
+     * 审核权限
+     */
     private Integer reviewRole;
 
-    @JsonIgnore
+    /**
+     * 证书类型
+     */
+    private String certificateType;
+
+    /**
+     * 证书权益
+     */
+    private String certificateInterests;
+
+    /**
+     * 证书有效期
+     */
+    private String validityPeriod;
+
+    /**
+     * 用户uuid
+     */
     private String userUuid;
 
-    @JsonIgnore
+    /**
+     * 公司编号
+     */
     private Integer companyCode;
 
-    private List<String> platforms;
+    /**
+     * 证书编号
+     */
+    private String certificationId;
 
-    @JsonIgnore
+
+    /**
+     * 认证状态
+     */
     private String authenticationStatus;
 
+    /**
+     * CPU硬件厂商
+     */
+    private String cpuVendor;
+
+    /**
+     * 测评场景id
+     */
     private Integer asId;
 
+    /**
+     * 认证完成时间
+     */
     private Date certificationTime;
+
+    /**
+     * 删除标识
+     */
+    private Integer deleteFlag;
 }
