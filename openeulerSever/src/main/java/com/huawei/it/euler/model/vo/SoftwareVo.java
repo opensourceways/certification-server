@@ -7,10 +7,6 @@ package com.huawei.it.euler.model.vo;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -20,40 +16,189 @@ import lombok.Data;
  */
 @Data
 public class SoftwareVo {
-    @NotNull(message = "认证id不能为空")
+
+    /**
+     * 主键id
+     */
     private Integer id;
 
-    @NotNull(message = "产品名称不能为空")
+    /**
+     * 企业名称
+     */
+    private String companyName;
+
+    /**
+     * 企业id
+     */
+    private Integer companyId;
+
+    /**
+     * 产品名称
+     */
     private String productName;
 
-    @NotNull(message = "产品版本不能为空")
+    /**
+     * 产品功能介绍
+     */
+    private String productFunctionDesc;
+
+    /**
+     * 产品使用场景
+     */
+    private String usageScenesDesc;
+
+    /**
+     * 产品版本
+     */
     private String productVersion;
 
-    @NotNull(message = "os名称不能为空")
+    /**
+     * os名称
+     */
     private String osName;
 
-    @NotNull(message = "os版本不能为空")
+    /**
+     * os版本
+     */
     private String osVersion;
 
-    @NotNull(message = "算力平台不能为空")
-    private List<@Valid ComputingPlatformVo> hashratePlatformList;
-
-    @JsonIgnore
+    /**
+     * 算力平台集合字符串
+     */
     private String jsonHashRatePlatform;
 
-    @JsonIgnore
-    private String reviewer;
+    /**
+     * 算力平台集合
+     */
+    private List<ComputingPlatformVo> hashratePlatformList;
 
-    @JsonIgnore
-    private Integer reviewRole;
+    /**
+     * 算力平台名称集合字符串
+     */
+    private String hashratePlatformNameList;
 
-    @JsonIgnore
+    /**
+     * 平台集合
+     */
+    private List<String> platforms;
+
+    private String platformsList;
+    /**
+     * 服务器型号
+     */
+    private String serverType;
+
+    /**
+     * 产品类型
+     */
+    private String productType;
+
+    /**
+     * 测试机构
+     */
+    private String testOrganization;
+
+    /**
+     * 测试机构id
+     */
+    private Integer testOrgId;
+
+    /**
+     * 节点状态id
+     */
     private Integer status;
 
-    @JsonIgnore
+    /**
+     * 节点状态
+     */
+    private String statusName;
+    /**
+     * 更新时间
+     */
     private Date updateTime;
 
-    private Integer testOrgId;
-    @JsonIgnore
+    /**
+     * 申请时间
+     */
+    private Date applicationTime;
+
+    /**
+     * 前审核人Id
+     */
+    private String preReviewer;
+
+    /**
+     * 审核人
+     */
+    private String reviewer;
+
+    /**
+     * 审核人名称
+     */
+    private String reviewerName;
+    /**
+     * 审核权限
+     */
+    private Integer reviewRole;
+
+    /**
+     * 证书类型
+     */
+    private String certificateType;
+
+    /**
+     * 证书权益
+     */
+    private String certificateInterests;
+
+    /**
+     * 证书有效期
+     */
+    private String validityPeriod;
+
+    /**
+     * 用户uuid
+     */
+    private String userUuid;
+
+    /**
+     * 用户名称
+     */
+    private String applicantName;
+
+    /**
+     * 公司编号
+     */
+    private Integer companyCode;
+
+    /**
+     * 证书编号
+     */
+    private String certificationId;
+
+    /**
+     * 认证状态
+     */
     private String authenticationStatus;
+
+    /**
+     * CPU硬件厂商
+     */
+    private String cpuVendor;
+
+    /**
+     * 测评场景id
+     */
+    private Integer asId;
+
+    /**
+     * 认证完成时间
+     */
+    private Date certificationTime;
+
+    /**
+     * 删除标识
+     */
+    private Integer deleteFlag;
+
 }
