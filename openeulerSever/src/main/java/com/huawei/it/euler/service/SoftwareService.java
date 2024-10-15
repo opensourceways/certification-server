@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.it.euler.common.JsonResponse;
@@ -28,11 +30,11 @@ public interface SoftwareService {
     /**
      * 根据id查询软件认证信息
      *
-     * @param id 软件id
+     * @param id   软件id
      * @param uuid uuid
      * @return 软件信息
      */
-    Software findById(Integer id, String uuid);
+    SoftwareVo findById(Integer id, String uuid);
 
     /**
      * 根据id查询软件认证信息
@@ -56,7 +58,7 @@ public interface SoftwareService {
      * @param software 软件信息
      * @param uuid uuid
      */
-    Integer createSoftware(Software software, String uuid) throws InputException, IOException;
+    Integer createSoftware(SoftwareVo software, String uuid) throws InputException, IOException;
 
     /**
      * 通用的审批流程
@@ -89,20 +91,20 @@ public interface SoftwareService {
     /**
      * 查询兼容性认证申请列表
      *
-     * @param selectSoftwareVo 筛选条件
-     * @param uuid uuid
+     * @param softwareQueryRequest 筛选条件
+     * @param uuid                 uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
+    PageResult<SoftwareVo> getSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize);
 
     /**
      * 华为侧查询兼容性认证申请列表
      *
-     * @param selectSoftwareVo 筛选条件
-     * @param uuid uuid
+     * @param softwareQueryRequest 筛选条件
+     * @param uuid                 uuid
      * @return 列表
      */
-    PageResult<SoftwareListVo> getReviewSoftwareList(SelectSoftwareVo selectSoftwareVo, String uuid);
+    PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize);
 
     /**
      * 认证审核记录
@@ -233,4 +235,21 @@ public interface SoftwareService {
     PageVo<CompatibilityVo> findCommunityCheckList(SoftwareFilterVo vo);
 
     FilterCriteriaVo filterCeriteria();
+
+    /**
+     * 导出软件清单
+     *
+     * @param softwareVo 筛选条件
+     * @param uuid uuid
+     */
+    void export(SoftwareQueryRequest softwareVo, HttpServletResponse response, String uuid) throws IOException;
+
+    /**
+     * 导出证书
+     *
+     * @param softwareVo 筛选条件
+     * @param uuid uuid
+     * @return 文件流
+     */
+    ResponseEntity<StreamingResponseBody> streamFiles(SoftwareQueryRequest softwareVo, String uuid) throws IOException;
 }
