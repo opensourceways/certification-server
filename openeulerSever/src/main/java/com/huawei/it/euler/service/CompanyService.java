@@ -4,6 +4,13 @@
 
 package com.huawei.it.euler.service;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.common.JsonResponse;
@@ -12,13 +19,8 @@ import com.huawei.it.euler.model.entity.FileModel;
 import com.huawei.it.euler.model.vo.CompanyAuditVo;
 import com.huawei.it.euler.model.vo.CompanyVo;
 import com.huawei.it.euler.model.vo.UserCompanyVo;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * CompanyService
