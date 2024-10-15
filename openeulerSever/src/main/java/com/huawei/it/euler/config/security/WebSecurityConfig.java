@@ -1,6 +1,5 @@
 package com.huawei.it.euler.config.security;
 
-import com.huawei.it.euler.ddd.domain.account.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,12 +13,17 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.context.request.async.TimeoutCallableProcessingInterceptor;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.huawei.it.euler.config.handler.EulerAccessDeniedHandler;
 import com.huawei.it.euler.config.handler.EulerAuthenticationEntryPoint;
 import com.huawei.it.euler.config.handler.EulerLogoutSuccessHandler;
+import com.huawei.it.euler.ddd.domain.account.UserInfoService;
 import com.huawei.it.euler.filter.CsrfFilter;
 import com.huawei.it.euler.filter.JwtTokenFilter;
 import com.huawei.it.euler.filter.SecurityFilter;
@@ -52,6 +56,25 @@ public class WebSecurityConfig {
 
     @Autowired
     private SecurityFilter securityFilter;
+
+    @Bean
+    public RequestAttributeSecurityContextRepository getRequestAttributeSecurityContextRepository() {
+        return new RequestAttributeSecurityContextRepository();
+    }
+
+    @Bean
+    public TimeoutCallableProcessingInterceptor timeoutInterceptor() {
+        return new TimeoutCallableProcessingInterceptor();
+    }
+
+    @Configuration
+    public class AsyncConfig implements WebMvcConfigurer {
+        @Override
+        public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+            configurer.setDefaultTimeout(180000);
+            configurer.registerCallableInterceptors(timeoutInterceptor());
+        }
+    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
