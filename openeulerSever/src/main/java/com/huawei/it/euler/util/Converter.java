@@ -10,7 +10,6 @@ import java.util.List;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.util.CollectionUtils;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.model.vo.PageResult;
 
 public interface Converter<S,T>{
@@ -29,15 +28,6 @@ public interface Converter<S,T>{
         }else {
             List<T> target = source.getList().stream().map(this::convert).toList();
             return new PageResult<>(target, source.getTotal(), source.getPageNum(), source.getPageSize());
-        }
-    }
-
-    default PageResult<T> convert(Page<S> source) {
-        if (ObjectUtils.isEmpty(source)) {
-            return PageResult.empty();
-        }else {
-            List<T> target = source.getRecords().stream().map(this::convert).toList();
-            return new PageResult<>(target, source.getTotal(), (int) source.getCurrent(), (int)source.getSize());
         }
     }
 }
