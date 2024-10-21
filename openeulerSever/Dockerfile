@@ -48,7 +48,7 @@ RUN passwd -l certification \
     && echo "export TMOUT=1800 readonly TMOUT" >> /etc/profile
 
 RUN dnf install -y wget \
-    && wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jre/x64/linux/OpenJDK17U-jdk_x64_linux_hotspot_17.0.13_11.tar.gz \
+    && wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jre/x64/linux/OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz \
     && tar -zxvf OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz \
     && rm OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz \
     && chown -R certification:certification jdk-17.0.13+11-jre
