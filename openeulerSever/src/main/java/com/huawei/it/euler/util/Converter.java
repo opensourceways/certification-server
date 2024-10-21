@@ -7,6 +7,7 @@ package com.huawei.it.euler.util;
 import java.util.Collections;
 import java.util.List;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -28,6 +29,15 @@ public interface Converter<S,T>{
         }else {
             List<T> target = source.getList().stream().map(this::convert).toList();
             return new PageResult<>(target, source.getTotal(), source.getPageNum(), source.getPageSize());
+        }
+    }
+
+    default PageResult<T> convert(Page<S> source) {
+        if (ObjectUtils.isEmpty(source)) {
+            return PageResult.empty();
+        }else {
+            List<T> target = source.getRecords().stream().map(this::convert).toList();
+            return new PageResult<>(target, source.getTotal(), (int) source.getCurrent(), (int)source.getSize());
         }
     }
 }
