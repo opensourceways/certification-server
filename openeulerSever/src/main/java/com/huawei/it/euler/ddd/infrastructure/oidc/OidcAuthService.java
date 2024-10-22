@@ -31,11 +31,11 @@ public class OidcAuthService {
 
     public JSONObject isLogin(OidcCookie oidcCookie) throws NoLoginException {
         OidcResponse refreshResult = oidcClient.refreshSession(oidcCookie);
-        if (refreshResult == null){
+        if (refreshResult == null) {
             throw new NoLoginException();
         }
 
-        if (HttpStatus.HTTP_OK != refreshResult.getCode()){
+        if (HttpStatus.HTTP_OK != refreshResult.getCode()) {
             throw new NoLoginException();
         }
 
@@ -43,17 +43,11 @@ public class OidcAuthService {
         if (dataJSONObject == null) {
             throw new NoLoginException();
         }
-        dataJSONObject.put("cookieList",refreshResult.getCookieList());
+        dataJSONObject.put("cookieList", refreshResult.getCookieList());
         return dataJSONObject;
     }
 
-    public UserInfo getUserInfoByCode(String code){
-        String accessToken = oidcClient.getAccessToken(code);
-        OidcResponse userInfoRes = oidcClient.getUserInfoByAccessToken(accessToken);
-        return userInfoFactory.createByAccessTokenUser(userInfoRes.getData());
-    }
-
-    public UserInfo getUserInfo(String uuid) {
+    private String getManagerToken() {
         String managerToken;
         String tokenStr = customizeCacheService.get("managerToken");
         if (StringUtils.isEmpty(tokenStr)) {
@@ -71,35 +65,59 @@ public class OidcAuthService {
         } else {
             managerToken = tokenStr;
         }
+        return managerToken;
+    }
+
+    public void register(OidcCookie oidcCookie) throws NoLoginException {
+        String managerToken = getManagerToken();
+        OidcResponse oidcResponse = oidcClient.registerApp(managerToken, oidcCookie);
+        if (oidcResponse == null) {
+            throw new NoLoginException();
+        }
+
+        if (HttpStatus.HTTP_OK != oidcResponse.getCode()) {
+            throw new NoLoginException();
+        }
+    }
+
+    public UserInfo getUserInfoByCode(String code) {
+        String accessToken = oidcClient.getAccessToken(code);
+        OidcResponse userInfoRes = oidcClient.getUserInfoByAccessToken(accessToken);
+        return userInfoFactory.createByAccessTokenUser(userInfoRes.getData());
+    }
+
+    public UserInfo getUserInfo(String uuid) {
+        String managerToken = getManagerToken();
         OidcResponse userInfoRes = oidcClient.getUserInfoByManagerToken(uuid, managerToken);
         log.info("get manager token by user");
         log.info(JSONObject.toJSONString(userInfoRes));
-        if (HttpStatus.HTTP_OK == userInfoRes.getCode()){
+        if (HttpStatus.HTTP_OK == userInfoRes.getCode()) {
             UserInfo byManagerTokenUser = userInfoFactory.createByManagerTokenUser(userInfoRes.getData());
             byManagerTokenUser.setUuid(uuid);
             return byManagerTokenUser;
         }
-       return null;
+        return null;
     }
 
-    public String getLoginUrl(){
+    public String getLoginUrl() {
         return oidcClient.getLoginUrl();
     }
 
-    public String getLogoutUrl(){
+    public String getLogoutUrl() {
         return oidcClient.getLogoutUrl();
     }
 
-    public String redirectToIndex(){
+    public String redirectToIndex() {
         return oidcClient.getFrontRedirectUrl();
     }
 
     /**
      * parse the data for api called by euler user center
+     *
      * @param jwtStr jwt data
      * @return required data
      */
-    public String verifyJwt(String jwtStr){
+    public String verifyJwt(String jwtStr) {
         return oidcClient.verifyJwt(jwtStr);
     }
 
