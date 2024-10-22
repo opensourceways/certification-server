@@ -80,7 +80,7 @@ RUN rm -rf /usr/bin/gdb* \
     && yum remove gdb-gdbserver findutils passwd shadow -y \
     && yum clean all
 
-ENV JAVA_HOME=${WORKSPACE}/jdk-17.0.12+7-jre
+ENV JAVA_HOME=${WORKSPACE}/jdk-17.0.13+11-jre
 ENV PATH=${JAVA_HOME}/bin:$PATH
 ENV LANG="C.UTF-8"
 
