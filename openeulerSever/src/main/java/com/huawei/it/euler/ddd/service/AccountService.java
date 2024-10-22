@@ -74,6 +74,9 @@ public class AccountService {
 
     public boolean loginByOidc(HttpServletRequest request, HttpServletResponse response) throws Exception {
         OidcCookie oidcCookie = getOidcCookie(request);
+
+        oidcAuthService.register(oidcCookie);
+
         JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
         String uuid = loginObj.getString("userId");
 
@@ -118,12 +121,6 @@ public class AccountService {
             return false;
         }
 
-        // local login but remote no login, set local logout
-        if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
-            logout(request, response);
-            return false;
-        }
-
         // local no login but remote login, set local login
         if (StringUtils.isEmpty(sessionId) && oidcCookie != null) {
             try {
@@ -135,38 +132,7 @@ public class AccountService {
             }
         }
 
-        // bot login and check login expire or not and check local user equal remote user or not
-        String loginUuid = null;
-        try {
-            boolean isLoginLocal = sessionService.isAuth(sessionId);
-            if (isLoginLocal) {
-                loginUuid = getLoginUuid(request);
-            } else {
-                sessionId = null;
-            }
-        } catch (NoLoginException ignored) {
-        }
-
-        try {
-            JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
-
-            String uuid = loginObj.getString("userId");
-            if (!uuid.equals(loginUuid)) {
-                if (!StringUtils.isEmpty(sessionId)) {
-                    sessionService.clear(sessionId);
-                }
-               return loginByOidc(request, response);
-            }
-            JSONArray cookieList = loginObj.getJSONArray("cookieList");
-            cookieConfig.writeCookieList(response,cookieList);
-        } catch (Exception ignored) {
-            if (!StringUtils.isEmpty(sessionId)) {
-                logout(request, response);
-                sessionId = null;
-            }
-        }
-
-        return StringUtils.isNotEmpty(sessionId);
+        return sessionService.isAuth(sessionId);
     }
 
     public void refreshLogin(HttpServletRequest request) {
