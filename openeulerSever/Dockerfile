@@ -2,14 +2,14 @@ FROM openeuler/openeuler:22.03-lts-sp1 as BUILDER
 
 RUN cd / \
     && yum install -y wget \
-    && wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jdk/x64/linux/OpenJDK17U-jdk_x64_linux_hotspot_17.0.12_7.tar.gz \
-    && tar -zxvf OpenJDK17U-jdk_x64_linux_hotspot_17.0.12_7.tar.gz \
+    && wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jdk/x64/linux/OpenJDK17U-jdk_x64_linux_hotspot_17.0.13_11.tar.gz \
+    && tar -zxvf OpenJDK17U-jdk_x64_linux_hotspot_17.0.13_11.tar.gz \
     && wget https://repo.huaweicloud.com/apache/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz \
     && tar -zxvf apache-maven-3.8.1-bin.tar.gz
 
 COPY . /certification-server
 
-ENV JAVA_HOME=/jdk-17.0.12+7
+ENV JAVA_HOME=/jdk-17.0.13+11
 ENV PATH=${JAVA_HOME}/bin:$PATH
 
 ENV MAVEN_HOME=/apache-maven-3.8.1
@@ -48,10 +48,17 @@ RUN passwd -l certification \
     && echo "export TMOUT=1800 readonly TMOUT" >> /etc/profile
 
 RUN dnf install -y wget \
-    && wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jre/x64/linux/OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz \
-    && tar -zxvf OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz \
-    && rm OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz \
-    && chown -R certification:certification jdk-17.0.12+7-jre
+    && wget https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jre/x64/linux/OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz \
+    && tar -zxvf OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz \
+    && rm OpenJDK17U-jre_x64_linux_hotspot_17.0.13_11.tar.gz \
+    && chown -R certification:certification jdk-17.0.13+11-jre
+
+RUN dnf install -y \
+    fontconfig \
+    freetype \
+    wget \
+    zip \
+    && dnf clean all
 
 RUN dnf install -y \
     fontconfig \
@@ -80,7 +87,7 @@ RUN rm -rf /usr/bin/gdb* \
     && yum remove gdb-gdbserver findutils passwd shadow -y \
     && yum clean all
 
-ENV JAVA_HOME=${WORKSPACE}/jdk-17.0.12+7-jre
+ENV JAVA_HOME=${WORKSPACE}/jdk-17.0.13+11-jre
 ENV PATH=${JAVA_HOME}/bin:$PATH
 ENV LANG="C.UTF-8"
 

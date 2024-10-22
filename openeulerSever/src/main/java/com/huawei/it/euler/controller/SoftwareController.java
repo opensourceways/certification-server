@@ -285,7 +285,8 @@ public class SoftwareController {
             message = "每页展示条数超出范围") Integer pageSize,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareVo> softwareList = softwareService.getSoftwareList(softwareQueryRequest, uuid,curPage,pageSize);
+        PageResult<SoftwareVo> softwareList =
+            softwareService.getSoftwareList(softwareQueryRequest, uuid, curPage, pageSize);
         return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(softwareList));
     }
 
@@ -305,7 +306,8 @@ public class SoftwareController {
             message = "每页展示条数超出范围") Integer pageSize,
         HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
-        PageResult<SoftwareVo> reviewSoftwareList = softwareService.getReviewSoftwareList(softwareQueryRequest, uuid, curPage, pageSize);
+        PageResult<SoftwareVo> reviewSoftwareList =
+            softwareService.getReviewSoftwareList(softwareQueryRequest, uuid, curPage, pageSize);
         return JsonResponse.success(SoftwareVOToDTOConverter.INSTANCE.convert(reviewSoftwareList));
     }
 
