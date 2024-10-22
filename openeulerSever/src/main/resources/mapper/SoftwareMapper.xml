@@ -404,6 +404,7 @@
             hashrate_platform     = #{jsonHashRatePlatform},
             update_time           = #{updateTime},
             product_type          = #{productType},
+            test_org_id           = #{testOrgId},
             test_organization     = #{testOrganization},
             cpu_vendor            = #{cpuVendor},
             as_id                 = #{asId}
