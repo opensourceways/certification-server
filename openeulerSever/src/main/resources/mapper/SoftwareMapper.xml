@@ -26,7 +26,7 @@
         <result column="company_code" property="companyCode"/>
     </resultMap>
 
-    <resultMap id="softwareMap" type="com.huawei.it.euler.model.vo.SoftwareVo">
+    <resultMap id="softwareMap" type="com.huawei.it.euler.model.vo.SoftwareListVo">
         <id column="id" property="id"/>
         <result column="company_name" property="companyName"/>
         <result column="product_name" property="productName"/>
@@ -34,20 +34,18 @@
         <result column="product_version" property="productVersion"/>
         <result column="os_name" property="osName"/>
         <result column="os_version" property="osVersion"/>
-        <result column="hashrate_platform" property="jsonHashRatePlatform"/>
+        <result column="hashrate_platform" property="hashratePlatform"/>
         <result column="test_organization" property="testOrganization"/>
         <result column="test_org_id" property="testOrgId"/>
         <result column="application_time" property="applicationTime"/>
         <result column="status" property="status"/>
+        <result column="status" property="statusId"/>
         <result column="reviewer" property="reviewer"/>
         <result column="review_role" property="reviewRole"/>
         <result column="authentication_status" property="authenticationStatus"/>
         <result column="cpu_vendor" property="cpuVendor"/>
-        <result column="user_uuid" property="userUuid"/>
+        <result column="user_uuid" property="applicant"/>
         <result column="as_id" property="asId"/>
-        <result column="product_function_desc" property="productFunctionDesc"/>
-        <result column="usage_scenes_desc" property="usageScenesDesc"/>
-        <result column="validity_period" property="validityPeriod"/>
     </resultMap>
 
     <resultMap id="compatibilityMap" type="com.huawei.it.euler.model.entity.Compatibility">
@@ -67,7 +65,6 @@
         <result column="file_path" property="filePath"/>
         <result column="software_id" property="softwareId"/>
         <result column="file_type" property="fileType"/>
-        <result column="fileid" property="fileId"/>
     </resultMap>
 
     <resultMap id="AttachmentsVoMap" type="com.huawei.it.euler.model.vo.AttachmentsVo">
@@ -222,7 +219,7 @@
         </if>
     </select>
 
-    <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.entity.Software">
+    <update id="updateSoftwareById" parameterType="com.huawei.it.euler.model.vo.SoftwareVo">
         update software_t
         set product_name      = #{productName},
             product_version   = #{productVersion},
@@ -269,7 +266,7 @@
         <include refid="whereSoftwareList"/>
     </select>
 
-    <select id="getSoftwareList" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery"
+    <select id="getSoftwareList" parameterType="com.huawei.it.euler.model.entity.SelectSoftware"
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
         s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
@@ -312,14 +309,6 @@
             </otherwise>
         </choose>
         LIMIT #{offset}, #{pageSize}
-    </select>
-
-    <select id="getExportSoftwareList" resultMap="softwareMap">
-        select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
-        s.reviewer,s.review_role,s.hashrate_platform, s.test_organization,s.test_org_id,
-        s.application_time,s.status,s.authentication_status,s.cpu_vendor,s.certification_time, s.user_uuid,s.product_function_desc,s.usage_scenes_desc,s.validity_period
-        from software_t AS s
-        <include refid="whereReviewSoftwareList"/>
     </select>
 
     <select id="getAuditRecordsList" parameterType="java.lang.Integer"
@@ -404,6 +393,7 @@
             hashrate_platform     = #{jsonHashRatePlatform},
             update_time           = #{updateTime},
             product_type          = #{productType},
+            test_org_id           = #{testOrgId},
             test_organization     = #{testOrganization},
             cpu_vendor            = #{cpuVendor},
             as_id                 = #{asId}
@@ -440,18 +430,6 @@
     <select id="findTestOrganization" resultType="java.lang.String">
         select distinct name
         from innovation_center_t;
-    </select>
-
-    <select id="getCertificationIds" resultMap="AttachmentsMap">
-        select fileid, filename,software_id
-        from attachments_t
-        where  file_type = 'certificates'
-        <if test="softwareIds != null and softwareIds.size() > 0">
-            and attachments_t.software_id in
-            <foreach collection="softwareIds" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
     </select>
 
     <delete id="deleteSoftware">
