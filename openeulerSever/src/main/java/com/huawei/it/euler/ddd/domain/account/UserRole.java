@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @TableName("user_role_mapping_t")
 public class UserRole {
@@ -14,13 +16,13 @@ public class UserRole {
      * 主键id
      */
     @TableId(type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 角色值
      */
     @TableField(value = "role_id")
-    private String role;
+    private Integer roleId;
 
     /**
      * 数据范围
@@ -38,5 +40,11 @@ public class UserRole {
      * 更新时间
      */
     @TableField(value = "update_time")
-    private Data updateTime;
+    private Date LastUpdatedTime;
+
+    /**
+     * 最后更新人
+     */
+    @TableField(value = "last_updated_by")
+    private Integer LastUpdatedBy;
 }

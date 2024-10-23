@@ -14,6 +14,8 @@ import com.huawei.it.euler.ddd.domain.account.query.UserRoleQuery;
 import com.huawei.it.euler.ddd.domain.account.repository.UserRoleRepository;
 import com.huawei.it.euler.ddd.infrastructure.mapper.UserRoleMapper;
 
+import java.util.Date;
+
 @Service
 public class UserRoleDBRepository extends ServiceImpl<UserRoleMapper, UserRole> implements UserRoleRepository {
 
@@ -26,4 +28,28 @@ public class UserRoleDBRepository extends ServiceImpl<UserRoleMapper, UserRole> 
         Page<UserRole> poPage = new Page<>(curPage, pageSize);
         return userRoleMapper.selectPage(poPage, queryWrapper);
     }
+
+    @Override
+    public String createUserRole(UserRole userRole) {
+        userRole.setLastUpdatedTime(new Date());
+        userRoleMapper.insert(userRole);
+        return String.valueOf(userRole.getId());
+    }
+
+    @Override
+    public String modifyUserRole(UserRole userRole) {
+        userRole.setLastUpdatedTime(new Date());
+        userRoleMapper.updateById(userRole);
+        return String.valueOf(userRole.getId());
+    }
+
+    @Override
+    public void deleteUserRole(Integer userRoleId) {
+        userRoleMapper.deleteById(userRoleId);
+    }
+
+    @Override
+    public UserRole getUserRoleById(Integer id) {
+        return userRoleMapper.selectById(id);
+    } 
 }

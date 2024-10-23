@@ -2,38 +2,38 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.interfaces.request;
-
-import lombok.Data;
+package com.huawei.it.euler.ddd.domain.masterdata;
 
 import java.util.Date;
 
+import lombok.Data;
+
+/**
+ * ComputingPlatform
+ *
+ * @since 2024/07/02
+ */
 @Data
-public class UserRoleDTO {
+public class ComputingPlatform {
     /**
-     * 主键id
+     * 主键
      */
     private Integer id;
 
     /**
-     * 角色值
+     * 算力平台
      */
-    private Integer role;
+    private String platformName;
 
     /**
-     * 角色名称
+     * 服务厂家
      */
-    private String roleName;
+    private String serverProvider;
 
     /**
-     * 数据范围
+     * 服务器类型
      */
-    private Integer dataScope;
-
-    /**
-     * 用户uuid
-     */
-    private String uuid;
+    private String serverType;
 
     /**
      * 更新时间
@@ -44,4 +44,5 @@ public class UserRoleDTO {
      * 最后更新人
      */
     private Integer LastUpdatedBy;
+
 }

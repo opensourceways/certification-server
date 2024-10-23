@@ -4,8 +4,7 @@
 
 package com.huawei.it.euler.model.enumeration;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import lombok.Getter;
 
@@ -38,6 +37,9 @@ public enum RoleEnum {
     OPERATOR(13, "operator", "运维人员"),
     ;
 
+    //可以进行授权的角色
+    private static final Set<Integer> MANAGE_IDS = new HashSet<>(Arrays.asList( 2,4,5,11,12,13));
+
     private final Integer roleId; // 角色id
 
     private final String role; // 角色英文名
@@ -48,6 +50,19 @@ public enum RoleEnum {
         this.roleId = roleId;
         this.role = role;
         this.roleName = roleName;
+    }
+
+    public static boolean isManageRole(int id) {
+        return MANAGE_IDS.contains(id);
+    }
+
+    public static String findById(Integer id) {
+        for (RoleEnum roleEnum : RoleEnum.values()) {
+            if (roleEnum.getRoleId().equals(id)) {
+                return roleEnum.getRoleName();
+            }
+        }
+        return null;
     }
 
     public static boolean isUser(List<Integer> roles) {
