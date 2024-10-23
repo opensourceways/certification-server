@@ -112,9 +112,7 @@ public class UserServiceImpl implements UserService {
             && Objects.equals(userUuid, Integer.valueOf(software.getUserUuid()))) {
             return true;
         }
-        List<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, software.getReviewRole()).stream().map(RoleVo::getDataScope)
-            .filter(Objects::nonNull).toList();
-        return dateScope.contains(ALL_PERMISSION) || dateScope.contains(software.getTestOrgId());
+        return hasDateScopePermission(String.valueOf(userUuid), software.getReviewRole(), software.getTestOrgId());
     }
 
     @Override
@@ -126,13 +124,7 @@ public class UserServiceImpl implements UserService {
             if (company != null){
                 return company.getCompanyCode().equals(software.getCompanyCode());
             }
-            Set<Integer> dateScope = roleMapper.findRoleByUserId(userUuid, null).stream().map(RoleVo::getDataScope)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
-            if (dateScope.contains(ALL_PERMISSION)) {
-                return true;
-            } else {
-                return dateScope.contains(software.getTestOrgId());
-            }
+            return hasDateScopePermission(String.valueOf(userUuid), null, software.getTestOrgId());
         }
     }
 
@@ -154,5 +146,13 @@ public class UserServiceImpl implements UserService {
             default:
                 throw new ParamException("无权限下载");
         }
+    }
+
+    @Override
+    public boolean hasDateScopePermission(String uuid, Integer roleId, Integer dataScope) {
+        Set<Integer> dateScope = roleMapper.findRoleByUserId(Integer.valueOf(uuid), RoleEnum.ADMIN.getRoleId()).stream().map(RoleVo::getDataScope)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        return dateScope.contains(ALL_PERMISSION) || dateScope.contains(dataScope);
+
     }
 }

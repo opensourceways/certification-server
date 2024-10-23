@@ -262,7 +262,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public JsonResponse<String> approveCompany(CompanyAuditVo companyAuditVo) {
+    public JsonResponse<String> approveCompany(CompanyAuditVo companyAuditVo) throws Exception {
         if (companyAuditVo == null || companyAuditVo.getUserUuid() == null) {
             return JsonResponse.failed("请求参数不完整");
         }
