@@ -2,39 +2,39 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.interfaces.request;
-
-import lombok.Data;
+package com.huawei.it.euler.ddd.domain.masterdata;
 
 import java.util.Date;
 
+import lombok.Data;
+
+/**
+ * Os
+ *
+ * @since 2024/07/02
+ */
 @Data
-public class UserRoleDTO {
+public class Os {
     /**
-     * 主键id
+     * 主键
      */
     private Integer id;
 
     /**
-     * 角色值
+     * 系统名称
      */
-    private Integer role;
+    private String osName;
 
     /**
-     * 角色名称
+     * 系统版本
      */
-    private String roleName;
+    private String osVersion;
 
     /**
-     * 数据范围
+     * 对应欧拉版本
      */
-    private Integer dataScope;
-
-    /**
-     * 用户uuid
-     */
-    private String uuid;
-
+    private String relatedOsVersion;
+    
     /**
      * 更新时间
      */

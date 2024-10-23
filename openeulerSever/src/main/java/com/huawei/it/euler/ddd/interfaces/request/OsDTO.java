@@ -4,36 +4,31 @@
 
 package com.huawei.it.euler.ddd.interfaces.request;
 
-import lombok.Data;
-
 import java.util.Date;
 
+import lombok.Data;
+
 @Data
-public class UserRoleDTO {
+public class OsDTO {
     /**
-     * 主键id
+     * 主键
      */
     private Integer id;
 
     /**
-     * 角色值
+     * 系统名称
      */
-    private Integer role;
+    private String osName;
 
     /**
-     * 角色名称
+     * 系统版本
      */
-    private String roleName;
+    private String osVersion;
 
     /**
-     * 数据范围
+     * 对应版本
      */
-    private Integer dataScope;
-
-    /**
-     * 用户uuid
-     */
-    private String uuid;
+    private String relatedOsVersion;
 
     /**
      * 更新时间

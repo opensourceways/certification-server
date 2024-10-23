@@ -2,38 +2,33 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.interfaces.request;
-
-import lombok.Data;
+package com.huawei.it.euler.ddd.domain.masterdata;
 
 import java.util.Date;
 
+import lombok.Data;
+
+/**
+ * Product
+ *
+ * @since 2024/07/02
+ */
 @Data
-public class UserRoleDTO {
+public class Product {
     /**
-     * 主键id
+     * 主键
      */
     private Integer id;
 
     /**
-     * 角色值
+     * 产品类型
      */
-    private Integer role;
+    private String productType;
 
     /**
-     * 角色名称
+     * 产品类型子类型
      */
-    private String roleName;
-
-    /**
-     * 数据范围
-     */
-    private Integer dataScope;
-
-    /**
-     * 用户uuid
-     */
-    private String uuid;
+    private String productChildrenType;
 
     /**
      * 更新时间
