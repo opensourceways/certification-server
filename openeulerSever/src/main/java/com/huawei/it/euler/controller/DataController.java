@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-public class MasterDataController {
+public class DataController {
     @Resource
     private MasterDataService masterDataService;
 
