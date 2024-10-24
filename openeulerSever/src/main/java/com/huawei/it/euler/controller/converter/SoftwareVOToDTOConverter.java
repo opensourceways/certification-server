@@ -18,7 +18,7 @@ public abstract class SoftwareVOToDTOConverter implements Converter<SoftwareVo, 
     public static final SoftwareVOToDTOConverter INSTANCE = Mappers.getMapper(SoftwareVOToDTOConverter.class);
 
     @Override
-    @Mappings({@Mapping(source = "userUuid", target = "applicant"), @Mapping(source = "statusName", target = "status"),
+    @Mappings({@Mapping(source = "userUuid", target = "applicant"),
         @Mapping(source = "certificationTime", target = "certificationTime", dateFormat = "yyyy-MM-dd HH:mm:ss"),
         @Mapping(source = "applicationTime", target = "applicationTime", dateFormat = "yyyy-MM-dd HH:mm:ss")})
     public abstract SoftwareDTO convert(SoftwareVo source);
