@@ -4,22 +4,19 @@
 
 package com.huawei.it.euler.controller.converter;
 
+import com.huawei.it.euler.model.dto.SoftwareDTO;
+import com.huawei.it.euler.model.vo.SoftwareVo;
+import com.huawei.it.euler.util.Converter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
-
-import com.huawei.it.euler.model.dto.SoftwareDTO;
-import com.huawei.it.euler.model.vo.SoftwareVo;
-import com.huawei.it.euler.util.Converter;
 
 @Mapper
 public abstract class SoftwareVOToDTOConverter implements Converter<SoftwareVo, SoftwareDTO> {
     public static final SoftwareVOToDTOConverter INSTANCE = Mappers.getMapper(SoftwareVOToDTOConverter.class);
 
     @Override
-    @Mappings({@Mapping(source = "userUuid", target = "applicant"),
-        @Mapping(source = "certificationTime", target = "certificationTime", dateFormat = "yyyy-MM-dd HH:mm:ss"),
-        @Mapping(source = "applicationTime", target = "applicationTime", dateFormat = "yyyy-MM-dd HH:mm:ss")})
+    @Mappings({@Mapping(source = "userUuid", target = "applicant")})
     public abstract SoftwareDTO convert(SoftwareVo source);
 }
