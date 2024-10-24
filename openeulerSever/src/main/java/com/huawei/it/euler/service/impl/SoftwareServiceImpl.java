@@ -247,8 +247,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         Integer softwareId = software.getId();
         // 判断是否存在id，如果已经存在id说明是驳回后重新提交，更新数据
         if (softwareId == null || softwareId == 0) {
-            softwareMapper.insertSoftware(SoftwareVOToEntityConverter.INSTANCE.convert(software));
-            softwareId = software.getId();
+            Software softwareConvert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
+            softwareMapper.insertSoftware(softwareConvert);
+            softwareId = softwareConvert.getId();
+            software.setId(softwareId);
         } else {
             softwareMapper.recommit(SoftwareVOToEntityConverter.INSTANCE.convert(software));
             // 调用审核接口
