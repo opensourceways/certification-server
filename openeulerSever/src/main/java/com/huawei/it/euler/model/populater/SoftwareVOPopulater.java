@@ -39,6 +39,7 @@ public class SoftwareVOPopulater implements Populater<SoftwareVo> {
         }
         source.setReviewerName(accountService.getUserName(source.getReviewer()));
         source.setApplicantName(accountService.getUserName(source.getUserUuid()));
+        source.setStatusName(NodeEnum.findById(source.getStatus()));
         return source;
     }
 
