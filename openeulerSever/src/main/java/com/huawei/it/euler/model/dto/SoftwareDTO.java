@@ -143,9 +143,11 @@ public class SoftwareDTO {
     /**
      * 认证状态
      */
-    @ExcelProperty("认证状态")
-    private String status;
 
+    private Integer status;
+
+    @ExcelProperty("认证状态")
+    private String statusName;
     /**
      * 平台集合
      */
