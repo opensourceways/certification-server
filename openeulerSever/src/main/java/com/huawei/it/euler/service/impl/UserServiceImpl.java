@@ -150,9 +150,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean hasDateScopePermission(String uuid, Integer roleId, Integer dataScope) {
-        Set<Integer> dateScope = roleMapper.findRoleByUserId(Integer.valueOf(uuid), RoleEnum.ADMIN.getRoleId()).stream().map(RoleVo::getDataScope)
+        Set<Integer> dateScopeSet = roleMapper.findRoleByUserId(Integer.valueOf(uuid), roleId).stream().map(RoleVo::getDataScope)
                 .filter(Objects::nonNull).collect(Collectors.toSet());
-        return dateScope.contains(ALL_PERMISSION) || dateScope.contains(dataScope);
-
+        return dateScopeSet.contains(ALL_PERMISSION) || dateScopeSet.contains(dataScope);
     }
 }
