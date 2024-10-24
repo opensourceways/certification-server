@@ -87,7 +87,7 @@ public class SoftwareDTO {
     @ExcelProperty("测试机构")
     private String testOrganization;
 
-    private String testOrgId;
+    private Integer testOrgId;
 
     /**
      * 算力平台名称
