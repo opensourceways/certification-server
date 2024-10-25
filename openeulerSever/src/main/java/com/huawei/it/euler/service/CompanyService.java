@@ -78,7 +78,7 @@ public interface CompanyService {
      * @param companyAuditVo 审批结果
      * @return JsonResponse
      */
-    JsonResponse<String> approveCompany(CompanyAuditVo companyAuditVo);
+    JsonResponse<String> approveCompany(CompanyAuditVo companyAuditVo) throws Exception;
 
     /**
      * logo上传

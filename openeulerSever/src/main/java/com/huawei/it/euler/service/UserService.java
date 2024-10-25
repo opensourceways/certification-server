@@ -68,4 +68,6 @@ public interface UserService extends UserDetailsService {
     boolean isUserPermission(Integer userUuid, Software software);
 
     boolean isAttachmentPermission(String userUuid, Attachments attachment);
+
+    boolean hasDateScopePermission(String uuid, Integer roleId,Integer dataScope);
 }

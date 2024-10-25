@@ -504,7 +504,7 @@ class SoftwareServiceImplTest {
         software.setProductFunctionDesc("测试用例描述");
         software.setProductType("硬件/DIMM");
         software.setTestOrganization("openEuler社区");
-        software.setStatus(String.valueOf(NodeEnum.PROGRAM_REVIEW.getId()));
+        software.setStatus(Integer.valueOf(String.valueOf(NodeEnum.PROGRAM_REVIEW.getId())));
         software.setReviewer(USER_UUID);
         software.setApplicant(USER_UUID);
         return software;
