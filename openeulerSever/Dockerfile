@@ -60,6 +60,13 @@ RUN dnf install -y \
     zip \
     && dnf clean all
 
+RUN dnf install -y \
+    fontconfig \
+    freetype \
+    wget \
+    zip \
+    && dnf clean all
+
 RUN rm -rf `find / -iname "*tcpdump*"` \
     && rm -rf `find / -iname "*sniffer*"` \
     && rm -rf `find / -iname "*wireshark*"` \
