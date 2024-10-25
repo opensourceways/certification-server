@@ -4,15 +4,12 @@
 
 package com.huawei.it.euler.model.dto;
 
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
-
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * SoftwareDTO
@@ -110,24 +107,14 @@ public class SoftwareDTO {
     /**
      * 申请时间
      */
-    @JsonFormat(
-            shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd HH:mm:ss",
-            timezone = "GMT+8"
-    )
     @ExcelProperty("申请时间")
-    private Date applicationTime;
+    private String applicationTime;
 
     /**
      * 认证完成时间
      */
-    @JsonFormat(
-            shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd HH:mm:ss",
-            timezone = "GMT+8"
-    )
     @ExcelProperty("认证完成时间")
-    private Date certificationTime;
+    private String certificationTime;
 
     /**
      * 证书有效期

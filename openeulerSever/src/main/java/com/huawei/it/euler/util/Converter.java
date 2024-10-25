@@ -38,6 +38,5 @@ public interface Converter<S, T> {
         }
         List<T> target = source.getRecords().stream().map(this::convert).toList();
         return new PageResult<>(target, source.getTotal(), (int)source.getCurrent(), (int)source.getSize());
-
     }
 }
