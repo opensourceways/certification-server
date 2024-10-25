@@ -4,13 +4,12 @@
 
 package com.huawei.it.euler.model.dto;
 
-import java.util.List;
-
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.huawei.it.euler.model.vo.ComputingPlatformVo;
-
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * SoftwareDTO
@@ -85,7 +84,7 @@ public class SoftwareDTO {
     @ExcelProperty("测试机构")
     private String testOrganization;
 
-    private String testOrgId;
+    private Integer testOrgId;
 
     /**
      * 算力平台名称
@@ -143,9 +142,11 @@ public class SoftwareDTO {
     /**
      * 认证状态
      */
-    @ExcelProperty("认证状态")
-    private String status;
 
+    private Integer status;
+
+    @ExcelProperty("认证状态")
+    private String statusName;
     /**
      * 平台集合
      */
