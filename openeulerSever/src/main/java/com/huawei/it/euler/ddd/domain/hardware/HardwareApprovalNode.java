@@ -43,7 +43,7 @@ public class HardwareApprovalNode implements Serializable {
     private Date handlerTime;
 
     /**
-     * 操作结果：1-通过；2-驳回
+     * 操作结果：HardwareValueEnum-RESULT*
      */
     private String handlerResult;
 
@@ -53,7 +53,7 @@ public class HardwareApprovalNode implements Serializable {
     private String handlerComment;
 
     /**
-     * 操作节点：wait_apply-数据提交；wait_approval-数据审核
+     * 操作节点：HardwareValueEnum-NODE*
      */
     private String handlerNode;
 
@@ -70,7 +70,7 @@ public class HardwareApprovalNode implements Serializable {
         return this;
     }
 
-    public HardwareApprovalNode approval(String hardwareType){
+    public HardwareApprovalNode approval(String hardwareType) {
         this.setHardwareType(hardwareType);
         this.setHandlerTime(new Date());
         this.setHandlerNode(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());

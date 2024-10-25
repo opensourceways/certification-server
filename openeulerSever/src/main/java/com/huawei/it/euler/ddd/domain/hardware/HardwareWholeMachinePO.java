@@ -46,7 +46,7 @@ public class HardwareWholeMachinePO implements Serializable {
      * 硬件型号
      */
     @TableField("model")
-    private String model;
+    private String hardwareModel;
 
     /**
      * 操作系统版本

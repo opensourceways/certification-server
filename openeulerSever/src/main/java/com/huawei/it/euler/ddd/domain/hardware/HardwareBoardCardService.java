@@ -85,11 +85,10 @@ public class HardwareBoardCardService {
         List<HardwareBoardCardPO> boardCardPOList = boardCardRepository.list(queryWrapper);
         return hardwareFactory.createBoardCardList(boardCardPOList);
     }
+
     public List<HardwareBoardCard> getList(HardwareBoardCard boardCard) {
         HardwareBoardCardSelectVO selectVO = hardwareFactory.createBoardCardSelectVO(boardCard);
-        QueryWrapper<HardwareBoardCardPO> queryWrapper = createQueryWrapper(selectVO);
-        List<HardwareBoardCardPO> boardCardPOList = boardCardRepository.list(queryWrapper);
-        return hardwareFactory.createBoardCardList(boardCardPOList);
+        return getList(selectVO);
     }
 
     public Page<HardwareBoardCard> getPage(HardwareBoardCardSelectVO selectVO) {
@@ -108,8 +107,8 @@ public class HardwareBoardCardService {
     }
 
     public void updateById(HardwareBoardCard boardCard){
-        HardwareBoardCardPO wholeMachinePO = hardwareFactory.createBoardCardPO(boardCard);
-        boardCardRepository.updateById(wholeMachinePO);
+        HardwareBoardCardPO boardCardPO = hardwareFactory.createBoardCardPO(boardCard);
+        boardCardRepository.updateById(boardCardPO);
     }
 
     public HardwareBoardCard insert(HardwareBoardCard boardCard) {
@@ -144,5 +143,8 @@ public class HardwareBoardCardService {
         boardCardRepository.saveOrUpdate(boardCardPO);
     }
 
-
+    public void close(HardwareBoardCard boardCard) {
+        HardwareBoardCardPO boardCardPO = hardwareFactory.createBoardCardPO(boardCard.close());
+        boardCardRepository.saveOrUpdate(boardCardPO);
+    }
 }

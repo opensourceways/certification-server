@@ -130,7 +130,7 @@ public class HardwareBoardCard {
         return this;
     }
 
-    public HardwareBoardCard delete(){
+    public HardwareBoardCard delete() {
         this.setStatus(HardwareValueEnum.NODE_DELETE.getValue());
         this.setUpdateTime(new Date());
         return this;
@@ -154,7 +154,13 @@ public class HardwareBoardCard {
         return this;
     }
 
-    public String toSimpleJsonString(){
+    public HardwareBoardCard close() {
+        this.setStatus(HardwareValueEnum.NODE_CLOSE.getValue());
+        this.setUpdateTime(new Date());
+        return this;
+    }
+
+    public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
         simple.put("os", this.getOs());
         simple.put("architecture", this.getArchitecture());

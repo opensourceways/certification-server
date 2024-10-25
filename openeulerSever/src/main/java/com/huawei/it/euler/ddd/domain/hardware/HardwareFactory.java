@@ -61,6 +61,8 @@ public class HardwareFactory {
     public HardwareWholeMachine createWholeMachine(HardwareWholeMachinePO wholeMachinePO) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
+        wholeMachine.setHardwareFactoryZy(wholeMachinePO.getFactoryZy());
+        wholeMachine.setHardwareFactoryEn(wholeMachinePO.getFactoryEn());
         HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
         BeanUtils.copyProperties(wholeMachinePO, compatibilityConfiguration);
         wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
@@ -71,6 +73,8 @@ public class HardwareFactory {
         List<HardwareWholeMachine> wholeMachineList = new ArrayList<>();
         for (HardwareWholeMachinePO wholeMachinePO : wholeMachinePOList) {
             HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
+            wholeMachine.setHardwareFactoryZy(wholeMachinePO.getFactoryZy());
+            wholeMachine.setHardwareFactoryEn(wholeMachinePO.getFactoryEn());
             BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
             wholeMachineList.add(wholeMachine);
         }
@@ -79,9 +83,8 @@ public class HardwareFactory {
 
     public HardwareWholeMachinePO createWholeMachinePO(HardwareWholeMachine wholeMachine) {
         HardwareWholeMachinePO wholeMachinePO = new HardwareWholeMachinePO();
-        wholeMachinePO.setFactoryZy(wholeMachine.getHardwareFactory());
-        wholeMachinePO.setFactoryEn(wholeMachine.getHardwareFactory());
-        wholeMachinePO.setModel(wholeMachine.getHardwareModel());
+        wholeMachinePO.setFactoryZy(wholeMachine.getHardwareFactoryZy());
+        wholeMachinePO.setFactoryEn(wholeMachine.getHardwareFactoryEn());
         BeanUtils.copyProperties(wholeMachine, wholeMachinePO);
         BeanUtils.copyProperties(wholeMachine.getCompatibilityConfiguration(), wholeMachinePO);
         List<Integer> boardCardIdList = wholeMachine.getBoardCards().stream().map(HardwareBoardCard::getId).toList();

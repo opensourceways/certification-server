@@ -26,16 +26,16 @@ public class HardwareApprovalNodeService {
     @Autowired
     private HardwareFactory hardwareFactory;
 
-    public List<HardwareApprovalNode> getList(Integer hardwareId, String hardwareType, String handlerNode) {
+    public List<HardwareApprovalNode> getList(HardwareApprovalNodeSelectVO selectVO) {
         QueryWrapper<HardwareApprovalNodePO> queryWrapper = new QueryWrapper<>();
-        if (hardwareId > 0) {
-            queryWrapper.eq("hardware_id", hardwareId);
+        if (selectVO.getHardwareId() > 0) {
+            queryWrapper.eq("hardware_id", selectVO.getHardwareId());
         }
-        if (!StringUtils.isEmpty(hardwareType)) {
-            queryWrapper.eq("hardware_type", hardwareType);
+        if (!StringUtils.isEmpty(selectVO.getHardwareType())) {
+            queryWrapper.eq("hardware_type", selectVO.getHardwareType());
         }
-        if (!StringUtils.isEmpty(handlerNode)) {
-            queryWrapper.eq("handler_node", handlerNode);
+        if (!StringUtils.isEmpty(selectVO.getHandlerNode())) {
+            queryWrapper.eq("handler_node", selectVO.getHandlerNode());
         }
         List<HardwareApprovalNodePO> nodePOList = nodeRepository.list(queryWrapper);
         return nodePOList.stream().map(item -> hardwareFactory.createApprovalNode(item)).toList();
