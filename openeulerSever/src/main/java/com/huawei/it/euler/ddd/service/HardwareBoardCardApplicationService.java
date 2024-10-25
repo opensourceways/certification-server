@@ -42,18 +42,6 @@ public class HardwareBoardCardApplicationService {
     }
 
     @Transactional
-    public HardwareBoardCard insertPassed(HardwareBoardCard boardCard, String uuid) {
-        HardwareBoardCard insert = insert(boardCard, uuid);
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(insert.getId());
-        approvalNode.setHandlerUuid(Integer.valueOf(uuid));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-        approvalNode.setHandlerComment("管理员上传");
-        approvalNodeService.insert(approvalNode.approval(HardwareValueEnum.TYPE_BOARD_CARD.getValue()));
-        return insert;
-    }
-
-    @Transactional
     public List<HardwareBoardCard> batchInsert(List<HardwareBoardCard> boardCardList, String uuid){
         List<HardwareBoardCard> unExist = new ArrayList<>();
         for (HardwareBoardCard boardCard : boardCardList) {
@@ -74,17 +62,6 @@ public class HardwareBoardCardApplicationService {
         return unExist;
     }
 
-    @Transactional
-    public List<HardwareBoardCard> batchInsertPassed(List<HardwareBoardCard> boardCardList, String uuid) {
-        List<HardwareBoardCard> batchedInsert = batchInsert(boardCardList, uuid);
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHandlerUuid(Integer.valueOf(uuid));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-        approvalNode.setHandlerComment("管理员批量上传");
-        approvalNodeService.insert(approvalNode.approval(HardwareValueEnum.TYPE_BOARD_CARD.getValue()));
-        return batchedInsert;
-    }
-
     public HardwareBoardCard getById(Integer id) {
         return boardCardService.getById(id);
     }
@@ -98,7 +75,8 @@ public class HardwareBoardCardApplicationService {
         if (byId == null) {
             throw new ParamException("当前板卡数据不存在！");
         }
-        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())){
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(byId.getStatus())) {
             throw new BusinessException("当前板卡数据状态无法进行编辑操作！");
         }
         boardCardService.updateById(boardCard);

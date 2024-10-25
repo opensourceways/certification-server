@@ -32,13 +32,13 @@ public class HardwareWholeMachineService {
 
     public boolean exist(HardwareWholeMachine wholeMachine) {
         QueryWrapper<HardwareWholeMachinePO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("factory_zy", wholeMachine.getHardwareFactoryZy());
+        queryWrapper.eq("factory_en", wholeMachine.getHardwareFactoryEn());
         queryWrapper.eq("model", wholeMachine.getHardwareModel());
         queryWrapper.eq("os_version", wholeMachine.getOsVersion());
         queryWrapper.eq("architecture", wholeMachine.getArchitecture());
         queryWrapper.eq("date", wholeMachine.getDate());
         queryWrapper.in("status", HardwareValueEnum.activeStatusList());
-        queryWrapper.and(wrapper -> wrapper.eq("factory_zy", wholeMachine.getHardwareFactory())
-                .or().eq("factory_en", wholeMachine.getHardwareFactory()));
         long count = wholeMachineRepository.count(queryWrapper);
         return count > 0;
     }
@@ -117,15 +117,9 @@ public class HardwareWholeMachineService {
         return wholeMachineRepository.saveBatch(wholeMachinePOList);
     }
 
-    public boolean insertPassed(HardwareWholeMachine wholeMachine) {
-        HardwareWholeMachinePO wholeMachinePO = hardwareFactory.createWholeMachinePO(wholeMachine.pass());
-        return wholeMachineRepository.save(wholeMachinePO);
-    }
-
-    public boolean batchInsertPassed(List<HardwareWholeMachine> wholeMachineList) {
-        wholeMachineList = wholeMachineList.stream().map(HardwareWholeMachine::pass).toList();
-        List<HardwareWholeMachinePO> wholeMachinePOList = hardwareFactory.createWholeMachinePOList(wholeMachineList);
-        return wholeMachineRepository.saveBatch(wholeMachinePOList);
+    public void delete(HardwareWholeMachine wholeMachine) {
+        HardwareWholeMachinePO wholeMachinePO = hardwareFactory.createWholeMachinePO(wholeMachine.delete());
+        wholeMachineRepository.saveOrUpdate(wholeMachinePO);
     }
 
     public void apply(HardwareWholeMachine wholeMachine) {
@@ -140,6 +134,11 @@ public class HardwareWholeMachineService {
 
     public void reject(HardwareWholeMachine wholeMachine) {
         HardwareWholeMachinePO wholeMachinePO = hardwareFactory.createWholeMachinePO(wholeMachine.reject());
+        wholeMachineRepository.saveOrUpdate(wholeMachinePO);
+    }
+
+    public void close(HardwareWholeMachine wholeMachine) {
+        HardwareWholeMachinePO wholeMachinePO = hardwareFactory.createWholeMachinePO(wholeMachine.close());
         wholeMachineRepository.saveOrUpdate(wholeMachinePO);
     }
 }

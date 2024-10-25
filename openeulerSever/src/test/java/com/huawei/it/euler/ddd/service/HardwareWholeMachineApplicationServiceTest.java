@@ -2,10 +2,10 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.domain.hardware;
+package com.huawei.it.euler.ddd.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huawei.it.euler.ddd.service.HardwareWholeMachineApplicationService;
+import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.exception.BusinessException;
 import com.huawei.it.euler.exception.ParamException;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +33,9 @@ public class HardwareWholeMachineApplicationServiceTest {
     
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HardwareBoardCardService boardCardService;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private HardwareApprovalNodeService approvalNodeService;
     
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HardwareWholeMachineService wholeMachineService;
@@ -262,6 +265,7 @@ public class HardwareWholeMachineApplicationServiceTest {
             wholeMachine.apply();
             return wholeMachine;
         }).when(wholeMachineService).apply(wholeMachine);
+        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
 
         wholeMachineApplicationService.apply(approvalNode);
 
@@ -331,6 +335,7 @@ public class HardwareWholeMachineApplicationServiceTest {
             wholeMachine.pass();
             return wholeMachine;
         }).when(wholeMachineService).pass(wholeMachine);
+        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
 
         wholeMachineApplicationService.approval(approvalNode);
 
@@ -362,6 +367,7 @@ public class HardwareWholeMachineApplicationServiceTest {
             wholeMachine.reject();
             return wholeMachine;
         }).when(wholeMachineService).reject(wholeMachine);
+        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
 
         wholeMachineApplicationService.approval(approvalNode);
 

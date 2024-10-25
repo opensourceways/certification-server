@@ -27,14 +27,20 @@ public enum HardwareValueEnum {
      */
     RESULT_PASS("1", "通过"),
     RESULT_REJECT("2", "驳回"),
+    RESULT_CLOSE("3", "关闭"),
+    RESULT_DELETE("4", "删除"),
+    RESULT_OFFLINE("5", "下架"),
     /**
      * 硬件数据审批节点枚举
      */
     NODE_WAIT_APPLY("1", "数据提交"),
     NODE_WAIT_APPROVE("2", "数据审核"),
     NODE_PASS("3", "已通过"),
-    NODE_REJECT("-1", "已驳回"),
-    NODE_DELETE("-2", "已删除");
+    NODE_DELETE("-1", "已删除"),
+    NODE_CLOSE("-2", "已关闭"),
+    NODE_REJECT("-3", "已驳回"),
+    NODE_OFFLINE("-4", "已下架");
+
     private final String value;
 
     private final String text;

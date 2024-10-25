@@ -2,10 +2,10 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.domain.hardware;
+package com.huawei.it.euler.ddd.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huawei.it.euler.ddd.service.HardwareBoardCardApplicationService;
+import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.exception.BusinessException;
 import com.huawei.it.euler.exception.ParamException;
 import org.junit.jupiter.api.Assertions;
@@ -30,6 +30,9 @@ public class HardwareBoardCardApplicationServiceTest {
     private static final String USER_UUID = "1";
 
     private static final int HARDWARE_ID = 1;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private HardwareApprovalNodeService approvalNodeService;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HardwareBoardCardService boardCardService;
@@ -62,20 +65,6 @@ public class HardwareBoardCardApplicationServiceTest {
         ParamException paramException = assertThrows(ParamException.class,
                 () -> boardCardApplicationService.insert(boardCard, USER_UUID));
         Assertions.assertTrue(paramException.getMessage().matches("当前板卡(.*)已存在！"));
-    }
-
-    @Test
-    @DisplayName("板卡插入失败-插入异常")
-    void testInsertFailedOfInsert() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-
-        Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(boardCard)).thenReturn(boardCard);
-
-        BusinessException businessException = assertThrows(BusinessException.class,
-                () -> boardCardApplicationService.insert(boardCard, USER_UUID));
-        Assertions.assertTrue(businessException.getMessage().matches("当前板卡(.*)申请失败！"));
     }
 
     @Test
@@ -161,7 +150,7 @@ public class HardwareBoardCardApplicationServiceTest {
         ParamException paramException = assertThrows(ParamException.class,
                 () -> boardCardApplicationService.delete(approvalNode));
 
-        Assertions.assertEquals("当前数据不存在！", paramException.getMessage());
+        Assertions.assertEquals("当前板卡数据不存在！", paramException.getMessage());
     }
 
     @Test
@@ -182,7 +171,7 @@ public class HardwareBoardCardApplicationServiceTest {
         BusinessException businessException = assertThrows(BusinessException.class,
                 () -> boardCardApplicationService.delete(approvalNode));
 
-        Assertions.assertEquals("当前数据状态无法进行删除操作！", businessException.getMessage());
+        Assertions.assertEquals("当前板卡数据状态无法进行删除操作！", businessException.getMessage());
     }
 
     @Test
@@ -213,6 +202,7 @@ public class HardwareBoardCardApplicationServiceTest {
         HardwareBoardCard boardCard = new HardwareBoardCard();
         boardCard.setId(HARDWARE_ID);
         boardCard.setBoardModel("1");
+        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
         boardCard.setBoardModel("2");
         boardCardApplicationService.edit(boardCard);
@@ -299,6 +289,7 @@ public class HardwareBoardCardApplicationServiceTest {
             boardCard.pass();
             return boardCard;
         }).when(boardCardService).pass(boardCard);
+        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
 
         boardCardApplicationService.approval(approvalNode);
 
@@ -323,7 +314,7 @@ public class HardwareBoardCardApplicationServiceTest {
             boardCard.reject();
             return boardCard;
         }).when(boardCardService).reject(boardCard);
-
+        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
         boardCardApplicationService.approval(approvalNode);
 
         Assertions.assertEquals(HardwareValueEnum.NODE_REJECT.getValue(),boardCard.getStatus());

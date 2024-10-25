@@ -25,9 +25,14 @@ public class HardwareWholeMachine implements Serializable {
     private Integer id;
 
     /**
-     * 硬件厂商
+     * 硬件厂商-中文
      */
-    private String hardwareFactory;
+    private String hardwareFactoryZy;
+
+    /**
+     * 硬件厂商-英文
+     */
+    private String hardwareFactoryEn;
 
     /**
      * 硬件型号
@@ -119,9 +124,16 @@ public class HardwareWholeMachine implements Serializable {
         return this;
     }
 
+    public HardwareWholeMachine close() {
+        this.setStatus(HardwareValueEnum.NODE_CLOSE.getValue());
+        this.setUpdateTime(new Date());
+        return this;
+    }
+
     public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
-        simple.put("hardwareFactory", this.getHardwareFactory());
+        simple.put("hardwareFactoryZy", this.getHardwareFactoryZy());
+        simple.put("hardwareFactoryEn", this.getHardwareFactoryEn());
         simple.put("hardwareModel", this.getHardwareModel());
         simple.put("osVersion", this.getOsVersion());
         simple.put("architecture", this.getArchitecture());
