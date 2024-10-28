@@ -278,7 +278,9 @@ public class AccountService {
     }
     public void logoutForCenter(HttpServletRequest request, HttpServletResponse response) {
         String authorization = request.getHeader("Authorization");
+        log.info("logout for center : authorization > " + authorization);
         String uuid = oidcAuthService.verifyJwt(authorization);
+        log.info("logout for center : uuid > " + uuid);
         sessionService.clearByUuid(uuid);
         cookieConfig.cleanCookie(request,response);
         logUtils.insertAuditLog(request, uuid, "login", "login out", "user login out by center");
