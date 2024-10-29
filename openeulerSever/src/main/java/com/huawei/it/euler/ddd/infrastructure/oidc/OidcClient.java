@@ -5,6 +5,8 @@
 package com.huawei.it.euler.ddd.infrastructure.oidc;
 
 import com.alibaba.fastjson.JSONObject;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.Claim;
 import io.jsonwebtoken.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -174,10 +176,10 @@ public class OidcClient {
      */
     public String verifyJwt(String jwtStr) {
         try {
-            Claims claims = Jwts.parser().setSigningKey(clientSecret).parseClaimsJws(jwtStr).getBody();
-            for (Map.Entry<String, Object> stringObjectEntry : claims.entrySet()) {
-                if ("sub".equals(stringObjectEntry.getKey())) {
-                    return (String) stringObjectEntry.getValue();
+            Map<String, Claim> claims = JWT.decode(jwtStr).getClaims();
+            for (String string : claims.keySet()) {
+                if ("sub".equals(string)){
+                    return claims.get(string).asString();
                 }
             }
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException |
