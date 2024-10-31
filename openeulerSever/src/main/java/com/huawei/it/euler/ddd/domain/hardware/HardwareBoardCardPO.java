@@ -133,10 +133,16 @@ public class HardwareBoardCardPO implements Serializable {
     private String item;
 
     /**
-     * 关联整机数量
+     * 密级
      */
-    @TableField("ref_count")
-    private int refCount;
+    @TableField("security_level")
+    private String securityLevel;
+
+    /**
+     * 板卡信息id集合
+     */
+    @TableField("whole_machine_ids")
+    private String wholeMachineIds;
 
     /**
      * 申请人uuid

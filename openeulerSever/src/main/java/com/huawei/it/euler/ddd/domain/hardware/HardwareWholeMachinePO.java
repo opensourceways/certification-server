@@ -75,7 +75,7 @@ public class HardwareWholeMachinePO implements Serializable {
     /**
      * 板卡信息id集合
      */
-    @TableField("board_cards")
+    @TableField("board_card_ids")
     private String boardCardIds;
 
     /**
@@ -143,6 +143,12 @@ public class HardwareWholeMachinePO implements Serializable {
      */
     @TableField("hard_disk_drive")
     private String hardDiskDrive;
+
+    /**
+     * 密级
+     */
+    @TableField("security_level")
+    private String securityLevel;
 
     /**
      * 申请人uuid
