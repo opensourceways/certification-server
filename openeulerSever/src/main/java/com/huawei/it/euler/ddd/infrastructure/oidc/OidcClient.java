@@ -137,7 +137,7 @@ public class OidcClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("token", oidcCookie.get_U_T_());
-        headers.add("Referer", authCodeUrl);
+        headers.add("Referer", "https://openeuler-compatibility.test.osinfra.cn");
         headers.add(HttpHeaders.COOKIE, "_Y_G_=" + oidcCookie.get_Y_G_());
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(refreshTokenUrl, HttpMethod.GET, httpEntity, String.class);
