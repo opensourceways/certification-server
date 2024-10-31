@@ -9,11 +9,11 @@ import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareApprovalNode;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareWholeMachine;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareWholeMachineSelectVO;
-import com.huawei.it.euler.ddd.service.AccountService;
-import com.huawei.it.euler.ddd.service.HardwareWholeMachineApplicationService;
+import com.huawei.it.euler.ddd.service.*;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.exception.ParamException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -43,34 +43,50 @@ public class HardwareWholeMachineApi {
     }
 
     @PostMapping("/insert")
-    public JsonResponse<Integer> insert(@RequestBody HardwareWholeMachine wholeMachine, HttpServletRequest request) throws NoLoginException, ParamException {
+    public JsonResponse<InsertResponse> insert(@RequestBody @Valid HardwareWholeMachineAddCommand addCommand, HttpServletRequest request) throws NoLoginException, ParamException {
 //        String loginUuid = accountService.getLoginUuid(request);
         String loginUuid = "123";
-        HardwareWholeMachine insert = wholeMachineApplicationService.insert(wholeMachine, loginUuid);
-        return JsonResponse.success(insert.getId());
+        InsertResponse insert = wholeMachineApplicationService.insert(addCommand, loginUuid);
+        return JsonResponse.success(insert);
     }
 
     @PostMapping("/edit")
-    public JsonResponse<Boolean> edit(@RequestBody HardwareWholeMachine wholeMachine) throws NoLoginException {
-        wholeMachineApplicationService.edit(wholeMachine);
+    public JsonResponse<Boolean> edit(@RequestBody HardwareWholeMachineEditCommand editCommand) throws NoLoginException {
+        //        String loginUuid = accountService.getLoginUuid(request);
+        String loginUuid = "123";
+        wholeMachineApplicationService.edit(editCommand, loginUuid);
         return JsonResponse.success(null);
     }
 
     @PostMapping("/delete")
     public JsonResponse<Boolean> delete(@RequestBody HardwareApprovalNode approvalNode) throws NoLoginException {
+        String loginUuid = "123";
+        approvalNode.setHardwareId(Integer.valueOf(loginUuid));
         wholeMachineApplicationService.delete(approvalNode);
         return JsonResponse.success(null);
     }
 
     @PostMapping("/apply")
     public JsonResponse<Boolean> apply(@RequestBody HardwareApprovalNode approvalNode) throws NoLoginException {
+        String loginUuid = "123";
+        approvalNode.setHardwareId(Integer.valueOf(loginUuid));
         wholeMachineApplicationService.apply(approvalNode);
         return JsonResponse.success(null);
     }
 
     @PostMapping("/approval")
-    public JsonResponse<Boolean> approval(@RequestBody HardwareApprovalNode approvalNode) throws NoLoginException {
-        wholeMachineApplicationService.approval(approvalNode);
+    public JsonResponse<Boolean> pass(@RequestBody HardwareApprovalNode approvalNode) throws NoLoginException {
+        String loginUuid = "123";
+        approvalNode.setHardwareId(Integer.valueOf(loginUuid));
+        wholeMachineApplicationService.pass(approvalNode);
+        return JsonResponse.success(null);
+    }
+
+    @PostMapping("/approval")
+    public JsonResponse<Boolean> reject(@RequestBody HardwareApprovalNode approvalNode) throws NoLoginException {
+        String loginUuid = "123";
+        approvalNode.setHardwareId(Integer.valueOf(loginUuid));
+        wholeMachineApplicationService.reject(approvalNode);
         return JsonResponse.success(null);
     }
 }

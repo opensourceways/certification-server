@@ -7,13 +7,12 @@ package com.huawei.it.euler.ddd.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.exception.BusinessException;
-import com.huawei.it.euler.exception.ParamException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -23,190 +22,158 @@ import java.util.List;
 public class HardwareWholeMachineApplicationService {
 
     @Autowired
+    private HardwareBoardCardRepositoryImpl boardCardRepository;
+
+    @Autowired
+    private HardwareWholeMachineRepositoryImpl wholeMachineRepository;
+
+    @Autowired
+    private HardwareApprovalNodeRepositoryImpl approvalNodeRepository;
+
+    @Autowired
     private HardwareWholeMachineService wholeMachineService;
 
     @Autowired
-    private HardwareBoardCardService boardCardService;
-
-    @Autowired
-    private HardwareApprovalNodeService approvalNodeService;
+    private HardwareFactory hardwareFactory;
 
     @Transactional
-    public HardwareWholeMachine insert(HardwareWholeMachine wholeMachine, String uuid) {
-        boolean exist = wholeMachineService.exist(wholeMachine);
-        if (exist) {
-            String errMsg = String.format("当前整机[%s]已存在！", wholeMachine.toSimpleJsonString());
-            throw new ParamException(errMsg);
-        }
+    public InsertResponse insert(HardwareWholeMachineAddCommand addCommand, String uuid) {
+        InsertResponse response = new InsertResponse();
 
-        List<HardwareBoardCard> saveBoardCardList = new ArrayList<>();
-        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
-        for (HardwareBoardCard hardwareBoardCard : boardCardList) {
-            boolean cardExist = boardCardService.exist(hardwareBoardCard);
-            if (cardExist) {
-                List<HardwareBoardCard> cardList = boardCardService.getList(hardwareBoardCard);
-                saveBoardCardList.add(cardList.get(0));
-            } else {
-                hardwareBoardCard.setRefCount(1);
-                HardwareBoardCard insert = boardCardService.insert(hardwareBoardCard);
-                saveBoardCardList.add(insert);
-            }
+        HardwareWholeMachine wholeMachine = hardwareFactory.createWholeMachine(addCommand);
+
+        response.setUnique(wholeMachine.toSimpleJsonString());
+
+        HardwareWholeMachine exist = wholeMachineRepository.getOne(wholeMachine);
+        if (exist != null) {
+            response.setSuccess(false);
+            response.setMessage("当前整机已存在！");
+            return response;
         }
-        wholeMachine.setBoardCards(saveBoardCardList);
 
         wholeMachine.setUserUuid(uuid);
         wholeMachine.setApplyTime(new Date());
 
-        boolean insert = wholeMachineService.insert(wholeMachine);
-        if (!insert) {
-            String errMsg = String.format("当前整机[%s]申请失败！", wholeMachine.toSimpleJsonString());
-            throw new BusinessException(errMsg);
+        HardwareWholeMachine insert = wholeMachineRepository.save(wholeMachine);
+        if (insert == null) {
+            response.setSuccess(false);
+            response.setMessage("当前整机新增失败！");
+            return response;
         }
-        return wholeMachine;
+
+        List<HardwareBoardCard> boardCardList = boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),insert.getId());
+        insert = wholeMachineService.refBoardCard2WholeMachine(insert, boardCardList);
+
+        wholeMachineRepository.save(insert);
+        boardCardRepository.saveBatch(insert.getBoardCards());
+
+        response.setSuccess(true);
+        response.setMessage("插入成功!");
+        return response;
     }
 
     @Transactional
-    public HardwareWholeMachine insertPassed(HardwareWholeMachine wholeMachine, String uuid) {
-        HardwareWholeMachine insert = insert(wholeMachine, uuid);
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(wholeMachine.getId());
-        approvalNode.setHandlerUuid(Integer.valueOf(uuid));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-        approvalNode.setHandlerComment("管理员上传");
-        approvalNodeService.insert(approvalNode.approval(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue()));
-        return insert;
-    }
-
-    @Transactional
-    public List<HardwareWholeMachine> batchInsert(List<HardwareWholeMachine> wholeMachineList, String uuid) {
-        List<HardwareWholeMachine> unExistList = new ArrayList<>();
-        outer:
-        for (HardwareWholeMachine wholeMachine : wholeMachineList) {
-            boolean exist = wholeMachineService.exist(wholeMachine);
-            if (exist) {
-                String errMsg = String.format("当前整机[%s]已存在！", wholeMachine.toSimpleJsonString());
-                log.error(errMsg);
-                continue;
-            }
-            List<HardwareBoardCard> saveBoardCardList = new ArrayList<>();
-            List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
-            for (HardwareBoardCard hardwareBoardCard : boardCardList) {
-                boolean cardExist = boardCardService.exist(hardwareBoardCard);
-                if (cardExist) {
-                    List<HardwareBoardCard> cardList = boardCardService.getList(hardwareBoardCard);
-                    saveBoardCardList.add(cardList.get(0));
-                } else {
-                    HardwareBoardCard insert = boardCardService.insert(hardwareBoardCard);
-                    saveBoardCardList.add(insert);
-                }
-            }
-            wholeMachine.setBoardCards(saveBoardCardList);
-
-            wholeMachine.setUserUuid(uuid);
-            wholeMachine.setApplyTime(new Date());
-
-            unExistList.add(wholeMachine);
-        }
-        boolean batchInsert = wholeMachineService.batchInsert(unExistList);
-        if (!batchInsert) {
-            throw new BusinessException("整机数据批量申请失败，请稍后重试！");
-        }
-        return unExistList;
-    }
-
-    @Transactional
-    public List<HardwareWholeMachine> batchInsertPassed(List<HardwareWholeMachine> wholeMachineList, String uuid) {
-        List<HardwareWholeMachine> batchInsert = batchInsert(wholeMachineList, uuid);
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHandlerUuid(Integer.valueOf(uuid));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-        approvalNode.setHandlerComment("管理员批量上传");
-        approvalNodeService.insert(approvalNode.approval(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue()));
-        return batchInsert;
+    public BatchInsertResponse batchInsert(List<HardwareWholeMachineAddCommand> addCommandList, String uuid) {
+        List<InsertResponse> insertResponseList = addCommandList.stream().map(addCommand -> this.insert(addCommand, uuid)).toList();
+        int successCount = (int) insertResponseList.stream().filter(InsertResponse::isSuccess).count();
+        int failureCount = addCommandList.size() - successCount;
+        BatchInsertResponse batchInsertResponse = new BatchInsertResponse();
+        batchInsertResponse.setResults(insertResponseList);
+        batchInsertResponse.setSuccessCount(successCount);
+        batchInsertResponse.setFailureCount(failureCount);
+        return batchInsertResponse;
     }
 
     public HardwareWholeMachine getById(Integer id) {
-        return wholeMachineService.getById(id);
+        HardwareWholeMachine hardwareWholeMachine = wholeMachineRepository.find(id);
+        HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
+        selectVO.setIdList(Arrays.stream(hardwareWholeMachine.getBoardCardIds().split(",")).toList());
+        List<HardwareBoardCard> boardCardList = boardCardRepository.getList(selectVO);
+        hardwareWholeMachine.setBoardCards(boardCardList);
+        return hardwareWholeMachine;
     }
 
     public Page<HardwareWholeMachine> getPage(HardwareWholeMachineSelectVO selectVO) {
-        return wholeMachineService.getPage(selectVO);
+        return wholeMachineRepository.getPage(selectVO);
     }
 
-    public void edit(HardwareWholeMachine wholeMachine) {
-        HardwareWholeMachine byId = wholeMachineService.getById(wholeMachine.getId());
-        if (byId == null) {
-            throw new ParamException("当前整机数据不存在！");
+    public void edit(HardwareWholeMachineEditCommand editCommand, String uuid) {
+        HardwareWholeMachine wholeMachine = wholeMachineRepository.find(editCommand.getId());
+
+        if (uuid.equals(wholeMachine.getUserUuid())) {
+            throw new BusinessException("无权限编辑该整机数据");
         }
-        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())) {
-            throw new BusinessException("当前整机数据状态无法进行编辑操作！");
+
+        List<HardwareBoardCardEditCommand> boardCardEditCommandList = editCommand.getBoardCardEditCommandList();
+        for (HardwareBoardCardEditCommand boardCardEditCommand : boardCardEditCommandList) {
+            HardwareBoardCard boardCard = boardCardRepository.getOne(hardwareFactory.createBoardCard(boardCardEditCommand));
+            BeanUtils.copyProperties(boardCardEditCommand, boardCard);
+            boardCard.edit();
+            boardCardRepository.save(boardCard);
         }
-        List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
-        for (HardwareBoardCard hardwareBoardCard : boardCardList) {
-            try {
-                if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(hardwareBoardCard.getStatus())) {
-                    throw new BusinessException("当前板卡数据状态无法进行编辑操作！");
-                }
-                boardCardService.updateById(hardwareBoardCard);
-            } catch (Exception e) {
-                log.error("板卡更新失败,id:" + byId.getId() + ">>>>" + e.getMessage());
-            }
-        }
-        wholeMachineService.updateById(wholeMachine);
+
+        BeanUtils.copyProperties(editCommand, wholeMachine);
+        wholeMachine.edit();
+        wholeMachineRepository.save(wholeMachine);
     }
 
     public void delete(HardwareApprovalNode approvalNode) {
-        HardwareWholeMachine byId = wholeMachineService.getById(approvalNode.getHardwareId());
-        if (byId == null) {
-            throw new ParamException("当前整机数据不存在！");
+        HardwareWholeMachine wholeMachine = getById(approvalNode.getHardwareId());
+        if (approvalNode.getHardwareId().toString().equals(wholeMachine.getUserUuid())){
+            throw new BusinessException("无权限编辑该整机数据");
         }
-        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(byId.getStatus())
-                && !HardwareValueEnum.NODE_REJECT.getValue().equals(byId.getStatus())) {
-            throw new BusinessException("当前整机数据状态无法进行删除操作！");
-        }
-        HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
-        selectVO.setIdList(Arrays.stream(byId.getBoardCardIds().split(",")).toList());
-        List<HardwareBoardCard> boardCardList = boardCardService.getList(selectVO);
-        for (HardwareBoardCard boardCard : boardCardList) {
-            int refCount = boardCard.getRefCount();
-            if (refCount == 1) {
-                boardCard.setRefCount(0);
-                boardCardService.delete(boardCard);
-            } else if (refCount > 1) {
-                boardCard.setRefCount(refCount - 1);
-                boardCardService.updateById(boardCard);
-            }
-        }
-        wholeMachineService.updateById(byId.delete());
+
+        wholeMachineService.delete(wholeMachine);
+
+        boardCardRepository.saveBatch(wholeMachine.getBoardCards());
+        wholeMachineRepository.save(wholeMachine);
     }
 
     public void apply(HardwareApprovalNode approvalNode) {
-        HardwareWholeMachine wholeMachine = wholeMachineService.getById(approvalNode.getHardwareId());
-        if (wholeMachine == null){
-            throw new ParamException("当前整机数据不存在！");
-        }
-        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(wholeMachine.getStatus())){
-            throw new BusinessException("当前整机数据状态无法进行申请操作！");
-        }
-        wholeMachineService.apply(wholeMachine);
-        approvalNode.apply(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue());
-        approvalNodeService.insert(approvalNode);
+        HardwareWholeMachine wholeMachine = wholeMachineRepository.find(approvalNode.getHardwareId());
+
+        approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
+                wholeMachine.getStatus(),HardwareValueEnum.RESULT_PASS.getValue());
+
+        wholeMachine.apply();
+
+        wholeMachineRepository.save(wholeMachine);
+        approvalNodeRepository.save(approvalNode);
     }
 
-    public void approval(HardwareApprovalNode approvalNode) {
-        HardwareWholeMachine wholeMachine = wholeMachineService.getById(approvalNode.getHardwareId());
-        if (wholeMachine == null){
-            throw new ParamException("当前整机数据不存在！");
-        }
-        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(wholeMachine.getStatus())){
-            throw new BusinessException("当前整机数据状态无法进行审批操作！");
-        }
-        if (HardwareValueEnum.RESULT_PASS.getValue().equals(approvalNode.getHandlerResult())) {
-            wholeMachineService.pass(wholeMachine);
-        } else if (HardwareValueEnum.RESULT_REJECT.getValue().equals(approvalNode.getHandlerResult())) {
-            wholeMachineService.reject(wholeMachine);
-        }
-        approvalNode.approval(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue());
-        approvalNodeService.insert(approvalNode);
+    public void close(HardwareApprovalNode approvalNode) {
+        HardwareWholeMachine wholeMachine = wholeMachineRepository.find(approvalNode.getHardwareId());
+
+        approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
+                wholeMachine.getStatus(),HardwareValueEnum.RESULT_PASS.getValue());
+
+        wholeMachineService.close(wholeMachine);
+
+        wholeMachineRepository.save(wholeMachine);
+        approvalNodeRepository.save(approvalNode);
+    }
+
+    public void pass(HardwareApprovalNode approvalNode) {
+        HardwareWholeMachine wholeMachine = wholeMachineRepository.find(approvalNode.getHardwareId());
+
+        approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
+                wholeMachine.getStatus(),HardwareValueEnum.RESULT_PASS.getValue());
+
+        wholeMachineService.pass(wholeMachine);
+
+        wholeMachineRepository.save(wholeMachine);
+        approvalNodeRepository.save(approvalNode);
+    }
+
+    public void reject(HardwareApprovalNode approvalNode) {
+        HardwareWholeMachine wholeMachine = wholeMachineRepository.find(approvalNode.getHardwareId());
+
+        approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
+                wholeMachine.getStatus(),HardwareValueEnum.RESULT_REJECT.getValue());
+
+        wholeMachine.reject();
+
+        wholeMachineRepository.save(wholeMachine);
+        approvalNodeRepository.save(approvalNode);
     }
 }
