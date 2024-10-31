@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -25,6 +26,7 @@ public class HardwareApprovalNode implements Serializable {
     /**
      * 硬件设备id
      */
+    @NotNull(message = "业务id不能为空！")
     private Integer hardwareId;
 
     /**
@@ -50,6 +52,7 @@ public class HardwareApprovalNode implements Serializable {
     /**
      * 操作意见
      */
+    @NotNull(message = "操作意见不能为空！")
     private String handlerComment;
 
     /**
@@ -62,6 +65,15 @@ public class HardwareApprovalNode implements Serializable {
      */
     private String handlerNodeName;
 
+    public HardwareApprovalNode action(String hardwareType, String status, String result) {
+        this.setHardwareType(hardwareType);
+        this.setHandlerNode(status);
+        this.setHandlerNodeName(HardwareValueEnum.getTextByValue(status));
+        this.setHandlerResult(result);
+        this.setHandlerTime(new Date());
+        return this;
+    }
+
     public HardwareApprovalNode apply(String hardwareType) {
         this.setHardwareType(hardwareType);
         this.setHandlerTime(new Date());
@@ -69,13 +81,4 @@ public class HardwareApprovalNode implements Serializable {
         this.setHandlerNodeName(HardwareValueEnum.NODE_WAIT_APPLY.getText());
         return this;
     }
-
-    public HardwareApprovalNode approval(String hardwareType) {
-        this.setHardwareType(hardwareType);
-        this.setHandlerTime(new Date());
-        this.setHandlerNode(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
-        this.setHandlerNodeName(HardwareValueEnum.NODE_WAIT_APPROVE.getText());
-        return this;
-    }
-
 }

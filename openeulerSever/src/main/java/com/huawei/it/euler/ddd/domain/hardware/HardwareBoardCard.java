@@ -5,9 +5,13 @@
 package com.huawei.it.euler.ddd.domain.hardware;
 
 import com.alibaba.fastjson.JSONObject;
+import com.huawei.it.euler.exception.BusinessException;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Data
 public class HardwareBoardCard {
@@ -100,9 +104,14 @@ public class HardwareBoardCard {
     private String item;
 
     /**
-     * 关联整机数量
+     * 密级
      */
-    private int refCount;
+    private String securityLevel;
+
+    /**
+     * 关联整机id
+     */
+    private String wholeMachineIds;
 
     /**
      * 状态
@@ -124,48 +133,109 @@ public class HardwareBoardCard {
      */
     private Date updateTime;
 
-    public HardwareBoardCard create() {
+    public HardwareBoardCard create(String uuid) {
+        this.setUserUuid(uuid);
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         this.setApplyTime(new Date());
         return this;
     }
 
+    public HardwareBoardCard createTemp(String uuid) {
+        this.setUserUuid(uuid);
+        this.setStatus(HardwareValueEnum.NODE_TEMP.getValue());
+        this.setApplyTime(new Date());
+        return this;
+    }
+
+    public HardwareBoardCard edit(){
+        if (!HardwareValueEnum.NODE_TEMP.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前板卡数据状态无法进行编辑操作！");
+        }
+        this.setUpdateTime(new Date());
+        return this;
+    }
+
     public HardwareBoardCard delete() {
+        if (!HardwareValueEnum.NODE_TEMP.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前板卡数据状态无法进行删除操作！");
+        }
+        if (!StringUtils.isEmpty(this.getWholeMachineIds())) {
+            throw new BusinessException("当前板卡关联整机，无法删除！");
+        }
         this.setStatus(HardwareValueEnum.NODE_DELETE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareBoardCard apply() {
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前板卡数据状态无法进行申请操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareBoardCard pass() {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_TEMP.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前板卡数据状态无法进行审批操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_PASS.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareBoardCard reject() {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前板卡数据状态无法进行审批操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_REJECT.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareBoardCard close() {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_TEMP.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前板卡数据状态无法进行关闭操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_CLOSE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
+    public HardwareBoardCard addWholeMachine(Integer wholeMachineId) {
+        if (StringUtils.isEmpty(this.getWholeMachineIds())) {
+            this.setWholeMachineIds(String.valueOf(wholeMachineId));
+        } else {
+            this.setWholeMachineIds(this.getWholeMachineIds() + "," + wholeMachineId);
+        }
+        return this;
+    }
+
+    public HardwareBoardCard removeWholeMachine(Integer wholeMachineId){
+        if (!StringUtils.isEmpty(this.getWholeMachineIds())) {
+            String[] split = this.getWholeMachineIds().split(",");
+            String idStr = String.valueOf(wholeMachineId);
+            String collect = null;
+            if (!idStr.equals(this.getWholeMachineIds())){
+                collect = Arrays.stream(split).filter(id -> !id.equals(idStr)).collect(Collectors.joining(","));
+            }
+            this.setWholeMachineIds(collect);
+        }
+        return this;
+    }
     public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
-        simple.put("os", this.getOs());
-        simple.put("architecture", this.getArchitecture());
-        simple.put("boardModel", this.getBoardModel());
-        simple.put("chipModel", this.getChipModel());
+        simple.put("操作系统", this.getOs());
+        simple.put("架构", this.getArchitecture());
+        simple.put("板卡型号", this.getBoardModel());
+        simple.put("芯片型号", this.getChipModel());
         return simple.toJSONString();
     }
 }

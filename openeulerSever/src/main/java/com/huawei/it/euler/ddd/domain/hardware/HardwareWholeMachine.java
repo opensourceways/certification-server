@@ -5,6 +5,7 @@
 package com.huawei.it.euler.ddd.domain.hardware;
 
 import com.alibaba.fastjson.JSONObject;
+import com.huawei.it.euler.exception.BusinessException;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -25,7 +26,7 @@ public class HardwareWholeMachine implements Serializable {
     private Integer id;
 
     /**
-     * 硬件厂商-中文
+     * 整机厂商-中文
      */
     private String hardwareFactoryZy;
 
@@ -60,12 +61,12 @@ public class HardwareWholeMachine implements Serializable {
     private String friendlyLink;
 
     /**
-     * 板卡信息id集合:1,2,3
+     * 整机信息id集合:1,2,3
      */
     private String boardCardIds;
 
     /**
-     * 板卡信息集合
+     * 整机信息集合
      */
     private List<HardwareBoardCard> boardCards;
 
@@ -73,6 +74,11 @@ public class HardwareWholeMachine implements Serializable {
      * 兼容性配置
      */
     private HardwareCompatibilityConfiguration compatibilityConfiguration;
+
+    /**
+     * 密级
+     */
+    private String securityLevel;
 
     /**
      * 状态
@@ -100,31 +106,56 @@ public class HardwareWholeMachine implements Serializable {
         return this;
     }
 
+    public HardwareWholeMachine edit(){
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行编辑操作！");
+        }
+        this.setUpdateTime(new Date());
+        return this;
+    }
+
     public HardwareWholeMachine delete() {
+        if (HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行删除操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_DELETE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine apply() {
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行申请操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine pass() {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行审批操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_PASS.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine reject() {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行审批操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_REJECT.getValue());
         this.setUpdateTime(new Date());
         return this;
     }
 
     public HardwareWholeMachine close() {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())) {
+            throw new BusinessException("当前整机数据状态无法进行关闭操作！");
+        }
         this.setStatus(HardwareValueEnum.NODE_CLOSE.getValue());
         this.setUpdateTime(new Date());
         return this;
@@ -132,13 +163,12 @@ public class HardwareWholeMachine implements Serializable {
 
     public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
-        simple.put("hardwareFactoryZy", this.getHardwareFactoryZy());
-        simple.put("hardwareFactoryEn", this.getHardwareFactoryEn());
-        simple.put("hardwareModel", this.getHardwareModel());
-        simple.put("osVersion", this.getOsVersion());
-        simple.put("architecture", this.getArchitecture());
-        simple.put("date", this.getDate());
-        simple.put("status", this.getStatus());
+        simple.put("整机厂商中文名称", this.getHardwareFactoryZy());
+        simple.put("整机厂商英文名称", this.getHardwareFactoryEn());
+        simple.put("整机型号", this.getHardwareModel());
+        simple.put("操作系统版本", this.getOsVersion());
+        simple.put("架构", this.getArchitecture());
+        simple.put("认证日期", this.getDate());
         return simple.toJSONString();
     }
 }

@@ -4,7 +4,10 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
-import org.apache.commons.lang3.StringUtils;
+import com.huawei.it.euler.ddd.service.HardwareBoardCardAddCommand;
+import com.huawei.it.euler.ddd.service.HardwareBoardCardEditCommand;
+import com.huawei.it.euler.ddd.service.HardwareWholeMachineAddCommand;
+import com.huawei.it.euler.ddd.service.HardwareWholeMachineEditCommand;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,7 @@ import java.util.List;
 @Component
 public class HardwareFactory {
 
+    // approval node
     public HardwareApprovalNode createApprovalNode(HardwareApprovalNodePO approvalNodePO) {
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         BeanUtils.copyProperties(approvalNodePO, approvalNode);
@@ -32,9 +36,22 @@ public class HardwareFactory {
         return approvalNodePO;
     }
 
+    // hardware board card
     public HardwareBoardCard createBoardCard(HardwareBoardCardPO boardCardPO) {
         HardwareBoardCard boardCard = new HardwareBoardCard();
         BeanUtils.copyProperties(boardCardPO, boardCard);
+        return boardCard;
+    }
+
+    public HardwareBoardCard createBoardCard(HardwareBoardCardAddCommand addCommand) {
+        HardwareBoardCard boardCard = new HardwareBoardCard();
+        BeanUtils.copyProperties(addCommand, boardCard);
+        return boardCard;
+    }
+
+    public HardwareBoardCard createBoardCard(HardwareBoardCardEditCommand editCommand) {
+        HardwareBoardCard boardCard = new HardwareBoardCard();
+        BeanUtils.copyProperties(editCommand, boardCard);
         return boardCard;
     }
 
@@ -58,6 +75,7 @@ public class HardwareFactory {
         return boardCardSelectVO;
     }
 
+    // hardware whole machine
     public HardwareWholeMachine createWholeMachine(HardwareWholeMachinePO wholeMachinePO) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
@@ -66,6 +84,26 @@ public class HardwareFactory {
         HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
         BeanUtils.copyProperties(wholeMachinePO, compatibilityConfiguration);
         wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
+        return wholeMachine;
+    }
+
+    public HardwareWholeMachine createWholeMachine(HardwareWholeMachineAddCommand addCommand) {
+        HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
+        BeanUtils.copyProperties(addCommand, wholeMachine);
+        HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
+        BeanUtils.copyProperties(addCommand, compatibilityConfiguration);
+        wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
+        wholeMachine.setBoardCards(addCommand.getBoardCardAddCommandList().stream().map(this::createBoardCard).toList());
+        return wholeMachine;
+    }
+
+    public HardwareWholeMachine createWholeMachine(HardwareWholeMachineEditCommand editCommand) {
+        HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
+        BeanUtils.copyProperties(editCommand, wholeMachine);
+        HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
+        BeanUtils.copyProperties(editCommand, compatibilityConfiguration);
+        wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
+        wholeMachine.setBoardCards(editCommand.getBoardCardEditCommandList().stream().map(this::createBoardCard).toList());
         return wholeMachine;
     }
 
@@ -87,8 +125,6 @@ public class HardwareFactory {
         wholeMachinePO.setFactoryEn(wholeMachine.getHardwareFactoryEn());
         BeanUtils.copyProperties(wholeMachine, wholeMachinePO);
         BeanUtils.copyProperties(wholeMachine.getCompatibilityConfiguration(), wholeMachinePO);
-        List<Integer> boardCardIdList = wholeMachine.getBoardCards().stream().map(HardwareBoardCard::getId).toList();
-        wholeMachinePO.setBoardCardIds(StringUtils.join(boardCardIdList, ","));
         return wholeMachinePO;
     }
 
@@ -101,4 +137,5 @@ public class HardwareFactory {
         BeanUtils.copyProperties(wholeMachine, wholeMachineSelectVO);
         return wholeMachineSelectVO;
     }
+
 }
