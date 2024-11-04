@@ -43,11 +43,12 @@ public class HardwareWholeMachineService {
     public void close(HardwareWholeMachine wholeMachine) {
         List<HardwareBoardCard> boardCardList = wholeMachine.getBoardCards();
         for (HardwareBoardCard boardCard : boardCardList) {
+            boardCard.removeWholeMachine(wholeMachine.getId());
             if (HardwareValueEnum.NODE_TEMP.getValue().equals(boardCard.getStatus())){
                 boardCard.close();
             }
         }
-        wholeMachine.pass();
+        wholeMachine.close();
     }
 
     public void pass(HardwareWholeMachine wholeMachine) {

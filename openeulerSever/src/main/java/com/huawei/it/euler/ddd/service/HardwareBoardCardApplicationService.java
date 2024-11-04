@@ -74,21 +74,25 @@ public class HardwareBoardCardApplicationService {
 
     public void edit(HardwareBoardCardEditCommand editCommand, String uuid) {
         HardwareBoardCard boardCard = hardwareFactory.createBoardCard(editCommand);
-        HardwareBoardCard editBoardCard = boardCardRepository.find(boardCard.getId());
+        HardwareBoardCard existBoardCard = boardCardRepository.getOne(boardCard);
 
-        if (uuid.equals(boardCard.getUserUuid())){
-            throw new BusinessException("无权限编辑该板卡数据");
+        if (!boardCard.getId().equals(existBoardCard.getId())) {
+            throw new BusinessException("板卡[" + existBoardCard.toSimpleJsonString() + "]已存在！");
         }
 
-        editBoardCard.edit();
-        boardCardRepository.save(editBoardCard);
+        if (!uuid.equals(boardCard.getUserUuid())){
+            throw new BusinessException("无权限编辑该板卡数据！");
+        }
+
+        boardCard.edit();
+        boardCardRepository.save(boardCard);
     }
 
     public void delete(HardwareApprovalNode approvalNode) {
         HardwareBoardCard boardCard = boardCardRepository.find(approvalNode.getHardwareId());
 
-        if (approvalNode.getHardwareId().toString().equals(boardCard.getUserUuid())){
-            throw new BusinessException("无权限编辑该板卡数据");
+        if (!approvalNode.getHardwareId().toString().equals(boardCard.getUserUuid())){
+            throw new BusinessException("无权限删除该板卡数据！");
         }
 
         approvalNode.action(HardwareValueEnum.TYPE_BOARD_CARD.getValue(),

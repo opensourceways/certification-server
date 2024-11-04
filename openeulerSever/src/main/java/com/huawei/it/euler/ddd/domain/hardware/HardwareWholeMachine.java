@@ -100,7 +100,8 @@ public class HardwareWholeMachine implements Serializable {
      */
     private Date updateTime;
 
-    public HardwareWholeMachine create() {
+    public HardwareWholeMachine create(String uuid) {
+        this.setUserUuid(uuid);
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         this.setApplyTime(new Date());
         return this;
@@ -116,7 +117,7 @@ public class HardwareWholeMachine implements Serializable {
     }
 
     public HardwareWholeMachine delete() {
-        if (HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())) {
+        if (!HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())) {
             throw new BusinessException("当前整机数据状态无法进行删除操作！");
         }
         this.setStatus(HardwareValueEnum.NODE_DELETE.getValue());
