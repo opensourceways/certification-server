@@ -4,13 +4,14 @@
 
 package com.huawei.it.euler.mapper;
 
-import com.huawei.it.euler.ddd.domain.account.Role;
-import com.huawei.it.euler.ddd.domain.account.RoleRelationship;
-import com.huawei.it.euler.model.vo.RoleVo;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.huawei.it.euler.ddd.domain.account.Role;
+import com.huawei.it.euler.ddd.domain.account.RoleRelationship;
+import com.huawei.it.euler.model.vo.RoleVo;
 
 /**
  * 用户角色Mapper
@@ -41,6 +42,13 @@ public interface RoleMapper {
     List<String> findUserByRole(@Param("roleId") Integer roleId,@Param("dataScope") Integer dataScope);
 
     List<RoleVo> findRoleByUserId(@Param("uuid") Integer uuid,@Param("roleId") Integer roleId);
+
+    /**
+     * 根据数据权限查找用户
+     * @param dataScope 数据范围
+     * @return 用户列表
+     */
+    List<Role> findUserByDataScope(@Param("dataScope") Integer dataScope);
 
     List<String> findAllUuid();
 }

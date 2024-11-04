@@ -34,7 +34,7 @@ public interface SoftwareMapper {
      *
      * @param software 软件信息
      */
-    void updateSoftwareById(SoftwareVo software);
+    void updateSoftwareById(Software software);
 
     /**
      * 更新证书信息
@@ -61,23 +61,25 @@ public interface SoftwareMapper {
     /**
      * 查询兼容性认证申请列表
      *
-     * @param selectSoftware 筛选类型
+     * @param softwareQuery 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
-                                         @Param("software")SelectSoftware selectSoftware);
+    List<SoftwareVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+                                         @Param("software") SoftwareQuery softwareQuery);
 
-    Long countSoftwareList(@Param("software") SelectSoftware selectSoftware);
+    Long countSoftwareList(@Param("software") SoftwareQuery softwareQuery);
     /**
      * 华为侧查询兼容性认证申请列表
      *
-     * @param selectSoftware 筛选类型
+     * @param softwareQuery 筛选类型
      * @return 列表
      */
-    List<SoftwareListVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
-        @Param("software") SelectSoftware selectSoftware);
+    List<SoftwareVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
+        @Param("software") SoftwareQuery softwareQuery);
 
-    Long countReviewSoftwareList(@Param("software") SelectSoftware selectSoftware);
+    Long countReviewSoftwareList(@Param("software") SoftwareQuery softwareQuery);
+
+    List<SoftwareVo> getExportSoftwareList(@Param("software") SoftwareQuery softwareQuery);
 
     /**
      * 审核节点记录
@@ -167,6 +169,7 @@ public interface SoftwareMapper {
      */
     String getSignedFileId(Integer softwareId);
 
+    List<Attachments> getCertificationIds(@Param("softwareIds") List<Integer> softwareIds);
     /**
      * 查询社区软件清单
      * 

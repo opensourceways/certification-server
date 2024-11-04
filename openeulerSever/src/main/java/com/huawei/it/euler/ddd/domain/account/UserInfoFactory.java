@@ -32,4 +32,12 @@ public class UserInfoFactory {
         userInfo.setPhone(jsonObject.getString("phone"));
         return userInfo;
     }
+
+    public UserInfo createDeregisterUser(String uuid){
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUuid(uuid);
+        userInfo.setUserName("该用户已注销");
+        userInfo.setNickName("该用户已注销");
+        return userInfo;
+    }
 }
