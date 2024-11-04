@@ -147,7 +147,7 @@ public class HardwareBoardCard {
         return this;
     }
 
-    public HardwareBoardCard edit(){
+    public HardwareBoardCard edit() {
         if (!HardwareValueEnum.NODE_TEMP.getValue().equals(this.getStatus())
                 && !HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(this.getStatus())
                 && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())) {
@@ -218,18 +218,19 @@ public class HardwareBoardCard {
         return this;
     }
 
-    public HardwareBoardCard removeWholeMachine(Integer wholeMachineId){
+    public HardwareBoardCard removeWholeMachine(Integer wholeMachineId) {
         if (!StringUtils.isEmpty(this.getWholeMachineIds())) {
             String[] split = this.getWholeMachineIds().split(",");
             String idStr = String.valueOf(wholeMachineId);
             String collect = null;
-            if (!idStr.equals(this.getWholeMachineIds())){
+            if (!idStr.equals(this.getWholeMachineIds())) {
                 collect = Arrays.stream(split).filter(id -> !id.equals(idStr)).collect(Collectors.joining(","));
             }
             this.setWholeMachineIds(collect);
         }
         return this;
     }
+
     public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
         simple.put("操作系统", this.getOs());
