@@ -7,7 +7,6 @@ package com.huawei.it.euler.ddd.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.exception.BusinessException;
-import com.huawei.it.euler.exception.ParamException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,10 +18,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 public class HardwareBoardCardApplicationServiceTest {
@@ -32,10 +31,13 @@ public class HardwareBoardCardApplicationServiceTest {
     private static final int HARDWARE_ID = 1;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private HardwareApprovalNodeService approvalNodeService;
+    private HardwareBoardCardRepositoryImpl boardCardRepository;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private HardwareBoardCardService boardCardService;
+    private HardwareApprovalNodeRepositoryImpl approvalNodeRepository;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private HardwareFactory hardwareFactory;
 
     @InjectMocks
     private HardwareBoardCardApplicationService boardCardApplicationService;
@@ -43,318 +45,382 @@ public class HardwareBoardCardApplicationServiceTest {
     @Test
     @DisplayName("板卡插入成功")
     void testInsertSuccess() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
+        HardwareBoardCardAddCommand addCommand = getBoardCardAddCommand();
+        HardwareBoardCard boardCard = getBoardCard(null);
 
-        Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.insert(boardCard)).thenReturn(boardCard);
+        Mockito.when(hardwareFactory.createBoardCard(addCommand)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(null);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
 
-        HardwareBoardCard insert = boardCardApplicationService.insert(boardCard, USER_UUID);
+        InsertResponse insert = boardCardApplicationService.insert(addCommand, USER_UUID);
 
-        Assertions.assertEquals(1, insert.getId());
+        Assertions.assertTrue(insert.isSuccess());
     }
 
     @Test
     @DisplayName("板卡插入失败-已存在")
-    void testInsertFailedOfExist() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
+    void testInsertFailedExist() {
+        HardwareBoardCardAddCommand addCommand = getBoardCardAddCommand();
+        HardwareBoardCard boardCard = getBoardCard(null);
 
-        Mockito.when(boardCardService.exist(any())).thenReturn(true);
+        Mockito.when(hardwareFactory.createBoardCard(addCommand)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
 
-        ParamException paramException = assertThrows(ParamException.class,
-                () -> boardCardApplicationService.insert(boardCard, USER_UUID));
-        Assertions.assertTrue(paramException.getMessage().matches("当前板卡(.*)已存在！"));
+        InsertResponse insert = boardCardApplicationService.insert(addCommand, USER_UUID);
+
+        Assertions.assertFalse(insert.isSuccess());
+        Assertions.assertEquals("当前板卡已存在！", insert.getMessage());
     }
 
     @Test
-    @DisplayName("板卡批量插入成功")
+    @DisplayName("批量插入成功")
     void testBatchInsertSuccess() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        List<HardwareBoardCard> boardCardList = new ArrayList<>();
-        boardCardList.add(boardCard);
+        HardwareBoardCardAddCommand addCommand = getBoardCardAddCommand();
+        List<HardwareBoardCardAddCommand> addCommandList = new ArrayList<>();
+        addCommandList.add(addCommand);
 
-        Mockito.when(boardCardService.exist(any())).thenReturn(false);
-        Mockito.when(boardCardService.batchInsert(boardCardList)).thenReturn(true);
+        HardwareBoardCard boardCard = getBoardCard(null);
 
-        List<HardwareBoardCard> batchInsert = boardCardApplicationService.batchInsert(boardCardList, USER_UUID);
-        Assertions.assertEquals(1, batchInsert.size());
+        Mockito.when(hardwareFactory.createBoardCard(addCommand)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(null);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+
+        BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, USER_UUID);
+
+        Assertions.assertEquals(1, batchInsertResponse.getSuccessCount());
+        Assertions.assertEquals(0, batchInsertResponse.getFailureCount());
     }
 
     @Test
-    @DisplayName("板卡单笔查询成功")
-    void testGetByIdSuccess() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
+    @DisplayName("批量插入失败")
+    void testBatchInsertFailed() {
+        HardwareBoardCardAddCommand addCommand = getBoardCardAddCommand();
+        List<HardwareBoardCardAddCommand> addCommandList = new ArrayList<>();
+        addCommandList.add(addCommand);
 
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
+        HardwareBoardCard boardCard = getBoardCard(null);
+
+        Mockito.when(hardwareFactory.createBoardCard(addCommand)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+
+        BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, USER_UUID);
+
+        Assertions.assertEquals(0, batchInsertResponse.getSuccessCount());
+        Assertions.assertEquals(1, batchInsertResponse.getFailureCount());
+    }
+
+    @Test
+    @DisplayName("查询对象成功")
+    void testGetByIdSuccess() {
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+
+        Mockito.when(boardCardRepository.find(HARDWARE_ID)).thenReturn(boardCard);
 
         HardwareBoardCard byId = boardCardApplicationService.getById(HARDWARE_ID);
+
         Assertions.assertEquals(boardCard, byId);
     }
 
     @Test
-    @DisplayName("板卡分页查询成功")
-    void testGetPageSuccess() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-
-        Page<HardwareBoardCard> page = new Page<>(1, 10);
+    @DisplayName("查询列表成功")
+    void testGetListSuccess() {
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
         boardCardList.add(boardCard);
-        page.setRecords(boardCardList);
 
-        Mockito.when(boardCardService.getPage(any())).thenReturn(page);
+        HardwareBoardCardSelectVO selectVO = getBoardCardSelectVO();
 
-        Page<HardwareBoardCard> boardCardPage = boardCardApplicationService.getPage(new HardwareBoardCardSelectVO());
-        Assertions.assertEquals(boardCardList, boardCardPage.getRecords());
+        Mockito.when(boardCardRepository.getList(selectVO)).thenReturn(boardCardList);
+
+        List<HardwareBoardCard> boardCardList1 = boardCardApplicationService.getList(selectVO);
+
+        Assertions.assertEquals(boardCardList, boardCardList1);
     }
 
     @Test
-    @DisplayName("板卡删除成功")
-    void testDeleteSuccess(){
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setRefCount(0);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+    @DisplayName("查询分页成功")
+    void testGetPageSuccess() {
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        List<HardwareBoardCard> boardCardList = new ArrayList<>();
+        boardCardList.add(boardCard);
 
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_REJECT.getValue());
+        Page<HardwareBoardCard> boardCardPage = new Page<>();
+        boardCardPage.setRecords(boardCardList);
 
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-        Mockito.doAnswer(invocation -> {
-            boardCard.delete();
-            return boardCard;
-        }).when(boardCardService).updateById(boardCard);
+        HardwareBoardCardSelectVO selectVO = getBoardCardSelectVO();
+
+        Mockito.when(boardCardRepository.getPage(selectVO)).thenReturn(boardCardPage);
+
+        Page<HardwareBoardCard> boardCardPage1 = boardCardApplicationService.getPage(selectVO);
+
+        Assertions.assertEquals(boardCardPage, boardCardPage1);
+    }
+
+    @Test
+    @DisplayName("编辑成功")
+    void testEditSuccess() {
+        HardwareBoardCardEditCommand editCommand = getBoardCardEditCommand();
+        HardwareBoardCard editBoardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        editBoardCard.setVendorID(editCommand.getVendorID());
+        editBoardCard.setUserUuid(USER_UUID);
+
+        Mockito.when(hardwareFactory.createBoardCard(editCommand)).thenReturn(editBoardCard);
+        Mockito.when(boardCardRepository.getOne(editBoardCard)).thenReturn(editBoardCard);
+        Mockito.when(boardCardRepository.save(editBoardCard)).thenReturn(editBoardCard);
+
+        boardCardApplicationService.edit(editCommand, USER_UUID);
+
+        Assertions.assertEquals(editCommand.getVendorID(), editBoardCard.getVendorID());
+    }
+
+    @Test
+    @DisplayName("编辑失败-已存在")
+    void testEditFailedExist() {
+        HardwareBoardCardEditCommand editCommand = getBoardCardEditCommand();
+        HardwareBoardCard existBoard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        boardCard.setId(HARDWARE_ID + 1);
+        boardCard.setUserUuid(USER_UUID);
+
+        Mockito.when(hardwareFactory.createBoardCard(editCommand)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(existBoard);
+
+        BusinessException businessException = assertThrows(BusinessException.class,
+                () -> boardCardApplicationService.edit(editCommand, USER_UUID));
+
+        Assertions.assertEquals("板卡[" + existBoard.toSimpleJsonString() + "]已存在！", businessException.getMessage());
+    }
+
+    @Test
+    @DisplayName("编辑失败-无权限")
+    void testEditFailedPermission() {
+        HardwareBoardCardEditCommand editCommand = getBoardCardEditCommand();
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        boardCard.setUserUuid("2");
+
+        Mockito.when(hardwareFactory.createBoardCard(editCommand)).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(boardCard);
+
+        BusinessException businessException = assertThrows(BusinessException.class,
+                () -> boardCardApplicationService.edit(editCommand, USER_UUID));
+
+        Assertions.assertEquals("无权限编辑该板卡数据！", businessException.getMessage());
+    }
+
+    @Test
+    @DisplayName("删除成功")
+    void testDeleteSuccess() {
+        HardwareApprovalNode approvalNode = getApprovalNode(null);
+
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        boardCard.setUserUuid(USER_UUID);
+
+        Mockito.when(boardCardRepository.find(approvalNode.getHardwareId())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+        Mockito.when(approvalNodeRepository.save(approvalNode)).thenReturn(true);
 
         boardCardApplicationService.delete(approvalNode);
 
-        Assertions.assertEquals(HardwareValueEnum.NODE_DELETE.getValue(),boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.NODE_DELETE.getValue(), boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.RESULT_DELETE.getValue(), approvalNode.getHandlerResult());
+        Assertions.assertEquals(HardwareValueEnum.TYPE_BOARD_CARD.getValue(), approvalNode.getHardwareType());
+        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPLY.getValue(), approvalNode.getHandlerNode());
     }
 
     @Test
-    @DisplayName("板卡删除失败-数据不存在")
-    void testDeleteFailedUnExist(){
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_REJECT.getValue());
+    @DisplayName("删除失败-无权限")
+    void testDeleteFailedPermission() {
+        HardwareApprovalNode approvalNode = getApprovalNode(null);
+        approvalNode.setHardwareId(Integer.valueOf(USER_UUID));
 
-        Mockito.when(boardCardService.getById(any())).thenReturn(null);
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        boardCard.setUserUuid("2");
 
-        ParamException paramException = assertThrows(ParamException.class,
-                () -> boardCardApplicationService.delete(approvalNode));
-
-        Assertions.assertEquals("当前板卡数据不存在！", paramException.getMessage());
-    }
-
-    @Test
-    @DisplayName("板卡删除失败-状态不匹配")
-    void testDeleteFailedStatus() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
-
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.find(approvalNode.getHardwareId())).thenReturn(boardCard);
 
         BusinessException businessException = assertThrows(BusinessException.class,
                 () -> boardCardApplicationService.delete(approvalNode));
 
-        Assertions.assertEquals("当前板卡数据状态无法进行删除操作！", businessException.getMessage());
+        Assertions.assertEquals("无权限删除该板卡数据！", businessException.getMessage());
     }
 
     @Test
-    @DisplayName("板卡删除失败-被占用")
-    void testDeleteFailedUsed() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
-        boardCard.setRefCount(1);
-
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-
-        BusinessException businessException = assertThrows(BusinessException.class,
-                () -> boardCardApplicationService.delete(approvalNode));
-
-        Assertions.assertEquals("当前板卡关联整机，无法删除！", businessException.getMessage());
-    }
-
-    @Test
-    @DisplayName("板卡编辑成功")
-    void testEditSuccess(){
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setBoardModel("1");
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-        boardCard.setBoardModel("2");
-        boardCardApplicationService.edit(boardCard);
-        Assertions.assertEquals("2",boardCard.getBoardModel());
-    }
-
-    @Test
-    @DisplayName("板卡申请成功")
+    @DisplayName("申请成功")
     void testApplySuccess() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        HardwareApprovalNode approvalNode = getApprovalNode(null);
 
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        boardCard.setUserUuid(USER_UUID);
 
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-        Mockito.doAnswer(invocation -> {
-            boardCard.apply();
-            return boardCard;
-        }).when(boardCardService).apply(boardCard);
+        Mockito.when(boardCardRepository.find(approvalNode.getHardwareId())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+        Mockito.when(approvalNodeRepository.save(approvalNode)).thenReturn(true);
 
         boardCardApplicationService.apply(approvalNode);
 
-        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPROVE.getValue(),boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPROVE.getValue(), boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.RESULT_PASS.getValue(), approvalNode.getHandlerResult());
+        Assertions.assertEquals(HardwareValueEnum.TYPE_BOARD_CARD.getValue(), approvalNode.getHardwareType());
+        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPLY.getValue(), approvalNode.getHandlerNode());
     }
 
     @Test
-    @DisplayName("板卡申请失败-数据不存在")
-    void testApplyFailedUnExist() {
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
+    @DisplayName("关闭成功")
+    void testCloseSuccess() {
+        HardwareApprovalNode approvalNode = getApprovalNode(null);
 
-        Mockito.when(boardCardService.getById(any())).thenReturn(null);
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
+        boardCard.setUserUuid(USER_UUID);
 
-        ParamException paramException = assertThrows(ParamException.class,
-                () -> boardCardApplicationService.apply(approvalNode));
+        Mockito.when(boardCardRepository.find(approvalNode.getHardwareId())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+        Mockito.when(approvalNodeRepository.save(approvalNode)).thenReturn(true);
 
-        Assertions.assertEquals("当前板卡数据不存在！", paramException.getMessage());
+        boardCardApplicationService.close(approvalNode);
+
+        Assertions.assertEquals(HardwareValueEnum.NODE_CLOSE.getValue(), boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.RESULT_CLOSE.getValue(), approvalNode.getHandlerResult());
+        Assertions.assertEquals(HardwareValueEnum.TYPE_BOARD_CARD.getValue(), approvalNode.getHardwareType());
+        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPROVE.getValue(), approvalNode.getHandlerNode());
     }
 
     @Test
-    @DisplayName("板卡申请失败-状态不匹配")
-    void testApplyFailedStatus() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
+    @DisplayName("通过成功")
+    void testPassSuccess() {
+        HardwareApprovalNode approvalNode = getApprovalNode(null);
 
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
+        boardCard.setUserUuid(USER_UUID);
 
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.find(approvalNode.getHardwareId())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+        Mockito.when(approvalNodeRepository.save(approvalNode)).thenReturn(true);
 
-        BusinessException businessException = assertThrows(BusinessException.class,
-                () -> boardCardApplicationService.apply(approvalNode));
-
-        Assertions.assertEquals("当前板卡数据状态无法进行申请操作！", businessException.getMessage());
-    }
-
-    @Test
-    @DisplayName("板卡审批成功-通过")
-    void testApprovalPassSuccess() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
-
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-        Mockito.doAnswer(invocation -> {
-            boardCard.pass();
-            return boardCard;
-        }).when(boardCardService).pass(boardCard);
-        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
-
-        boardCardApplicationService.approval(approvalNode);
+        boardCardApplicationService.pass(approvalNode);
 
         Assertions.assertEquals(HardwareValueEnum.NODE_PASS.getValue(), boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.RESULT_PASS.getValue(), approvalNode.getHandlerResult());
+        Assertions.assertEquals(HardwareValueEnum.TYPE_BOARD_CARD.getValue(), approvalNode.getHardwareType());
+        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPROVE.getValue(), approvalNode.getHandlerNode());
     }
 
     @Test
-    @DisplayName("板卡审批成功-驳回")
-    void testApprovalRejectSuccess(){
+    @DisplayName("驳回成功")
+    void testRejectSuccess() {
+        HardwareApprovalNode approvalNode = getApprovalNode(null);
+
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
+        boardCard.setUserUuid(USER_UUID);
+
+        Mockito.when(boardCardRepository.find(approvalNode.getHardwareId())).thenReturn(boardCard);
+        Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
+        Mockito.when(approvalNodeRepository.save(approvalNode)).thenReturn(true);
+
+        boardCardApplicationService.reject(approvalNode);
+
+        Assertions.assertEquals(HardwareValueEnum.NODE_REJECT.getValue(), boardCard.getStatus());
+        Assertions.assertEquals(HardwareValueEnum.RESULT_REJECT.getValue(), approvalNode.getHandlerResult());
+        Assertions.assertEquals(HardwareValueEnum.TYPE_BOARD_CARD.getValue(), approvalNode.getHardwareType());
+        Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPROVE.getValue(), approvalNode.getHandlerNode());
+    }
+
+
+    private HardwareBoardCardAddCommand getBoardCardAddCommand() {
+        HardwareBoardCardAddCommand boardCardAddCommand = new HardwareBoardCardAddCommand();
+        boardCardAddCommand.setVendorID("15B3");
+        boardCardAddCommand.setDeviceID("1015");
+        boardCardAddCommand.setSvID("19E5");
+        boardCardAddCommand.setSsID("D11B");
+        boardCardAddCommand.setArchitecture("x86_64");
+        boardCardAddCommand.setOs("openEuler 22.03 LTS");
+        boardCardAddCommand.setDriverName("mlx5_core");
+        boardCardAddCommand.setVersion("5.1-2.5.2");
+        boardCardAddCommand.setType("NIC");
+        boardCardAddCommand.setDriverSize("1.1M");
+        boardCardAddCommand.setDate("2021.3.19");
+        boardCardAddCommand.setSha256("12312313123");
+        boardCardAddCommand.setDownloadLink("https://xx.rpm");
+        boardCardAddCommand.setChipVendor("CV4 Lx EN");
+        boardCardAddCommand.setBoardModel("SP333");
+        boardCardAddCommand.setChipModel("CX4 Lx EN");
+        boardCardAddCommand.setSecurityLevel("1");
+        return boardCardAddCommand;
+    }
+
+    private HardwareBoardCard getBoardCard(String status) {
         HardwareBoardCard boardCard = new HardwareBoardCard();
         boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPROVE.getValue());
-
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_REJECT.getValue());
-
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-        Mockito.doAnswer(invocation -> {
-            boardCard.reject();
-            return boardCard;
-        }).when(boardCardService).reject(boardCard);
-        Mockito.when(approvalNodeService.insert(approvalNode)).thenReturn(true);
-        boardCardApplicationService.approval(approvalNode);
-
-        Assertions.assertEquals(HardwareValueEnum.NODE_REJECT.getValue(),boardCard.getStatus());
+        boardCard.setVendorID("15B3");
+        boardCard.setDeviceID("1015");
+        boardCard.setSvID("19E5");
+        boardCard.setSsID("D11B");
+        boardCard.setArchitecture("x86_64");
+        boardCard.setOs("openEuler 22.03 LTS");
+        boardCard.setDriverName("mlx5_core");
+        boardCard.setVersion("5.1-2.5.2");
+        boardCard.setType("NIC");
+        boardCard.setDriverSize("1.1M");
+        boardCard.setDate("2021.3.19");
+        boardCard.setSha256("12312313123");
+        boardCard.setDownloadLink("https://xx.rpm");
+        boardCard.setChipVendor("CV4 Lx EN");
+        boardCard.setBoardModel("SP333");
+        boardCard.setChipModel("CX4 Lx EN");
+        boardCard.setStatus(status);
+        return boardCard;
     }
 
-    @Test
-    @DisplayName("板卡审批失败-数据不存在")
-    void testApprovalFailedUnExist() {
-        HardwareApprovalNode approvalNode = new HardwareApprovalNode();
-        approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
-        approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-
-        Mockito.when(boardCardService.getById(any())).thenReturn(null);
-
-        ParamException paramException = assertThrows(ParamException.class,
-                () -> boardCardApplicationService.approval(approvalNode));
-
-        Assertions.assertEquals("当前板卡数据不存在！", paramException.getMessage());
+    private HardwareBoardCardSelectVO getBoardCardSelectVO() {
+        HardwareBoardCardSelectVO boardCardSelectVO = new HardwareBoardCardSelectVO();
+        boardCardSelectVO.setId(String.valueOf(HARDWARE_ID));
+        boardCardSelectVO.setArchitecture("x86_64");
+        boardCardSelectVO.setOs("openEuler 22.03 LTS");
+        boardCardSelectVO.setDriverName("mlx5_core");
+        boardCardSelectVO.setType("NIC");
+        boardCardSelectVO.setDate("2021.3.19");
+        boardCardSelectVO.setChipVendor("CV4 Lx EN");
+        boardCardSelectVO.setChipModel("CX4 Lx EN");
+        boardCardSelectVO.setBoardModel("SP333");
+        boardCardSelectVO.setUserUuid(USER_UUID);
+        boardCardSelectVO.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        Date now = new Date();
+        boardCardSelectVO.setApplyTime(now);
+        boardCardSelectVO.setUpdateTime(now);
+        boardCardSelectVO.setCurrent(1);
+        boardCardSelectVO.setSize(10);
+        return boardCardSelectVO;
     }
 
-    @Test
-    @DisplayName("板卡申请失败-状态不匹配")
-    void testApprovalFailedStatus() {
-        HardwareBoardCard boardCard = new HardwareBoardCard();
-        boardCard.setId(HARDWARE_ID);
-        boardCard.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+    private HardwareBoardCardEditCommand getBoardCardEditCommand() {
+        HardwareBoardCardEditCommand boardCardEditCommand = new HardwareBoardCardEditCommand();
+        boardCardEditCommand.setId(HARDWARE_ID);
+        boardCardEditCommand.setVendorID("1015");
+        boardCardEditCommand.setDeviceID("1015");
+        boardCardEditCommand.setSvID("19E5");
+        boardCardEditCommand.setSsID("D11B");
+        boardCardEditCommand.setArchitecture("x86_64");
+        boardCardEditCommand.setOs("openEuler 22.03 LTS");
+        boardCardEditCommand.setDriverName("mlx5_core");
+        boardCardEditCommand.setVersion("5.1-2.5.2");
+        boardCardEditCommand.setType("NIC");
+        boardCardEditCommand.setDriverSize("1.1M");
+        boardCardEditCommand.setDate("2021.3.19");
+        boardCardEditCommand.setSha256("12312313123");
+        boardCardEditCommand.setDownloadLink("https://xx.rpm");
+        boardCardEditCommand.setChipVendor("CV4 Lx EN");
+        boardCardEditCommand.setBoardModel("SP333");
+        boardCardEditCommand.setChipModel("CX4 Lx EN");
+        return boardCardEditCommand;
+    }
 
+    private HardwareApprovalNode getApprovalNode(String result) {
         HardwareApprovalNode approvalNode = new HardwareApprovalNode();
         approvalNode.setHardwareId(HARDWARE_ID);
-        approvalNode.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
         approvalNode.setHandlerUuid(Integer.valueOf(USER_UUID));
-        approvalNode.setHandlerResult(HardwareValueEnum.RESULT_PASS.getValue());
-
-        Mockito.when(boardCardService.getById(any())).thenReturn(boardCard);
-
-        BusinessException businessException = assertThrows(BusinessException.class,
-                () -> boardCardApplicationService.approval(approvalNode));
-
-        Assertions.assertEquals("当前板卡数据状态无法进行审批操作！", businessException.getMessage());
+        approvalNode.setHandlerComment("操作意见");
+        approvalNode.setHandlerResult(result);
+        return approvalNode;
     }
 }
