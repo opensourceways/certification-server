@@ -28,10 +28,13 @@ import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.*;
 import com.huawei.it.euler.model.constant.CompanyStatusConstant;
+import com.huawei.it.euler.model.dto.SoftwareDTO;
 import com.huawei.it.euler.model.entity.*;
 import com.huawei.it.euler.model.enumeration.ErrorCodes;
 import com.huawei.it.euler.model.enumeration.HandlerResultEnum;
 import com.huawei.it.euler.model.enumeration.NodeEnum;
+import com.huawei.it.euler.model.enumeration.RoleEnum;
+import com.huawei.it.euler.model.populater.SoftwareVOPopulater;
 import com.huawei.it.euler.model.vo.*;
 import com.huawei.it.euler.service.ApprovalPathNodeService;
 import com.huawei.it.euler.service.ApprovalScenarioService;
@@ -48,7 +51,7 @@ class SoftwareServiceImplTest {
 
     private static final String USER_UUID = "1";
 
-    private static  final String USER_UUID_TRANSFORM = "2";
+    private static final String USER_UUID_TRANSFORM = "2";
 
     private static final Integer SOFTWARE_ID = 1;
 
@@ -68,6 +71,9 @@ class SoftwareServiceImplTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ProtocolMapper protocolMapper;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private UserService userInfoService;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private NodeMapper nodeMapper;
@@ -90,20 +96,24 @@ class SoftwareServiceImplTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private AccountService accountService;
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private SoftwareVOPopulater softwareVOPopulater;
+
     @InjectMocks
     private SoftwareServiceImpl softwareServiceImpl;
 
     @Test
     @DisplayName("根据id查询软件成功")
     void testFindByIdSuccess() {
-        Software software = initExpectResultSoftware();
+        SoftwareVo software = initResultSoftwareVo();
 
         // setup
         Mockito.when(userService.isUserPermission(any(), any())).thenReturn(true);
-        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initTestSoftware());
+        Mockito.when(softwareVOPopulater.populate(any(SoftwareVo.class))).thenReturn(software);
 
         // run
-        Software result = softwareServiceImpl.findById(USER_ID, USER_UUID);
+        SoftwareVo result = softwareServiceImpl.findById(USER_ID, USER_UUID);
 
         // verify
         Assertions.assertEquals(software, result);
@@ -126,7 +136,9 @@ class SoftwareServiceImplTest {
     @Test
     @DisplayName("测评流程申请成功")
     void testCreateSoftwareSuccess() throws Exception {
+        SoftwareVo softwareVo = initResultSoftwareVo();
         Software software = initTestSoftware();
+        software.setStatus(NodeEnum.APPLY.getId());
 
         // setup
         Mockito.when(companyService.findCompanyByUserUuid(any())).thenReturn(initResultCompanyVo());
@@ -135,13 +147,14 @@ class SoftwareServiceImplTest {
         Mockito.when(masterDataMapper.findProduct(any(), any())).thenReturn(1);
         Mockito.when(approvalScenarioService.findApprovalPath(any(), any())).thenReturn(initResultApprovalScenario());
         Mockito.when(protocolMapper.selectProtocolDesc(anyInt(), any())).thenReturn(initResultProtocol());
-        Mockito.when(softwareMapper.insertSoftware(any())).thenReturn(initResultSoftware().getId());
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
+        Mockito.when(userService.isUserDataScopeByRole(any(), any())).thenReturn(true);
 
         // run
-        Integer id = softwareServiceImpl.createSoftware(software, USER_UUID);
+        softwareServiceImpl.createSoftware(softwareVo, USER_UUID);
 
         // verify
-        Assertions.assertEquals(1, initResultSoftware().getId());
+        Assertions.assertEquals(1, initResultSoftwareDTO().getId());
     }
 
     @Test
@@ -150,9 +163,11 @@ class SoftwareServiceImplTest {
         ProcessVo processVo = initAcceptProcess();
         Node node = new Node();
         ApprovalPathNode approvalPathNode = new ApprovalPathNode();
+        Software software = initTestSoftware();
+        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
 
         // setup
-        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
         Mockito.when(userService.isUserDataScopeByRole(anyInt(), any())).thenReturn(true);
         Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn(node);
         doNothing().when(nodeMapper).updateNodeById(any());
@@ -163,8 +178,7 @@ class SoftwareServiceImplTest {
         doNothing().when(softwareMapper).updateSoftware(any());
 
         // run
-        String result =
-            softwareServiceImpl.commonProcess(processVo, USER_UUID, NodeEnum.PROGRAM_REVIEW.getId());
+        String result = softwareServiceImpl.commonProcess(processVo, USER_UUID, NodeEnum.PROGRAM_REVIEW.getId());
 
         // verify
         Assertions.assertEquals(TEST_SOFTWARE_ID, result);
@@ -176,7 +190,7 @@ class SoftwareServiceImplTest {
         ProcessVo processVo = initAcceptProcess();
         Node node = new Node();
         ApprovalPathNode approvalPathNode = new ApprovalPathNode();
-        Software software = initResultSoftware();
+        Software software = initTestSoftware();
         software.setStatus(NodeEnum.TESTING_PHASE.getId());
 
         // setup
@@ -202,7 +216,7 @@ class SoftwareServiceImplTest {
     void testReportReview() {
         ProcessVo processVo = initAcceptProcess();
         Node node = new Node();
-        Software software = initResultSoftware();
+        Software software = initTestSoftware();
         software.setStatus(NodeEnum.REPORT_REVIEW.getId());
 
         // setup
@@ -221,13 +235,12 @@ class SoftwareServiceImplTest {
         Assertions.assertEquals(JsonResponse.success(), result);
     }
 
-
     @Test
     @DisplayName("测评证书确认成功")
     void testCertificateConfirmation() {
         ProcessVo processVo = initAcceptProcess();
         Node node = new Node();
-        Software software = initResultSoftware();
+        Software software = initTestSoftware();
         software.setStatus(NodeEnum.CERTIFICATE_CONFIRMATION.getId());
 
         // setup
@@ -251,7 +264,7 @@ class SoftwareServiceImplTest {
     void testCertificateIssuance() throws IOException {
         ProcessVo processVo = initAcceptProcess();
         Node node = new Node();
-        Software software = initResultSoftware();
+        Software software = initTestSoftware();
         software.setStatus(NodeEnum.CERTIFICATE_ISSUANCE.getId());
 
         // setup
@@ -283,12 +296,12 @@ class SoftwareServiceImplTest {
         userInfo.setUserName("测试用户");
         List<UserInfo> eulerUsers = List.of(userInfo);
         // setup
-        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
-        Mockito.when(roleMapper.findUserByRole(any(), any())).thenReturn(List.of(USER_UUID,USER_UUID_TRANSFORM));
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initTestSoftware());
+        Mockito.when(roleMapper.findUserByRole(any(), any())).thenReturn(List.of(USER_UUID, USER_UUID_TRANSFORM));
         Mockito.when(accountService.getUserInfoList(any())).thenReturn(eulerUsers);
 
         // run
-        List<SimpleUserVo> result = softwareServiceImpl.transferredUserList(1,USER_UUID);
+        List<SimpleUserVo> result = softwareServiceImpl.transferredUserList(1, USER_UUID);
 
         // verify
         Assertions.assertEquals(1, result.size());
@@ -297,17 +310,17 @@ class SoftwareServiceImplTest {
 
     @Test
     @DisplayName("测试获取软件列表")
-     void testGetSoftwareList(){
-        SelectSoftwareVo selectSoftwareVo = new SelectSoftwareVo();
-        selectSoftwareVo.setPageNum(1);
-        selectSoftwareVo.setPageSize(10);
-        List<SoftwareListVo> currentSoftwareList = List.of(initTestSoftwareListVo());
+    void testGetSoftwareList() {
+        SoftwareQueryRequest softwareQueryRequest = new SoftwareQueryRequest();
+        List<SoftwareVo> currentSoftwareList = List.of(initResultSoftwareVo());
+
         // setup
         Mockito.when(companyMapper.findRegisterSuccessCompanyByUserUuid(any())).thenReturn(initResultCompany());
-        Mockito.when(softwareMapper.getSoftwareList(anyInt(),anyInt(),any())).thenReturn(currentSoftwareList);
+        Mockito.when(softwareMapper.getSoftwareList(anyInt(), anyInt(), any())).thenReturn(currentSoftwareList);
         Mockito.when(softwareMapper.countSoftwareList(any())).thenReturn(1L);
+
         // run
-        PageResult<SoftwareListVo> result = softwareServiceImpl.getSoftwareList(selectSoftwareVo,USER_UUID);
+        PageResult<SoftwareVo> result = softwareServiceImpl.getSoftwareList(softwareQueryRequest, USER_UUID,1,10);
 
         // verify
         Assertions.assertEquals(1, result.getList().size());
@@ -316,24 +329,25 @@ class SoftwareServiceImplTest {
     @Test
     @DisplayName("测试获取待测评软件列表")
     void testGetReviewSoftwareList() {
-        SelectSoftwareVo selectSoftwareVo = new SelectSoftwareVo();
-        selectSoftwareVo.setPageNum(1);
-        selectSoftwareVo.setPageSize(10);
-        List<SoftwareListVo> currentSoftwareList = List.of(initTestSoftwareListVo());
+        SoftwareQueryRequest softwareQueryRequest = new SoftwareQueryRequest();
+        SoftwareVo softwareVo = initResultSoftwareVo();
+        softwareVo.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
+        List<SoftwareVo> currentSoftwareList = List.of(softwareVo);
+
         // setup
         Mockito.when(companyMapper.findRegisterSuccessCompanyByUserUuid(any())).thenReturn(initResultCompany());
         Mockito.when(softwareMapper.getReviewSoftwareList(anyInt(),anyInt(),any())).thenReturn(currentSoftwareList);
         Mockito.when(softwareMapper.countReviewSoftwareList(any())).thenReturn(1L);
         // run
-        PageResult<SoftwareListVo> result = softwareServiceImpl.getReviewSoftwareList(selectSoftwareVo,USER_UUID);
+        PageResult<SoftwareVo> result = softwareServiceImpl.getReviewSoftwareList(softwareQueryRequest,USER_UUID,1,10);
 
-        // verify
+         //verify
         Assertions.assertEquals(1, result.getList().size());
     }
 
     @Test
     @DisplayName("测试获取审核记录列表")
-    void testGetAuditRecordsList(){
+    void testGetAuditRecordsList() {
         AuditRecordsVo auditRecordsVo = new AuditRecordsVo();
         List<AuditRecordsVo> auditRecordsVos = List.of(auditRecordsVo);
         // setup
@@ -348,8 +362,8 @@ class SoftwareServiceImplTest {
 
     @Test
     @DisplayName("测试删除软件")
-    void testDeleteSoftware(){
-        Software software = initResultSoftware();
+    void testDeleteSoftware() {
+        Software software = initTestSoftware();
         software.setStatus(NodeEnum.APPLY.getId());
 
         // setup
@@ -357,7 +371,7 @@ class SoftwareServiceImplTest {
         Mockito.when(softwareMapper.deleteSoftware(anyInt())).thenReturn(SOFTWARE_ID);
 
         // run
-        String result = softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
+        String result = softwareServiceImpl.deleteSoftware(SOFTWARE_ID, USER_UUID);
 
         // verify
         Assertions.assertEquals(TEST_SOFTWARE_ID, result);
@@ -365,15 +379,16 @@ class SoftwareServiceImplTest {
 
     @Test
     @DisplayName("删除软件失败，状态错误")
-    void testDeleteSoftwareFail(){
-        Software software = initResultSoftware();
+    void testDeleteSoftwareFail() {
+        Software software = initTestSoftware();
+        software.setStatus(NodeEnum.REPORT_REVIEW.getId());
 
         // setup
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
 
         // run
         ParamException paramException = assertThrows(ParamException.class, () -> {
-            softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
+            softwareServiceImpl.deleteSoftware(SOFTWARE_ID, USER_UUID);
         });
 
         // verify
@@ -382,15 +397,15 @@ class SoftwareServiceImplTest {
 
     @Test
     @DisplayName("删除软件失败，用户错误")
-    void testDeleteSoftwareFail2(){
-        Software software = initResultSoftware();
+    void testDeleteSoftwareFail2() {
+        Software software = initTestSoftware();
         software.setUserUuid(USER_UUID_TRANSFORM);
         // setup
         Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
 
         // run
         ParamException paramException = assertThrows(ParamException.class, () -> {
-            softwareServiceImpl.deleteSoftware(SOFTWARE_ID,USER_UUID);
+            softwareServiceImpl.deleteSoftware(SOFTWARE_ID, USER_UUID);
         });
 
         // verify
@@ -399,33 +414,37 @@ class SoftwareServiceImplTest {
 
     @Test
     @DisplayName("测试撤回申请")
-    void testWithdrawSoftware(){
+    void testWithdrawSoftware() {
+        Software software = initTestSoftware();
+        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
 
         // setup
-        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
-        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn(initResultNode());
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(), anyInt())).thenReturn(initResultNode());
         Mockito.when(nodeMapper.findLatestNodeById(anyInt())).thenReturn(new Node());
         doNothing().when(nodeMapper).updateNodeById(any());
         doNothing().when(nodeMapper).insertNode(any());
         doNothing().when(softwareMapper).updateSoftware(any());
 
         // run
-        String result = softwareServiceImpl.withdrawSoftware(initWithdrawProcess(),USER_UUID);
+        String result = softwareServiceImpl.withdrawSoftware(initWithdrawProcess(), USER_UUID);
         // verify
         Assertions.assertEquals(TEST_SOFTWARE_ID, result);
     }
 
     @Test
     @DisplayName("撤回申失败，用户错误")
-    void testWithdrawSoftwareFail(){
+    void testWithdrawSoftwareFail() {
+        Software software = initTestSoftware();
+        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
 
         // setup
-        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(initResultSoftware());
-        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(),anyInt())).thenReturn(initResultNode());
+        Mockito.when(softwareMapper.findById(anyInt())).thenReturn(software);
+        Mockito.when(nodeMapper.findLatestFinishedNode(anyInt(), anyInt())).thenReturn(initResultNode());
 
         // run
         ParamException paramException = assertThrows(ParamException.class, () -> {
-            softwareServiceImpl.withdrawSoftware(initWithdrawProcess(),USER_UUID_TRANSFORM);
+            softwareServiceImpl.withdrawSoftware(initWithdrawProcess(), USER_UUID_TRANSFORM);
         });
 
         // verify
@@ -433,37 +452,46 @@ class SoftwareServiceImplTest {
 
     }
 
-    private SoftwareListVo initTestSoftwareListVo() {
-        SoftwareListVo softwareVo = new SoftwareListVo();
-        softwareVo.setProductVersion("test版本号");
-        softwareVo.setOsName("openEuler");
-        softwareVo.setOsVersion("20.03");
-        softwareVo.setStatus(String.valueOf(NodeEnum.FINISHED.getId()));
-        softwareVo.setStatusId(NodeEnum.FINISHED.getId());
-        return softwareVo;
-    }
-
     private Software initTestSoftware() {
         Software software = new Software();
+        software.setId(1);
         software.setProductName("测试用例名称");
         software.setUsageScenesDesc("测试用例描述");
         software.setProductVersion("test版本号");
         software.setCompanyName("test公司");
-        ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
-        computingPlatformVo.setPlatformName("兆芯");
-        computingPlatformVo.setServerProvider("清华同方");
-        computingPlatformVo.setServerTypes(List.of("超强Z520-M1"));
-        software.setHashratePlatformList(List.of(computingPlatformVo));
         software.setOsName("openEuler");
         software.setOsVersion("20.03");
         software.setProductFunctionDesc("测试用例描述");
         software.setProductType("硬件/DIMM");
+        software.setReviewRole(RoleEnum.USER.getRoleId());
+        software.setReviewer(USER_UUID);
+        software.setUserUuid(USER_UUID);
         software.setTestOrganization("openEuler社区");
         return software;
     }
 
-    private Software initResultSoftware() {
-        Software software = new Software();
+    private SoftwareVo initResultSoftwareVo() {
+        SoftwareVo softwareVo = new SoftwareVo();
+        softwareVo.setId(1);
+        softwareVo.setProductName("测试用例名称");
+        softwareVo.setUsageScenesDesc("测试用例描述");
+        softwareVo.setProductVersion("test版本号");
+        softwareVo.setCompanyName("test公司");
+        softwareVo.setOsName("openEuler");
+        softwareVo.setOsVersion("20.03");
+        softwareVo.setProductFunctionDesc("测试用例描述");
+        softwareVo.setProductType("硬件/DIMM");
+        softwareVo.setTestOrganization("openEuler社区");
+        ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
+        computingPlatformVo.setPlatformName("兆芯");
+        computingPlatformVo.setServerProvider("清华同方");
+        computingPlatformVo.setServerTypes(List.of("超强Z520-M1"));
+        softwareVo.setHashratePlatformList(List.of(computingPlatformVo));
+        return softwareVo;
+    }
+
+    private SoftwareDTO initResultSoftwareDTO() {
+        SoftwareDTO software = new SoftwareDTO();
         software.setId(1);
         software.setCompanyName("test公司");
         ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
@@ -471,8 +499,6 @@ class SoftwareServiceImplTest {
         computingPlatformVo.setServerProvider("清华同方");
         computingPlatformVo.setServerTypes(List.of("超强Z520-M1"));
         software.setHashratePlatformList(List.of(computingPlatformVo));
-        software.setJsonHashRatePlatform(
-            "[{\"serverTypes\":[\"超强Z520-M1\"],\"platformName\":\"兆芯\",\"serverProvider\":\"清华同方\"}]");
         software.setOsName("openEuler");
         software.setOsVersion("20.03");
         software.setProductFunctionDesc("测试用例描述");
@@ -480,12 +506,12 @@ class SoftwareServiceImplTest {
         software.setTestOrganization("openEuler社区");
         software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
         software.setReviewer(USER_UUID);
-        software.setUserUuid(USER_UUID);
+        software.setApplicant(USER_UUID);
         return software;
     }
 
-    private Software initExpectResultSoftware() {
-        Software software = initResultSoftware();
+    private SoftwareDTO initExpectResultSoftware() {
+        SoftwareDTO software = initResultSoftwareDTO();
         software.setId(1);
         software.setCompanyName("test公司");
         ComputingPlatformVo computingPlatformVo = new ComputingPlatformVo();
@@ -553,13 +579,5 @@ class SoftwareServiceImplTest {
         node.setId(1);
         node.setHandler(USER_UUID);
         return node;
-    }
-
-    private ApprovalPathNode initResultApprovalPathNode() {
-        ApprovalPathNode approvalPathNode = new ApprovalPathNode();
-        approvalPathNode.setAsId(1);
-        approvalPathNode.setUserUuid(USER_UUID);
-        approvalPathNode.setRoleId(1);
-        return approvalPathNode;
     }
 }

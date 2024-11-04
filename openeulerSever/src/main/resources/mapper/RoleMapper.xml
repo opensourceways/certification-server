@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.huawei.it.euler.mapper.RoleMapper">
 
+    <sql id="baseFields">
+        id, role_id, data_scope,uuid,update_time
+    </sql>
+
+    <resultMap id="roleMap" type="com.huawei.it.euler.ddd.domain.account.Role">
+        <result column="id" property="id"/>
+        <result column="role_id" property="role"/>
+        <result column="data_scope" property="dataScope"/>
+        <result column="uuid" property="uuid"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
     <select id="findByIdList" parameterType="java.util.List" resultType="java.lang.String">
         select role_t.role
         from role_t
@@ -83,6 +95,13 @@
     <select id="findAllUuid" resultType="java.lang.String">
         select distinct uuid
         from user_role_mapping_t
+    </select>
+
+    <select id="findUserByDataScope" resultMap="roleMap">
+        select
+        <include refid="baseFields"/>
+        from user_role_mapping_t
+        where data_scope = #{dataScope}
     </select>
 
 </mapper>
