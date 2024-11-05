@@ -4,13 +4,12 @@
 
 package com.huawei.it.euler.config.extension;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * MybatisPlus配置
@@ -18,7 +17,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
  * @since 2024/06/29
  */
 @Configuration
-@MapperScan(value = {"com.huawei.it.euler.mapper","com.huawei.it.euler.ddd.domain.software","com.huawei.it.euler.ddd.infrastructure.mapper"})
+@MapperScan(value = {"com.huawei.it.euler.mapper","com.huawei.it.euler.ddd.domain.software","com.huawei.it.euler.ddd.infrastructure.mapper","com.huawei.it.euler.ddd.domain.hardware"})
 public class MybatisPlusConfig {
     /**
      * 配置分页插件
