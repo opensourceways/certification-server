@@ -34,13 +34,13 @@ public class HardwareWholeMachinePO implements Serializable {
      * 硬件厂商-中文
      */
     @TableField("factory_zy")
-    private String factoryZy;
+    private String hardwareFactoryZy;
 
     /**
      * 硬件厂商-英文
      */
     @TableField("factory_en")
-    private String factoryEn;
+    private String hardwareFactoryEn;
 
     /**
      * 硬件型号

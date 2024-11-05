@@ -4,13 +4,26 @@
 
 package com.huawei.it.euler.ddd.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huawei.it.euler.ddd.domain.file.AttachmentRepositoryImpl;
 import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.exception.BusinessException;
+import com.huawei.it.euler.exception.InputException;
+import com.huawei.it.euler.model.entity.FileModel;
+import com.huawei.it.euler.model.vo.ExcelInfoVo;
+import com.huawei.it.euler.util.FileUtils;
+import com.huawei.it.euler.util.S3Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -25,6 +38,16 @@ public class HardwareBoardCardApplicationService {
 
     @Autowired
     private HardwareFactory hardwareFactory;
+
+    @Autowired
+    private FileUtils fileUtils;
+
+    @Autowired
+    private AttachmentRepositoryImpl attachmentRepository;
+
+    @Autowired
+    private S3Utils s3Utils;
+
 
     public InsertResponse insert(HardwareBoardCardAddCommand addCommand, String uuid) {
         InsertResponse response = new InsertResponse();
@@ -47,6 +70,28 @@ public class HardwareBoardCardApplicationService {
         response.setSuccess(true);
         response.setMessage("插入成功!");
         return response;
+    }
+
+    public ExcelInfoVo uploadTemplate(MultipartFile file, String uuid) throws InputException {
+        FileModel fileModel = fileUtils.uploadFile(file, null, 1, "", uuid);
+        String fileSize = file.getSize() / 1000 + "KB";
+        attachmentRepository.save(fileModel);
+        return new ExcelInfoVo(fileModel.getFileId(), fileModel.getFileName(), fileSize);
+    }
+
+    @Transactional
+    public BatchInsertResponse readJsonData(String fileId, String uuid) {
+        try (InputStream inputStream = s3Utils.downloadFile(fileId)) {
+            if (inputStream == null) {
+                throw new BusinessException("Json文件读取失败！");
+            }
+
+            String jsonStr = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            List<HardwareBoardCardAddCommand> hardwareBoardCardAddCommands = JSONObject.parseArray(jsonStr, HardwareBoardCardAddCommand.class);
+            return batchInsert(hardwareBoardCardAddCommands, uuid);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public BatchInsertResponse batchInsert(List<HardwareBoardCardAddCommand> addCommandList, String uuid) {
@@ -76,22 +121,27 @@ public class HardwareBoardCardApplicationService {
         HardwareBoardCard boardCard = hardwareFactory.createBoardCard(editCommand);
         HardwareBoardCard existBoardCard = boardCardRepository.getOne(boardCard);
 
+        if (existBoardCard == null){
+            existBoardCard = boardCardRepository.find(editCommand.getId());
+        }
+
         if (!boardCard.getId().equals(existBoardCard.getId())) {
             throw new BusinessException("板卡[" + existBoardCard.toSimpleJsonString() + "]已存在！");
         }
 
-        if (!uuid.equals(boardCard.getUserUuid())){
+        if (!uuid.equals(existBoardCard.getUserUuid())) {
             throw new BusinessException("无权限编辑该板卡数据！");
         }
 
-        boardCard.edit();
-        boardCardRepository.save(boardCard);
+        BeanUtils.copyProperties(editCommand, existBoardCard);
+        existBoardCard.edit();
+        boardCardRepository.save(existBoardCard);
     }
 
     public void delete(HardwareApprovalNode approvalNode) {
         HardwareBoardCard boardCard = boardCardRepository.find(approvalNode.getHardwareId());
 
-        if (!approvalNode.getHardwareId().toString().equals(boardCard.getUserUuid())){
+        if (!approvalNode.getHandlerUuid().toString().equals(boardCard.getUserUuid())){
             throw new BusinessException("无权限删除该板卡数据！");
         }
 

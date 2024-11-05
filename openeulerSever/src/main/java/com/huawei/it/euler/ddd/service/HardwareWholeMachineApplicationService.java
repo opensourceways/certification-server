@@ -4,13 +4,16 @@
 
 package com.huawei.it.euler.ddd.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huawei.it.euler.ddd.domain.file.AttachmentRepositoryImpl;
 import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.exception.BusinessException;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.model.entity.FileModel;
 import com.huawei.it.euler.model.vo.ExcelInfoVo;
 import com.huawei.it.euler.util.FileUtils;
+import com.huawei.it.euler.util.S3Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,7 +47,16 @@ public class HardwareWholeMachineApplicationService {
     private HardwareFactory hardwareFactory;
 
     @Autowired
+    private HardwareBoardCardApplicationService boardCardApplicationService;
+
+    @Autowired
     private FileUtils fileUtils;
+
+    @Autowired
+    private AttachmentRepositoryImpl attachmentRepository;
+
+    @Autowired
+    private S3Utils s3Utils;
 
     @Transactional
     public InsertResponse insert(HardwareWholeMachineAddCommand addCommand, String uuid) {
@@ -67,7 +82,7 @@ public class HardwareWholeMachineApplicationService {
             return response;
         }
 
-        List<HardwareBoardCard> boardCardList = boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),insert.getId());
+        List<HardwareBoardCard> boardCardList = boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(), uuid);
         insert = wholeMachineService.refBoardCard2WholeMachine(insert, boardCardList);
 
         wholeMachineRepository.save(insert);
@@ -81,7 +96,23 @@ public class HardwareWholeMachineApplicationService {
     public ExcelInfoVo uploadTemplate(MultipartFile file, String uuid) throws InputException {
         FileModel fileModel = fileUtils.uploadFile(file, null, 1, "", uuid);
         String fileSize = file.getSize() / 1000 + "KB";
+        attachmentRepository.save(fileModel);
         return new ExcelInfoVo(fileModel.getFileId(), fileModel.getFileName(), fileSize);
+    }
+
+    @Transactional
+    public BatchInsertResponse readJsonData(String fileId, String uuid) {
+        try (InputStream inputStream = s3Utils.downloadFile(fileId)) {
+            if (inputStream == null) {
+                throw new BusinessException("Json文件读取失败！");
+            }
+
+            String jsonStr = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            List<HardwareWholeMachineAddCommand> hardwareWholeMachineAddCommands = JSONObject.parseArray(jsonStr, HardwareWholeMachineAddCommand.class);
+            return batchInsert(hardwareWholeMachineAddCommands, uuid);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Transactional
@@ -113,31 +144,33 @@ public class HardwareWholeMachineApplicationService {
         HardwareWholeMachine wholeMachine = hardwareFactory.createWholeMachine(editCommand);
         HardwareWholeMachine existWholeMachine = wholeMachineRepository.getOne(wholeMachine);
 
-        if (!wholeMachine.getId().equals(existWholeMachine.getId())){
+        if (existWholeMachine == null){
+            existWholeMachine = wholeMachineRepository.find(editCommand.getId());
+        }
+
+        if (!wholeMachine.getId().equals(existWholeMachine.getId())) {
             throw new BusinessException("板卡[" + existWholeMachine.toSimpleJsonString() + "]已存在！");
         }
 
-        if (!uuid.equals(wholeMachine.getUserUuid())) {
+        if (!uuid.equals(existWholeMachine.getUserUuid())) {
             throw new BusinessException("无权限编辑该整机数据！");
         }
 
         List<HardwareBoardCardEditCommand> boardCardEditCommandList = editCommand.getBoardCardEditCommandList();
         for (HardwareBoardCardEditCommand boardCardEditCommand : boardCardEditCommandList) {
-            HardwareBoardCard boardCard = boardCardRepository.getOne(hardwareFactory.createBoardCard(boardCardEditCommand));
-            BeanUtils.copyProperties(boardCardEditCommand, boardCard);
-            boardCard.edit();
-            boardCardRepository.save(boardCard);
+            boardCardApplicationService.edit(boardCardEditCommand, uuid);
         }
 
-        BeanUtils.copyProperties(editCommand, wholeMachine);
-        wholeMachine.edit();
-        wholeMachineRepository.save(wholeMachine);
+        BeanUtils.copyProperties(editCommand,existWholeMachine);
+        BeanUtils.copyProperties(editCommand,existWholeMachine.getCompatibilityConfiguration());
+        existWholeMachine.edit();
+        wholeMachineRepository.save(existWholeMachine);
     }
 
     public void delete(HardwareApprovalNode approvalNode) {
         HardwareWholeMachine wholeMachine = getById(approvalNode.getHardwareId());
 
-        if (!approvalNode.getHardwareId().toString().equals(wholeMachine.getUserUuid())){
+        if (!approvalNode.getHandlerUuid().toString().equals(wholeMachine.getUserUuid())) {
             throw new BusinessException("无权限编辑该整机数据！");
         }
 
@@ -155,7 +188,7 @@ public class HardwareWholeMachineApplicationService {
         HardwareWholeMachine wholeMachine = wholeMachineRepository.find(approvalNode.getHardwareId());
 
         approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
-                wholeMachine.getStatus(),HardwareValueEnum.RESULT_PASS.getValue());
+                wholeMachine.getStatus(), HardwareValueEnum.RESULT_PASS.getValue());
 
         wholeMachine.apply();
 
@@ -167,10 +200,11 @@ public class HardwareWholeMachineApplicationService {
         HardwareWholeMachine wholeMachine = getById(approvalNode.getHardwareId());
 
         approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
-                wholeMachine.getStatus(),HardwareValueEnum.RESULT_CLOSE.getValue());
+                wholeMachine.getStatus(), HardwareValueEnum.RESULT_CLOSE.getValue());
 
         wholeMachineService.close(wholeMachine);
 
+        boardCardRepository.saveBatch(wholeMachine.getBoardCards());
         wholeMachineRepository.save(wholeMachine);
         approvalNodeRepository.save(approvalNode);
     }
@@ -179,10 +213,11 @@ public class HardwareWholeMachineApplicationService {
         HardwareWholeMachine wholeMachine = getById(approvalNode.getHardwareId());
 
         approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
-                wholeMachine.getStatus(),HardwareValueEnum.RESULT_PASS.getValue());
+                wholeMachine.getStatus(), HardwareValueEnum.RESULT_PASS.getValue());
 
         wholeMachineService.pass(wholeMachine);
 
+        boardCardRepository.saveBatch(wholeMachine.getBoardCards());
         wholeMachineRepository.save(wholeMachine);
         approvalNodeRepository.save(approvalNode);
     }
@@ -191,7 +226,7 @@ public class HardwareWholeMachineApplicationService {
         HardwareWholeMachine wholeMachine = wholeMachineRepository.find(approvalNode.getHardwareId());
 
         approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
-                wholeMachine.getStatus(),HardwareValueEnum.RESULT_REJECT.getValue());
+                wholeMachine.getStatus(), HardwareValueEnum.RESULT_REJECT.getValue());
 
         wholeMachine.reject();
 

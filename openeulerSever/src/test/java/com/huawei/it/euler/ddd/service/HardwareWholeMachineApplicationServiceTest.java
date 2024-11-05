@@ -63,7 +63,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         Mockito.when(hardwareFactory.createWholeMachine(addCommand)).thenReturn(wholeMachine);
         Mockito.when(wholeMachineRepository.getOne(wholeMachine)).thenReturn(null);
         Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
-        Mockito.when(boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),wholeMachine.getId())).thenReturn(boardCardList);
+        Mockito.when(boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),USER_UUID)).thenReturn(boardCardList);
         Mockito.when(wholeMachineService.refBoardCard2WholeMachine(wholeMachine,boardCardList)).thenReturn(wholeMachine);
         Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
         Mockito.doNothing().when(boardCardRepository).saveBatch(wholeMachine.getBoardCards());
@@ -124,7 +124,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         Mockito.when(hardwareFactory.createWholeMachine(addCommand)).thenReturn(wholeMachine);
         Mockito.when(wholeMachineRepository.getOne(wholeMachine)).thenReturn(null);
         Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
-        Mockito.when(boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),wholeMachine.getId())).thenReturn(boardCardList);
+        Mockito.when(boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),USER_UUID)).thenReturn(boardCardList);
         Mockito.when(wholeMachineService.refBoardCard2WholeMachine(wholeMachine,boardCardList)).thenReturn(wholeMachine);
         Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
         Mockito.doNothing().when(boardCardRepository).saveBatch(wholeMachine.getBoardCards());

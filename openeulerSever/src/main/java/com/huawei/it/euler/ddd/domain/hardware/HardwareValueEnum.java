@@ -81,6 +81,7 @@ public enum HardwareValueEnum {
         activeStatusList.add(NODE_WAIT_APPLY.value);
         activeStatusList.add(NODE_WAIT_APPROVE.value);
         activeStatusList.add(NODE_PASS.value);
+        activeStatusList.add(NODE_REJECT.value);
         return activeStatusList;
     }
 
@@ -95,6 +96,7 @@ public enum HardwareValueEnum {
         activeStatusList.add(NODE_WAIT_APPLY.value);
         activeStatusList.add(NODE_WAIT_APPROVE.value);
         activeStatusList.add(NODE_PASS.value);
+        activeStatusList.add(NODE_REJECT.value);
         return activeStatusList;
     }
 }

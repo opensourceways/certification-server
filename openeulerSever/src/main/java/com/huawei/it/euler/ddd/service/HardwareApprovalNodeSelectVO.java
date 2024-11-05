@@ -2,8 +2,9 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.domain.hardware;
+package com.huawei.it.euler.ddd.service;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.io.Serializable;
  * @author zhaoyan
  * @since 2024-10-09
  */
+@Tag(name = "审批记录查询命令", description = "用于存储查询命令字段数据")
 @Data
 public class HardwareApprovalNodeSelectVO implements Serializable {
 
