@@ -4,6 +4,8 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -16,6 +18,7 @@ import java.util.Date;
  * @author zhaoyan
  * @since 2024-10-09
  */
+@Tag(name = "审批节点对象",description = "用于节点审批记录")
 @Data
 public class HardwareApprovalNode implements Serializable {
 
@@ -23,46 +26,30 @@ public class HardwareApprovalNode implements Serializable {
 
     private Integer id;
 
-    /**
-     * 硬件设备id
-     */
+    @Schema(description = "硬件设备id")
     @NotNull(message = "业务id不能为空！")
     private Integer hardwareId;
 
-    /**
-     * 硬件设备类型:wholeMachine-整机；boardCard-板卡
-     */
+    @Schema(description = "硬件设备类型:wholeMachine-整机；boardCard-板卡")
     private String hardwareType;
 
-    /**
-     * 操作人uuid
-     */
+    @Schema(description = "操作人uuid")
     private Integer handlerUuid;
 
-    /**
-     * 操作时间
-     */
+    @Schema(description = "操作时间")
     private Date handlerTime;
 
-    /**
-     * 操作结果：HardwareValueEnum-RESULT*
-     */
+    @Schema(description = "操作结果：HardwareValueEnum-RESULT*")
     private String handlerResult;
 
-    /**
-     * 操作意见
-     */
+    @Schema(description = "操作意见")
     @NotNull(message = "操作意见不能为空！")
     private String handlerComment;
 
-    /**
-     * 操作节点：HardwareValueEnum-NODE*
-     */
+    @Schema(description = "操作节点：HardwareValueEnum-NODE*")
     private String handlerNode;
 
-    /**
-     * 操作节点名称：数据提交；数据审核；
-     */
+    @Schema(description = "操作节点名称：数据提交；数据审核；")
     private String handlerNodeName;
 
     public HardwareApprovalNode action(String hardwareType, String status, String result) {

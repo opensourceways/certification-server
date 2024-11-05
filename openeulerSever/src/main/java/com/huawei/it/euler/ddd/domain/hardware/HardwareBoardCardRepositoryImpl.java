@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.huawei.it.euler.ddd.service.HardwareBoardCardSelectVO;
 import com.huawei.it.euler.exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -109,16 +110,26 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
         return boardCardPage;
     }
 
-    public List<HardwareBoardCard> findOrSaveTemp(List<HardwareBoardCard> boardCardList,Integer wholeMachineId){
+    public List<HardwareBoardCard> findOrSaveTemp(List<HardwareBoardCard> boardCardList,String uuid){
+        List<HardwareBoardCard> findList = new ArrayList<>();
+
         Map<Boolean, List<HardwareBoardCard>> existCheck = boardCardList.stream().
                 collect(Collectors.groupingBy(boardCard -> this.getOne(boardCard) != null));
 
-        List<HardwareBoardCard> saveBoardCardList = existCheck.get(false).stream().
-                map(boardCard -> this.save(boardCard.createTemp(String.valueOf(wholeMachineId)))).toList();
+        List<HardwareBoardCard> unExistList = existCheck.get(false);
+        if (unExistList != null && !unExistList.isEmpty()){
+            List<HardwareBoardCard> saveBoardCardList = unExistList.stream().
+                    map(boardCard -> this.save(boardCard.createTemp(uuid))).toList();
+            findList.addAll(saveBoardCardList);
+        }
 
-        List<HardwareBoardCard> findList = new ArrayList<>();
-        findList.addAll(saveBoardCardList);
-        findList.addAll(existCheck.get(true));
+        List<HardwareBoardCard> existList = existCheck.get(true);
+        if (existList != null && !existList.isEmpty()){
+            List<HardwareBoardCard> queryBoardCardList = existList.stream().
+                    map(this::getOne).toList();
+            findList.addAll(queryBoardCardList);
+        }
+
         return findList;
     }
 
@@ -149,7 +160,7 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
     @Transactional
     public void saveBatch(List<HardwareBoardCard> boardCardList){
         List<HardwareBoardCardPO> boardCardPOList = hardwareFactory.createBoardCardPOList(boardCardList);
-        this.saveBatch(boardCardPOList);
+        this.saveOrUpdateBatch(boardCardPOList);
         for (HardwareBoardCardPO boardCardPO : boardCardPOList) {
             if (StringUtils.isEmpty(boardCardPO.getWholeMachineIds())){
                 clearRef(boardCardPO.getId());

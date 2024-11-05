@@ -4,10 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
-import com.huawei.it.euler.ddd.service.HardwareBoardCardAddCommand;
-import com.huawei.it.euler.ddd.service.HardwareBoardCardEditCommand;
-import com.huawei.it.euler.ddd.service.HardwareWholeMachineAddCommand;
-import com.huawei.it.euler.ddd.service.HardwareWholeMachineEditCommand;
+import com.huawei.it.euler.ddd.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -79,8 +76,6 @@ public class HardwareFactory {
     public HardwareWholeMachine createWholeMachine(HardwareWholeMachinePO wholeMachinePO) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
-        wholeMachine.setHardwareFactoryZy(wholeMachinePO.getFactoryZy());
-        wholeMachine.setHardwareFactoryEn(wholeMachinePO.getFactoryEn());
         HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
         BeanUtils.copyProperties(wholeMachinePO, compatibilityConfiguration);
         wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
@@ -111,8 +106,6 @@ public class HardwareFactory {
         List<HardwareWholeMachine> wholeMachineList = new ArrayList<>();
         for (HardwareWholeMachinePO wholeMachinePO : wholeMachinePOList) {
             HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
-            wholeMachine.setHardwareFactoryZy(wholeMachinePO.getFactoryZy());
-            wholeMachine.setHardwareFactoryEn(wholeMachinePO.getFactoryEn());
             BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
             wholeMachineList.add(wholeMachine);
         }
@@ -121,8 +114,6 @@ public class HardwareFactory {
 
     public HardwareWholeMachinePO createWholeMachinePO(HardwareWholeMachine wholeMachine) {
         HardwareWholeMachinePO wholeMachinePO = new HardwareWholeMachinePO();
-        wholeMachinePO.setFactoryZy(wholeMachine.getHardwareFactoryZy());
-        wholeMachinePO.setFactoryEn(wholeMachine.getHardwareFactoryEn());
         BeanUtils.copyProperties(wholeMachine, wholeMachinePO);
         BeanUtils.copyProperties(wholeMachine.getCompatibilityConfiguration(), wholeMachinePO);
         return wholeMachinePO;
