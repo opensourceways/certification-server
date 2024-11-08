@@ -513,7 +513,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 }
                 break;
             case 4:// 报告初审
-                setProgramReviewerAsReviewer(software, NodeEnum.PROGRAM_REVIEW.getId());
+                setProgramReviewerAsReviewer(software, NodeEnum.REPORT_REVIEW.getId());
                 break;
             case 9:// 已完成
                 software.setReviewer(null);
