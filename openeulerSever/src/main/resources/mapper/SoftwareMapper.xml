@@ -334,6 +334,7 @@
                    when '1' then '通过'
                    when '2' then '已驳回'
                    when '3' then '转审'
+                   when '4' then '撤回'
                    end as handler_result
         from node_t
         where software_id = #{softwareId}
