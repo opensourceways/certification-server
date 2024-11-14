@@ -5,6 +5,11 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
+    <select id="findAll" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select id, name, type, update_time
+        from innovation_center_t
+    </select>
+
     <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select id, name, type, update_time
         from innovation_center_t

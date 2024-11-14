@@ -2,9 +2,10 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.infrastructure.repository.mapper;
+package com.huawei.it.euler.ddd.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.huawei.it.euler.ddd.infrastructure.persistence.po.RolePO;
 
 /**
  * 角色 Mapper 接口

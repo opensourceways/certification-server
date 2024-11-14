@@ -4,6 +4,8 @@
 
 package com.huawei.it.euler.ddd.domain.permission;
 
+import java.util.List;
+
 /**
  * 角色持久化接口
  *
@@ -12,4 +14,5 @@ package com.huawei.it.euler.ddd.domain.permission;
  */
 public interface RoleRepository {
 
+    public List<Role> findList();
 }

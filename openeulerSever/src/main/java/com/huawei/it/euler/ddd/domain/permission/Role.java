@@ -4,6 +4,8 @@
 
 package com.huawei.it.euler.ddd.domain.permission;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -12,6 +14,7 @@ import java.util.Date;
  * @author zhaoyan
  * @since 2024-11-07
  */
+@Data
 public class Role {
     private Integer id;
 
