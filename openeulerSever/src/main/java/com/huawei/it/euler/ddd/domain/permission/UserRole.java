@@ -4,6 +4,9 @@
 
 package com.huawei.it.euler.ddd.domain.permission;
 
+import com.alibaba.fastjson.JSONObject;
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -12,6 +15,7 @@ import java.util.Date;
  * @author zhaoyan
  * @since 2024-11-07
  */
+@Data
 public class UserRole {
     /**
      * 主键id
@@ -29,9 +33,19 @@ public class UserRole {
     private Integer dataScope;
 
     /**
+     * 数据范围名称
+     */
+    private String scopeName;
+
+    /**
      * 用户uuid
      */
     private String uuid;
+
+    /**
+     * 用户名称
+     */
+    private String userName;
 
     /**
      * 更新时间
@@ -41,5 +55,14 @@ public class UserRole {
     /**
      * 最后更新人
      */
-    private Integer lastUpdatedBy;
+    private String lastUpdatedBy;
+
+    public String toSimpleJsonString() {
+        JSONObject simple = new JSONObject();
+        simple.put("user", this.getUuid());
+        simple.put("role", this.getRoleId());
+        simple.put("scope", this.getDataScope());
+        return simple.toJSONString();
+    }
+
 }
