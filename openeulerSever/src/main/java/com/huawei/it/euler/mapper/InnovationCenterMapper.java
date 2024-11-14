@@ -17,6 +17,8 @@ import java.util.List;
  */
 @Repository
 public interface InnovationCenterMapper {
+    List<InnovationCenter> findAll(Integer id);
+
     InnovationCenter findById(Integer id);
 
     InnovationCenter findDefault();
