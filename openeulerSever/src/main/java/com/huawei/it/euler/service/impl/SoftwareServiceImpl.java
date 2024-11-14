@@ -445,7 +445,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 nextNodeNumber = getNextNodeNumber(software.getCpuVendor(), nextNodeNumber, false);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 software.setStatus(nextNodeNumber);
-                getHandler(nextNodeNumber, software);
+                getHandlerBack(nextNodeNumber, software);
                 break;
             case 3: // 转审
                 software.setReviewer(vo.getTransferredUser());
@@ -454,7 +454,7 @@ public class SoftwareServiceImpl implements SoftwareService {
                 nextNodeNumber = getNextNodeNumber(software.getCpuVendor(), nextNodeNumber, false);
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已撤回");
                 software.setStatus(nextNodeNumber);
-                getHandler(nextNodeNumber, software);
+                getHandlerBack(nextNodeNumber, software);
                 break;
             default:
                 LOGGER.error("审批阶段错误:id:{},HandlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
@@ -514,6 +514,40 @@ public class SoftwareServiceImpl implements SoftwareService {
                 break;
             case 4:// 报告初审
                 setProgramReviewerAsReviewer(software, NodeEnum.PROGRAM_REVIEW.getId());
+                break;
+            case 9:// 已完成
+                software.setReviewer(null);
+                software.setReviewRole(null);
+                break;
+            default:
+                setApprovalAsReviewer(software, nextNodeNumber);
+                break;
+        }
+        return software;
+    }
+
+    /**
+     * 获取下一个节点的审批人员
+     *
+     * @param nextNodeNumber 下一个节点
+     * @param software 审批流程
+     * @return 修改了审批人员的审批流程
+     */
+    private Software getHandlerBack(int nextNodeNumber, Software software) {
+        switch (nextNodeNumber) {
+            case 1: // 认证申请
+            case 7: // 证书确认
+                setUserAsReviewer(software);
+                break;
+            case 3: // 审批流程
+                if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
+                    setProgramReviewerAsReviewer(software, NodeEnum.TESTING_PHASE.getId());
+                } else {
+                    setUserAsReviewer(software);
+                }
+                break;
+            case 4:// 报告初审
+                setProgramReviewerAsReviewer(software, NodeEnum.REPORT_REVIEW.getId());
                 break;
             case 9:// 已完成
                 software.setReviewer(null);
@@ -727,7 +761,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         List<AuditRecordsVo> auditRecordsList = getAuditRecordsList(softwareId);
         // 对审核节点按照节点名称分组
         Map<String, List<AuditRecordsVo>> recordsMap =
-            auditRecordsList.stream().collect(Collectors.groupingBy(AuditRecordsVo::getNodeName));
+            auditRecordsList.stream().filter(auditRecordsVo -> !"撤回".equals(auditRecordsVo.getHandlerResult())).collect(Collectors.groupingBy(AuditRecordsVo::getNodeName));
         // 筛选每个节点中最新的数据
         List<AuditRecordsVo> latestNodes = getEveryNodeLatestData(recordsMap);
         // 判断审批流中最末端节点，如果有已驳回节点，最小的驳回节点就是最末节点，否则就是status最大的节点
