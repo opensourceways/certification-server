@@ -2,7 +2,7 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.infrastructure.repository.mapper;
+package com.huawei.it.euler.ddd.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -55,5 +55,5 @@ public class UserRolePO {
      * 最后更新人
      */
     @TableField(value = "last_updated_by")
-    private Integer lastUpdatedBy;
+    private String lastUpdatedBy;
 }
