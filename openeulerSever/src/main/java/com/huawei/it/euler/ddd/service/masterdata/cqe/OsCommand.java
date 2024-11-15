@@ -4,7 +4,7 @@
 
 package com.huawei.it.euler.ddd.service.masterdata.cqe;
 
-import com.huawei.it.euler.ddd.service.permission.cqe.UserRoleCommand;
+import com.huawei.it.euler.ddd.service.Command;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +16,7 @@ import lombok.Data;
  */
 @Tag(name = "操作系统命令对象", description = "用于存储命令字段数据")
 @Data
-public class OsCommand {
+public class OsCommand extends Command {
 
     @Schema(description = "主键id")
     @NotNull(message = "主键id不能为空", groups = Update.class)
@@ -33,8 +33,4 @@ public class OsCommand {
     @Schema(description = "对应欧拉版本")
     @NotNull(message = "对应欧拉版本relatedOsVersion不能为空", groups = Add.class)
     private String relatedOsVersion;
-
-    public interface Add {}
-
-    public interface Update {}
 }

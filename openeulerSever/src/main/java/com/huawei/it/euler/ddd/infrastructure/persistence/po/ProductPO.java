@@ -43,11 +43,11 @@ public class ProductPO {
      * 更新时间
      */
     @TableField(value = "update_time")
-    private Date LastUpdatedTime;
+    private Date lastUpdatedTime;
 
     /**
      * 最后更新人
      */
     @TableField(value = "update_by")
-    private String LastUpdatedBy;
+    private String lastUpdatedBy;
 }
