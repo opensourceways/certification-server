@@ -17,11 +17,11 @@ import jakarta.servlet.http.HttpServletRequest;
  * @since 2024-11-12
  */
 public interface UserRoleApplicationService {
-    public UserRole authorize(HttpServletRequest request, UserRoleCommand command, String uuid);
+    public UserRole authorize(HttpServletRequest request, UserRoleCommand command);
 
-    public UserRole reauthorize(HttpServletRequest request, UserRoleCommand command, String uuid);
+    public UserRole reauthorize(HttpServletRequest request, UserRoleCommand command);
 
-    public void undoAuthorize(HttpServletRequest request, Integer id, String uuid);
+    public void undoAuthorize(HttpServletRequest request, UserRoleCommand command);
 
     public Page<UserRole> page(UserRoleQuery query);
 

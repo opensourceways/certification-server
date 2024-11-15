@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.service.permission.cqe;
 
+import com.huawei.it.euler.ddd.service.Command;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,7 @@ import lombok.Data;
  */
 @Tag(name = "用户角色命令对象", description = "用于存储命令字段数据")
 @Data
-public class UserRoleCommand {
+public class UserRoleCommand extends Command {
 
     @Schema(description = "主键id")
     @NotNull(message = "主键id不能为空", groups = Update.class)
@@ -32,8 +33,4 @@ public class UserRoleCommand {
     @Schema(description = "用户uuid")
     @NotNull(message = "用户uuid不能为空", groups = Add.class)
     private String uuid;
-
-    public interface Add {}
-
-    public interface Update {}
 }

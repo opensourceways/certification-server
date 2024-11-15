@@ -38,11 +38,11 @@ public class ComputingPlatform {
     /**
      * 更新时间
      */
-    private Date LastUpdatedTime;
+    private Date lastUpdatedTime;
 
     /**
      * 最后更新人
      */
-    private String LastUpdatedBy;
+    private String lastUpdatedBy;
 
 }

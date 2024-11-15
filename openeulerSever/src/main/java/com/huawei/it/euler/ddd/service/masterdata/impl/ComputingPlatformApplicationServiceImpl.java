@@ -41,8 +41,7 @@ public class ComputingPlatformApplicationServiceImpl implements ComputingPlatfor
             throw new BusinessException("算力平台已存在！");
         }
         ComputingPlatform computingPlatform = computingPlatformFactory.toComputingPlatform(command);
-        computingPlatformRepository.add(computingPlatform);
-        return computingPlatform;
+        return computingPlatformRepository.add(computingPlatform);
     }
 
     @Override

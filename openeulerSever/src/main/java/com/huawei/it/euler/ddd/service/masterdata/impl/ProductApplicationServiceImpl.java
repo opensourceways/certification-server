@@ -41,8 +41,7 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
             throw new BusinessException("产品类型已存在！");
         }
         Product product = productFactory.toProduct(command);
-        productRepository.add(product);
-        return product;
+        return productRepository.add(product);
     }
 
     @Override

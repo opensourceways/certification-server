@@ -49,7 +49,7 @@ public class OsRepositoryImpl implements OsRepository {
     @Override
     public void delete(Integer id) {
         OsPO osPO = mapper.selectById(id);
-        if (osPO != null) {
+        if (osPO == null) {
             throw new BusinessException("操作系统不存在！");
         }
         mapper.deleteById(id);
