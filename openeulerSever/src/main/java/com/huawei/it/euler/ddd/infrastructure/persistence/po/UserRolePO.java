@@ -54,6 +54,6 @@ public class UserRolePO {
     /**
      * 最后更新人
      */
-    @TableField(value = "last_updated_by")
+    @TableField(value = "update_by")
     private String lastUpdatedBy;
 }

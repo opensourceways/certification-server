@@ -36,14 +36,12 @@ public class OsApplicationServiceImpl implements OsApplicationService {
     @Override
     public Os add(OsCommand command) {
         OsQuery query = osFactory.toQuery(command);
-        ;
         List<Os> queryList = osRepository.findList(query);
         if (queryList != null && !queryList.isEmpty()) {
             throw new BusinessException("操作系统已存在！");
         }
         Os os = osFactory.toOs(command);
-        osRepository.add(os);
-        return os;
+        return osRepository.add(os);
     }
 
     @Override

@@ -49,40 +49,40 @@ public class UserRoleApplicationServiceImpl implements UserRoleApplicationServic
     private LogUtils logUtils;
 
     @Override
-    public UserRole authorize(HttpServletRequest request, UserRoleCommand command, String uuid) {
+    public UserRole authorize(HttpServletRequest request, UserRoleCommand command) {
         UserRoleQuery query = userRoleFactory.toQuery(command);
         List<UserRole> queryList = userRoleRepository.findList(query);
         if (queryList != null && !queryList.isEmpty()) {
-            throw new BusinessException("用户已配置此权限!");
+            throw new BusinessException("用户已配置此权限！");
         }
         UserRole userRole = userRoleFactory.toUserRole(command);
-        userRoleRepository.add(userRole);
-        logUtils.insertAuditLog(request, uuid, "permission", "authorize", userRole.toSimpleJsonString());
+        userRole = userRoleRepository.add(userRole);
+        logUtils.insertAuditLog(request, command.getLastUpdatedBy(), "permission", "authorize", userRole.toSimpleJsonString());
         return fillData(userRole);
     }
 
     @Override
-    public UserRole reauthorize(HttpServletRequest request, UserRoleCommand command, String uuid) {
+    public UserRole reauthorize(HttpServletRequest request, UserRoleCommand command) {
         UserRole userRole = userRoleRepository.findById(command.getId());
 
         UserRoleQuery query = userRoleFactory.toQuery(command);
         query.setUuid(userRole.getUuid());
         List<UserRole> queryList = userRoleRepository.findList(query);
         if (queryList != null && !queryList.isEmpty()) {
-            throw new BusinessException("用户已配置此权限!");
+            throw new BusinessException("用户已配置此权限！");
         }
 
         UserRole update = userRoleFactory.toUserRole(command);
         userRoleRepository.update(update);
-        logUtils.insertAuditLog(request, uuid, "permission", "reauthorize", userRole.toSimpleJsonString());
+        logUtils.insertAuditLog(request, command.getLastUpdatedBy(), "permission", "reauthorize", userRole.toSimpleJsonString());
         return fillData(update);
     }
 
     @Override
-    public void undoAuthorize(HttpServletRequest request, Integer id, String uuid) {
-        UserRole userRole = userRoleRepository.findById(id);
-        userRoleRepository.delete(id);
-        logUtils.insertAuditLog(request, uuid, "permission", "undoAuthorize", userRole.toSimpleJsonString());
+    public void undoAuthorize(HttpServletRequest request, UserRoleCommand command) {
+        UserRole userRole = userRoleRepository.findById(command.getId());
+        userRoleRepository.delete(command.getId());
+        logUtils.insertAuditLog(request, command.getLastUpdatedBy(), "permission", "undoAuthorize", userRole.toSimpleJsonString());
     }
 
     @Override
