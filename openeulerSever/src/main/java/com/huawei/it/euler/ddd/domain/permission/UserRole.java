@@ -59,10 +59,10 @@ public class UserRole {
 
     public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
+        simple.put("id", this.getId());
         simple.put("user", this.getUuid());
         simple.put("role", this.getRoleId());
         simple.put("scope", this.getDataScope());
         return simple.toJSONString();
     }
-
 }

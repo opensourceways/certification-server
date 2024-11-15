@@ -83,7 +83,7 @@ public class UserRoleRepositoryImpl implements UserRoleRepository {
             queryWrapper.eq("id", query.getId());
         }
         if (query.getRoleId() != null) {
-            queryWrapper.eq("role_id", query.getId());
+            queryWrapper.eq("role_id", query.getRoleId());
         }
         if (query.getRoleIdList() != null && !query.getRoleIdList().isEmpty()) {
             queryWrapper.in("role_id", query.getRoleIdList());

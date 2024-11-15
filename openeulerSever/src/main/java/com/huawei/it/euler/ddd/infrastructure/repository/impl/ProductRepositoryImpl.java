@@ -49,7 +49,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public void delete(Integer id) {
         ProductPO productPO = mapper.selectById(id);
-        if (productPO != null) {
+        if (productPO == null) {
             throw new BusinessException("产品类型不存在！");
         }
         mapper.deleteById(id);

@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.service.masterdata.cqe;
 
+import com.huawei.it.euler.ddd.service.Command;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,7 @@ import lombok.Data;
  */
 @Tag(name = "算力平台命令对象", description = "用于存储新增命令字段数据")
 @Data
-public class ComputingPlatformCommand {
+public class ComputingPlatformCommand extends Command {
 
     @Schema(description = "主键id")
     @NotNull(message = "主键id不能为空", groups = Update.class)
@@ -32,9 +33,4 @@ public class ComputingPlatformCommand {
     @Schema(description = "服务器类型")
     @NotNull(message = "服务器类型不能为空", groups = Add.class)
     private String serverType;
-
-    public interface Add {}
-
-    public interface Update {
-    }
 }
