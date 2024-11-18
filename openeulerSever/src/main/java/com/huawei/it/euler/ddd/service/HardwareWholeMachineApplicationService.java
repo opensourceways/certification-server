@@ -141,6 +141,10 @@ public class HardwareWholeMachineApplicationService {
         return wholeMachineRepository.getPage(selectVO);
     }
 
+    public List<String> getOs(){
+        return wholeMachineRepository.getOs();
+    }
+
     public void edit(HardwareWholeMachineEditCommand editCommand, String uuid) {
         HardwareWholeMachine wholeMachine = hardwareFactory.createWholeMachine(editCommand);
         HardwareWholeMachine existWholeMachine = wholeMachineRepository.getOne(wholeMachine);

@@ -45,6 +45,9 @@ public class HardwareWholeMachineSelectVO {
     @Schema(description = "认证日期")
     private String date;
 
+    @Schema(description = "密级")
+    private String securityLevel;
+
     @Schema(description = "状态")
     private String status;
 

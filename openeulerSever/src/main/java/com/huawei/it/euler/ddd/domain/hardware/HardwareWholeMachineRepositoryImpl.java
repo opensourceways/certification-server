@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,6 +69,9 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
         if (!StringUtils.isEmpty(selectVO.getCpu())) {
             queryWrapper.like("cpu", selectVO.getCpu());
         }
+        if (!StringUtils.isEmpty(selectVO.getSecurityLevel())) {
+            queryWrapper.eq("security_level", selectVO.getSecurityLevel());
+        }
         if (!StringUtils.isEmpty(selectVO.getUserUuid())) {
             queryWrapper.eq("user_uuid", selectVO.getUserUuid());
         }
@@ -84,6 +88,16 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
         QueryWrapper<HardwareWholeMachinePO> queryWrapper = createQueryWrapper(selectVO);
         List<HardwareWholeMachinePO> wholeMachinePOList = this.list(queryWrapper);
         return hardwareFactory.createWholeMachineList(wholeMachinePOList);
+    }
+
+    public List<String> getOs() {
+        List<String> osList = new ArrayList<>();
+        QueryWrapper<HardwareWholeMachinePO> queryWrapper = new QueryWrapper<>();
+        List<HardwareWholeMachinePO> machinePOList = this.list(queryWrapper);
+        if (machinePOList != null && !machinePOList.isEmpty()) {
+            osList.addAll(machinePOList.stream().map(HardwareWholeMachinePO::getOsVersion).distinct().toList());
+        }
+        return osList;
     }
 
     public Page<HardwareWholeMachine> getPage(HardwareWholeMachineSelectVO selectVO) {
