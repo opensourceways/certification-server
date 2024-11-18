@@ -154,4 +154,13 @@ public class HardwareBoardCardApi {
         boardCardApplicationService.batchApproval(batchCommand);
         return JsonResponse.success(null);
     }
+
+    @Operation(summary = "板卡数据公示")
+    @GetMapping("/findAll")
+    public JsonResponse<Page<HardwareBoardCard>> findAll(@ParameterObject HardwareBoardCardSelectVO selectVO) {
+        selectVO.setSecurityLevel("0");
+        selectVO.setStatus(HardwareValueEnum.NODE_PASS.getValue());
+        Page<HardwareBoardCard> boardCardPage = boardCardApplicationService.getPage(selectVO);
+        return JsonResponse.success(boardCardPage);
+    }
 }
