@@ -77,6 +77,9 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
         if (!StringUtils.isEmpty(selectVO.getChipVendor())) {
             queryWrapper.like("chip_vendor", selectVO.getChipVendor());
         }
+        if (!StringUtils.isEmpty(selectVO.getSecurityLevel())) {
+            queryWrapper.eq("security_level", selectVO.getSecurityLevel());
+        }
         if (!StringUtils.isEmpty(selectVO.getUserUuid())) {
             queryWrapper.eq("user_uuid", selectVO.getUserUuid());
         }
