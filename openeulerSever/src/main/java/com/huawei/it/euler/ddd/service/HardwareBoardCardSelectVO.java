@@ -57,6 +57,9 @@ public class HardwareBoardCardSelectVO implements Serializable {
     @Schema(description = "申请人uuid")
     private String userUuid;
 
+    @Schema(description = "密级")
+    private String securityLevel;
+
     @Schema(description = "状态")
     private String status;
 

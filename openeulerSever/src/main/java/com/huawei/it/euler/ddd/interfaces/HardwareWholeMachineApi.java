@@ -4,9 +4,11 @@
 
 package com.huawei.it.euler.ddd.interfaces;
 
+import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareApprovalNode;
+import com.huawei.it.euler.ddd.domain.hardware.HardwareValueEnum;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareWholeMachine;
 import com.huawei.it.euler.ddd.service.HardwareWholeMachineSelectVO;
 import com.huawei.it.euler.ddd.service.*;
@@ -57,7 +59,7 @@ public class HardwareWholeMachineApi {
         return JsonResponse.success(wholeMachine);
     }
 
-    @Operation(summary = "新增业务",requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "新增业务对象",required = true))
+    @Operation(summary = "新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "新增业务对象", required = true))
     @PostMapping("/insert")
     public JsonResponse<InsertResponse> insert(@RequestBody @Valid HardwareWholeMachineAddCommand addCommand, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
@@ -65,7 +67,7 @@ public class HardwareWholeMachineApi {
         return JsonResponse.success(insert);
     }
 
-    @Operation(summary = "批量新增业务",requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象",required = true))
+    @Operation(summary = "批量新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象", required = true))
     @PostMapping("/batchInsert")
     public JsonResponse<BatchInsertResponse> batchInsert(@RequestBody @Valid List<HardwareWholeMachineAddCommand> addCommandList, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
@@ -152,5 +154,23 @@ public class HardwareWholeMachineApi {
         batchCommand.setHandlerUuid(Integer.valueOf(loginUuid));
         wholeMachineApplicationService.batchApproval(batchCommand);
         return JsonResponse.success(null);
+    }
+
+    @Operation(summary = "筛选条件")
+    @GetMapping("/filterCriteria")
+    public JsonResponse<JSONObject> findFilter() {
+        JSONObject jsonObject = new JSONObject();
+        List<String> os = wholeMachineApplicationService.getOs();
+        jsonObject.set("os", os);
+        return JsonResponse.success(jsonObject);
+    }
+
+    @Operation(summary = "整机数据公示")
+    @GetMapping("/findAll")
+    public JsonResponse<Page<HardwareWholeMachine>> findAll(@ParameterObject HardwareWholeMachineSelectVO selectVO) {
+        selectVO.setSecurityLevel("0");
+        selectVO.setStatus(HardwareValueEnum.NODE_PASS.getValue());
+        Page<HardwareWholeMachine> wholeMachinePage = wholeMachineApplicationService.getPage(selectVO);
+        return JsonResponse.success(wholeMachinePage);
     }
 }
