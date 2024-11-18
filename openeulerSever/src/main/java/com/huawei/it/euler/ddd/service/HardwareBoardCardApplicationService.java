@@ -65,8 +65,9 @@ public class HardwareBoardCardApplicationService {
 
         boardCard.create(uuid);
 
-        boardCardRepository.save(boardCard);
+        boardCard = boardCardRepository.save(boardCard);
 
+        response.setUnique(String.valueOf(boardCard.getId()));
         response.setSuccess(true);
         response.setMessage("插入成功!");
         return response;
@@ -121,7 +122,7 @@ public class HardwareBoardCardApplicationService {
         HardwareBoardCard boardCard = hardwareFactory.createBoardCard(editCommand);
         HardwareBoardCard existBoardCard = boardCardRepository.getOne(boardCard);
 
-        if (existBoardCard == null){
+        if (existBoardCard == null) {
             existBoardCard = boardCardRepository.find(editCommand.getId());
         }
 
@@ -141,7 +142,7 @@ public class HardwareBoardCardApplicationService {
     public void delete(HardwareApprovalNode approvalNode) {
         HardwareBoardCard boardCard = boardCardRepository.find(approvalNode.getHardwareId());
 
-        if (!approvalNode.getHandlerUuid().toString().equals(boardCard.getUserUuid())){
+        if (!approvalNode.getHandlerUuid().toString().equals(boardCard.getUserUuid())) {
             throw new BusinessException("无权限删除该板卡数据！");
         }
 
@@ -195,5 +196,36 @@ public class HardwareBoardCardApplicationService {
         boardCard.reject();
         boardCardRepository.save(boardCard);
         approvalNodeRepository.save(approvalNode);
+    }
+
+    @Transactional
+    public void batchApproval(HardwareApprovalBatchCommand batchCommand) {
+        List<Integer> hardwareIdList = batchCommand.getHardwareIdList();
+        for (Integer hardwareId : hardwareIdList) {
+            HardwareApprovalNode approvalNode = new HardwareApprovalNode();
+            approvalNode.setHardwareId(hardwareId);
+            BeanUtils.copyProperties(batchCommand, approvalNode);
+            if (HardwareValueEnum.NODE_WAIT_APPLY.getValue().equals(batchCommand.getHandlerNode())) {
+                if (HardwareValueEnum.RESULT_PASS.getValue().equals(batchCommand.getHandlerResult())) {
+                    apply(approvalNode);
+                } else if (HardwareValueEnum.RESULT_DELETE.getValue().equals(batchCommand.getHandlerResult())) {
+                    delete(approvalNode);
+                } else {
+                    throw new BusinessException("当前节点无法执行该操作！");
+                }
+            } else if (HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(batchCommand.getHandlerNode())) {
+                if (HardwareValueEnum.RESULT_PASS.getValue().equals(batchCommand.getHandlerResult())) {
+                    pass(approvalNode);
+                } else if (HardwareValueEnum.RESULT_REJECT.getValue().equals(batchCommand.getHandlerResult())) {
+                    reject(approvalNode);
+                } else if (HardwareValueEnum.RESULT_CLOSE.getValue().equals(batchCommand.getHandlerResult())) {
+                    close(approvalNode);
+                } else {
+                    throw new BusinessException("当前节点无法执行该操作！");
+                }
+            } else {
+                throw new BusinessException("当前节点无法操作！");
+            }
+        }
     }
 }

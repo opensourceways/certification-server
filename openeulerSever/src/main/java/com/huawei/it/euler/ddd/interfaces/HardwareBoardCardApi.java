@@ -58,7 +58,7 @@ public class HardwareBoardCardApi {
         return JsonResponse.success(wholeMachine);
     }
 
-    @Operation(summary = "新增业务",requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "新增业务对象",required = true))
+    @Operation(summary = "新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "新增业务对象", required = true))
     @PostMapping("/insert")
     public JsonResponse<InsertResponse> insert(@RequestBody @Valid HardwareBoardCardAddCommand addCommand, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
@@ -66,7 +66,7 @@ public class HardwareBoardCardApi {
         return JsonResponse.success(insert);
     }
 
-    @Operation(summary = "批量新增业务",requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象",required = true))
+    @Operation(summary = "批量新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象", required = true))
     @PostMapping("/batchInsert")
     public JsonResponse<BatchInsertResponse> batchInsert(@RequestBody @Valid List<HardwareBoardCardAddCommand> addCommandList, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
@@ -143,6 +143,15 @@ public class HardwareBoardCardApi {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
         boardCardApplicationService.close(approvalNode);
+        return JsonResponse.success(null);
+    }
+
+    @Operation(summary = "批量操作")
+    @PostMapping("/batchApproval")
+    public JsonResponse<Boolean> batchApproval(@RequestBody @Valid HardwareApprovalBatchCommand batchCommand, HttpServletRequest request) throws NoLoginException {
+        String loginUuid = accountService.getLoginUuid(request);
+        batchCommand.setHandlerUuid(Integer.valueOf(loginUuid));
+        boardCardApplicationService.batchApproval(batchCommand);
         return JsonResponse.success(null);
     }
 }
