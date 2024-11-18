@@ -144,4 +144,13 @@ public class HardwareWholeMachineApi {
         wholeMachineApplicationService.close(approvalNode);
         return JsonResponse.success(null);
     }
+
+    @Operation(summary = "批量操作")
+    @PostMapping("/batchApproval")
+    public JsonResponse<Boolean> batchApproval(@RequestBody @Valid HardwareApprovalBatchCommand batchCommand, HttpServletRequest request) throws NoLoginException {
+        String loginUuid = accountService.getLoginUuid(request);
+        batchCommand.setHandlerUuid(Integer.valueOf(loginUuid));
+        wholeMachineApplicationService.batchApproval(batchCommand);
+        return JsonResponse.success(null);
+    }
 }
