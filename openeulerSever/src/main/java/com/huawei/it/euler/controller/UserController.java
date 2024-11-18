@@ -4,10 +4,12 @@
 
 package com.huawei.it.euler.controller;
 
+import com.alibaba.excel.util.StringUtils;
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.account.ProtocolService;
 import com.huawei.it.euler.ddd.domain.account.Role;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.infrastructure.cla.ClaService;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.model.constant.StringConstant;
@@ -59,6 +61,9 @@ public class UserController {
 
     @Autowired
     private ProtocolService protocolService;
+
+    @Autowired
+    private ClaService claService;
 
     /**
      * 通过uuid查询个人信息
@@ -221,5 +226,23 @@ public class UserController {
         String uuid = accountService.getLoginUuid(request);
         logUtils.insertAuditLog(request, uuid, "compatibility agreement", "cancel", "cancel compatibility agreement");
         return protocolService.cancelAgreement(ProtocolEnum.COMPATIBILITY_LIST_USAGE_STATEMENT.getProtocolType(), uuid);
+    }
+
+    /**
+     * cla签署校验
+     *
+     * @param request request
+     * @return JsonResponse
+     */
+    @GetMapping("/user/claCheck")
+    @PreAuthorize("hasAnyRole('user', 'OSV_user')")
+    public JsonResponse<Boolean> claCheck(HttpServletRequest request) throws NoLoginException {
+        UserInfo userInfo = accountService.getLoginUser(request);
+        String email = userInfo.getEmail();
+        if (StringUtils.isEmpty(email)) {
+            return JsonResponse.success(false);
+        }
+        boolean check = claService.check(email);
+        return JsonResponse.success(check);
     }
 }
