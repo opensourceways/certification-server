@@ -4,6 +4,9 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import com.huawei.it.euler.ddd.interfaces.HardwareBoardCardDto;
+import com.huawei.it.euler.ddd.interfaces.HardwareWholeMachineDto;
+import com.huawei.it.euler.ddd.interfaces.HardwareWholeMachineListDto;
 import com.huawei.it.euler.ddd.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -129,4 +132,29 @@ public class HardwareFactory {
         return wholeMachineSelectVO;
     }
 
+    public List<HardwareWholeMachineListDto> createDtoList(List<HardwareWholeMachine> wholeMachineList) {
+        List<HardwareWholeMachineListDto> listDtoList = new ArrayList<>();
+        for (HardwareWholeMachine wholeMachine : wholeMachineList) {
+            HardwareWholeMachineListDto listDto = new HardwareWholeMachineListDto();
+            BeanUtils.copyProperties(wholeMachine, listDto);
+            listDto.setCpu(wholeMachine.getCompatibilityConfiguration().getCpu());
+            listDtoList.add(listDto);
+        }
+        return listDtoList;
+    }
+
+    public HardwareWholeMachineDto createDto(HardwareWholeMachine wholeMachine) {
+        HardwareWholeMachineDto dto = new HardwareWholeMachineDto();
+        BeanUtils.copyProperties(wholeMachine, dto);
+        HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
+        BeanUtils.copyProperties(wholeMachine, compatibilityConfiguration);
+        wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
+        return dto;
+    }
+
+    public HardwareBoardCardDto createDto(HardwareBoardCard boardCard) {
+        HardwareBoardCardDto dto = new HardwareBoardCardDto();
+        BeanUtils.copyProperties(boardCard, dto);
+        return dto;
+    }
 }

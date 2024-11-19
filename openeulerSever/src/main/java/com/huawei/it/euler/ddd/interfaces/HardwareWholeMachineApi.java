@@ -167,10 +167,15 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "整机数据公示")
     @GetMapping("/findAll")
-    public JsonResponse<Page<HardwareWholeMachine>> findAll(@ParameterObject HardwareWholeMachineSelectVO selectVO) {
-        selectVO.setSecurityLevel("0");
-        selectVO.setStatus(HardwareValueEnum.NODE_PASS.getValue());
-        Page<HardwareWholeMachine> wholeMachinePage = wholeMachineApplicationService.getPage(selectVO);
+    public JsonResponse<Page<HardwareWholeMachineListDto>> findAll(@ParameterObject HardwareWholeMachineSelectVO selectVO) {
+        Page<HardwareWholeMachineListDto> wholeMachinePage = wholeMachineApplicationService.pageForCompatibilityList(selectVO);
         return JsonResponse.success(wholeMachinePage);
+    }
+
+    @Operation(summary = "整机数据公示")
+    @GetMapping("/findById")
+    public JsonResponse<HardwareWholeMachineDto> findById(Integer id) {
+        HardwareWholeMachineDto hardwareWholeMachine = wholeMachineApplicationService.getByIdForCompatibilityList(id);
+        return JsonResponse.success(hardwareWholeMachine);
     }
 }

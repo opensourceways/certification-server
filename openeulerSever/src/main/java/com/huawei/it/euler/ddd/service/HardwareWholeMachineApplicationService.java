@@ -8,6 +8,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.ddd.domain.file.AttachmentRepositoryImpl;
 import com.huawei.it.euler.ddd.domain.hardware.*;
+import com.huawei.it.euler.ddd.interfaces.HardwareWholeMachineDto;
+import com.huawei.it.euler.ddd.interfaces.HardwareWholeMachineListDto;
 import com.huawei.it.euler.exception.BusinessException;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.model.entity.FileModel;
@@ -268,5 +270,25 @@ public class HardwareWholeMachineApplicationService {
                 throw new BusinessException("当前节点无法操作！");
             }
         }
+    }
+
+    public HardwareWholeMachineDto getByIdForCompatibilityList(Integer id) {
+        HardwareWholeMachine hardwareWholeMachine = wholeMachineRepository.find(id);
+        HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
+        selectVO.setIdList(Arrays.stream(hardwareWholeMachine.getBoardCardIds().split(",")).toList());
+        List<HardwareBoardCard> boardCardList = boardCardRepository.getList(selectVO);
+        hardwareWholeMachine.setBoardCards(boardCardList);
+        return hardwareFactory.createDto(hardwareWholeMachine);
+    }
+
+    public Page<HardwareWholeMachineListDto> pageForCompatibilityList(HardwareWholeMachineSelectVO selectVO) {
+        selectVO.setSecurityLevel("0");
+        selectVO.setStatus(HardwareValueEnum.NODE_PASS.getValue());
+        Page<HardwareWholeMachine> wholeMachinePage = wholeMachineRepository.getPage(selectVO);
+
+        Page<HardwareWholeMachineListDto> dtoPage = new Page<>();
+        BeanUtils.copyProperties(dtoPage, wholeMachinePage);
+        dtoPage.setRecords(hardwareFactory.createDtoList(wholeMachinePage.getRecords()));
+        return dtoPage;
     }
 }
