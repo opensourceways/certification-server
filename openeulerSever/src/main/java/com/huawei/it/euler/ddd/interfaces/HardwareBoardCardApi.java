@@ -44,6 +44,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "分页查询")
     @GetMapping("/getPage")
+    @PreAuthorize("hasAnyRole('user','hardware_review','admin')")
     public JsonResponse<Page<HardwareBoardCard>> getPage(@ParameterObject HardwareBoardCardSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         selectVO.setUserUuid(loginUuid);
@@ -53,6 +54,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "根据id查询对象", parameters = {@Parameter(name = "id", description = "板卡id")})
     @GetMapping("/getById")
+    @PreAuthorize("hasAnyRole('user','hardware_review','admin')")
     public JsonResponse<HardwareBoardCard> getById(@RequestParam("id") @NotNull(message = "id不能为空") Integer id, HttpServletRequest request) throws NoLoginException {
         HardwareBoardCard wholeMachine = boardCardApplicationService.getById(id);
         return JsonResponse.success(wholeMachine);
@@ -60,6 +62,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "新增业务对象", required = true))
     @PostMapping("/insert")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<InsertResponse> insert(@RequestBody @Valid HardwareBoardCardAddCommand addCommand, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
         InsertResponse insert = boardCardApplicationService.insert(addCommand, loginUuid);
@@ -68,6 +71,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "批量新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象", required = true))
     @PostMapping("/batchInsert")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<BatchInsertResponse> batchInsert(@RequestBody @Valid List<HardwareBoardCardAddCommand> addCommandList, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
         BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, loginUuid);
@@ -95,6 +99,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "编辑")
     @PostMapping("/edit")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<Boolean> edit(@RequestBody @Valid HardwareBoardCardEditCommand editCommand, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         boardCardApplicationService.edit(editCommand, loginUuid);
@@ -103,6 +108,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "删除")
     @PostMapping("/delete")
+    @PreAuthorize("hasRole('user')")
     public JsonResponse<Boolean> delete(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -112,6 +118,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "申请")
     @PostMapping("/apply")
+    @PreAuthorize("hasRole('user')")
     public JsonResponse<Boolean> apply(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -121,6 +128,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "通过")
     @PostMapping("/pass")
+    @PreAuthorize("hasRole('hardware_review')")
     public JsonResponse<Boolean> pass(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -130,6 +138,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "驳回")
     @PostMapping("/reject")
+    @PreAuthorize("hasRole('hardware_review')")
     public JsonResponse<Boolean> reject(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -139,6 +148,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "关闭")
     @PostMapping("/close")
+    @PreAuthorize("hasRole('hardware_review')")
     public JsonResponse<Boolean> close(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -148,6 +158,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "批量操作")
     @PostMapping("/batchApproval")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<Boolean> batchApproval(@RequestBody @Valid HardwareApprovalBatchCommand batchCommand, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         batchCommand.setHandlerUuid(Integer.valueOf(loginUuid));
