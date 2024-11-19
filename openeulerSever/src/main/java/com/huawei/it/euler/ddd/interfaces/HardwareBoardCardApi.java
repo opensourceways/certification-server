@@ -157,10 +157,8 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "板卡数据公示")
     @GetMapping("/findAll")
-    public JsonResponse<Page<HardwareBoardCard>> findAll(@ParameterObject HardwareBoardCardSelectVO selectVO) {
-        selectVO.setSecurityLevel("0");
-        selectVO.setStatus(HardwareValueEnum.NODE_PASS.getValue());
-        Page<HardwareBoardCard> boardCardPage = boardCardApplicationService.getPage(selectVO);
+    public JsonResponse<Page<HardwareBoardCardDto>> findAll(@ParameterObject HardwareBoardCardSelectVO selectVO) {
+        Page<HardwareBoardCardDto> boardCardPage = boardCardApplicationService.pageForCompatibilityList(selectVO);
         return JsonResponse.success(boardCardPage);
     }
 }

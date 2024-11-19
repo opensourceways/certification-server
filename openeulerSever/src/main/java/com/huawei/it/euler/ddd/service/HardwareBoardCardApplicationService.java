@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.ddd.domain.file.AttachmentRepositoryImpl;
 import com.huawei.it.euler.ddd.domain.hardware.*;
+import com.huawei.it.euler.ddd.interfaces.HardwareBoardCardDto;
 import com.huawei.it.euler.exception.BusinessException;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.model.entity.FileModel;
@@ -227,5 +228,16 @@ public class HardwareBoardCardApplicationService {
                 throw new BusinessException("当前节点无法操作！");
             }
         }
+    }
+
+    public Page<HardwareBoardCardDto> pageForCompatibilityList(HardwareBoardCardSelectVO selectVO) {
+        selectVO.setSecurityLevel("0");
+        selectVO.setStatus(HardwareValueEnum.NODE_PASS.getValue());
+        Page<HardwareBoardCard> boardCardPage = boardCardRepository.getPage(selectVO);
+
+        Page<HardwareBoardCardDto> dtoPage = new Page<>();
+        BeanUtils.copyProperties(dtoPage, boardCardPage);
+        dtoPage.setRecords(boardCardPage.getRecords().stream().map(hardwareFactory::createDto).toList());
+        return dtoPage;
     }
 }
