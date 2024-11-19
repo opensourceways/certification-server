@@ -45,6 +45,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "分页查询")
     @GetMapping("/getPage")
+    @PreAuthorize("hasAnyRole('user','admin','hardware_review')")
     public JsonResponse<Page<HardwareWholeMachine>> getPage(@ParameterObject HardwareWholeMachineSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         selectVO.setUserUuid(loginUuid);
@@ -54,6 +55,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "根据id查询对象", parameters = {@Parameter(name = "id", description = "板卡id")})
     @GetMapping("/getById")
+    @PreAuthorize("hasAnyRole('user','admin','hardware_review')")
     public JsonResponse<HardwareWholeMachine> getById(@RequestParam("id") @NotNull(message = "id不能为空") Integer id, HttpServletRequest request) throws NoLoginException {
         HardwareWholeMachine wholeMachine = wholeMachineApplicationService.getById(id);
         return JsonResponse.success(wholeMachine);
@@ -61,6 +63,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "新增业务对象", required = true))
     @PostMapping("/insert")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<InsertResponse> insert(@RequestBody @Valid HardwareWholeMachineAddCommand addCommand, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
         InsertResponse insert = wholeMachineApplicationService.insert(addCommand, loginUuid);
@@ -69,6 +72,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "批量新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象", required = true))
     @PostMapping("/batchInsert")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<BatchInsertResponse> batchInsert(@RequestBody @Valid List<HardwareWholeMachineAddCommand> addCommandList, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
         BatchInsertResponse batchInsertResponse = wholeMachineApplicationService.batchInsert(addCommandList, loginUuid);
@@ -96,6 +100,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "编辑")
     @PostMapping("/edit")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<Boolean> edit(@RequestBody @Valid HardwareWholeMachineEditCommand editCommand, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         wholeMachineApplicationService.edit(editCommand, loginUuid);
@@ -104,6 +109,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "删除")
     @PostMapping("/delete")
+    @PreAuthorize("hasRole('user')")
     public JsonResponse<Boolean> delete(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -113,6 +119,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "申请")
     @PostMapping("/apply")
+    @PreAuthorize("hasRole('user')")
     public JsonResponse<Boolean> apply(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -122,6 +129,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "通过")
     @PostMapping("/pass")
+    @PreAuthorize("hasRole('hardware_review')")
     public JsonResponse<Boolean> pass(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -131,6 +139,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "驳回")
     @PostMapping("/reject")
+    @PreAuthorize("hasRole('hardware_review')")
     public JsonResponse<Boolean> reject(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -140,6 +149,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "关闭")
     @PostMapping("/close")
+    @PreAuthorize("hasRole('hardware_review')")
     public JsonResponse<Boolean> close(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -149,6 +159,7 @@ public class HardwareWholeMachineApi {
 
     @Operation(summary = "批量操作")
     @PostMapping("/batchApproval")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<Boolean> batchApproval(@RequestBody @Valid HardwareApprovalBatchCommand batchCommand, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         batchCommand.setHandlerUuid(Integer.valueOf(loginUuid));
