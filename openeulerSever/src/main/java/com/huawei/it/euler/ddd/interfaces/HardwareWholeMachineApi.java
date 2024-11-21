@@ -7,6 +7,8 @@ package com.huawei.it.euler.ddd.interfaces;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.account.Role;
+import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareApprovalNode;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareValueEnum;
 import com.huawei.it.euler.ddd.domain.hardware.HardwareWholeMachine;
@@ -15,6 +17,7 @@ import com.huawei.it.euler.ddd.service.*;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.exception.ParamException;
+import com.huawei.it.euler.model.enumeration.RoleEnum;
 import com.huawei.it.euler.model.vo.ExcelInfoVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,8 +50,11 @@ public class HardwareWholeMachineApi {
     @GetMapping("/getPage")
     @PreAuthorize("hasAnyRole('user','admin','hardware_review')")
     public JsonResponse<Page<HardwareWholeMachine>> getPage(@ParameterObject HardwareWholeMachineSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
-        String loginUuid = accountService.getLoginUuid(request);
-        selectVO.setUserUuid(loginUuid);
+        UserInfo loginUser = accountService.getLoginUser(request);
+        List<Integer> roleIdList = loginUser.getRoleList().stream().map(Role::getId).toList();
+        if (RoleEnum.isUser(roleIdList)) {
+            selectVO.setUserUuid(loginUser.getUuid());
+        }
         Page<HardwareWholeMachine> wholeMachinePage = wholeMachineApplicationService.getPage(selectVO);
         return JsonResponse.success(wholeMachinePage);
     }
