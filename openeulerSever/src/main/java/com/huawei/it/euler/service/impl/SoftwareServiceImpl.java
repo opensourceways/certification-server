@@ -272,7 +272,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         // 更新软件信息表
         softwareMapper.updateSoftware(SoftwareVOToEntityConverter.INSTANCE.convert(software));
         // 发送邮件通知
-        sendEmail(software, uuid);
+//        sendEmail(software, uuid);
         return softwareId;
     }
 
