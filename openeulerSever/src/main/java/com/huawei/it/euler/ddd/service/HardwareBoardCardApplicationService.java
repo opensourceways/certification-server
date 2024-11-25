@@ -135,6 +135,11 @@ public class HardwareBoardCardApplicationService {
             throw new BusinessException("无权限编辑该板卡数据！");
         }
 
+        HardwareBoardCardEditCommand boardCardEditCommand = hardwareFactory.createEditCommand(existBoardCard);
+        if (boardCardEditCommand.equals(editCommand)){
+            return;
+        }
+
         BeanUtils.copyProperties(editCommand, existBoardCard);
         existBoardCard.edit();
         boardCardRepository.save(existBoardCard);
