@@ -26,16 +26,16 @@ import lombok.Getter;
 public enum CenterEnum {
     // openEuler社区
     USER(1, "openEuler社区"),
-    // 江苏鲲鹏&欧拉生态创新中心
-    CHINA_REGION(2, "江苏鲲鹏&欧拉生态创新中心"),
-    // 四川鲲鹏&欧拉生态创新中心
-    SIG_GROUP(4, "四川鲲鹏&欧拉生态创新中心"),
-    // 长江鲲鹏&欧拉生态创新中心
-    EULER_IC(5, "长江鲲鹏&欧拉生态创新中心"),
-    // 湖南欧拉生态创新中心
-    FLAG_STORE(6, "湖南欧拉生态创新中心"),
-    // 北京欧拉生态创新中心
-    ADMIN(7, "北京欧拉生态创新中心"),
+    // 江苏openEuler生态创新中心
+    CHINA_REGION(2, "江苏openEuler生态创新中心"),
+    // 四川openEuler生态创新中心
+    SIG_GROUP(4, "四川openEuler生态创新中心"),
+    // 长江openEuler生态创新中心
+    EULER_IC(5, "长江openEuler生态创新中心"),
+    // 湖南openEuler生态创新中心
+    FLAG_STORE(6, "湖南openEuler生态创新中心"),
+    // 北京openEuler生态创新中心
+    ADMIN(7, "北京openEuler生态创新中心"),
     // 开放原子-英特尔联合验证中心
     OSV_USER(8, "开放原子-英特尔联合验证中心");
 
