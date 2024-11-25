@@ -211,7 +211,7 @@
         <include refid="baseFields"/>
         from software_t where status = 9
         <if test="testOrganization != null and testOrganization != ''">
-            and test_organization = #{testOrganization}
+            and (test_organization = #{testOrganization} or test_organization_cp = #{testOrganization})
         </if>
         <if test="osName != null and osName != ''">
             and os_name = #{osName}
