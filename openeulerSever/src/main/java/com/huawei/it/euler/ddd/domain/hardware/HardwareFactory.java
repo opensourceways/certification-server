@@ -55,6 +55,12 @@ public class HardwareFactory {
         return boardCard;
     }
 
+    public HardwareBoardCardEditCommand createEditCommand(HardwareBoardCard boardCard) {
+        HardwareBoardCardEditCommand editCommand = new HardwareBoardCardEditCommand();
+        BeanUtils.copyProperties(boardCard, editCommand);
+        return editCommand;
+    }
+
     public List<HardwareBoardCard> createBoardCardList(List<HardwareBoardCardPO> boardCardPOList) {
         return boardCardPOList.stream().map(this::createBoardCard).toList();
     }
