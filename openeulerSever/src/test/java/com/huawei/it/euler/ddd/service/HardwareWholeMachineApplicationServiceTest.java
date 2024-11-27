@@ -45,6 +45,8 @@ public class HardwareWholeMachineApplicationServiceTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HardwareFactory hardwareFactory;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private HardwareBoardCardApplicationService boardCardApplicationService;
 
     @InjectMocks
     private HardwareWholeMachineApplicationService wholeMachineApplicationService;
@@ -212,7 +214,7 @@ public class HardwareWholeMachineApplicationServiceTest {
                 .get(0))).thenReturn(editBoardCard);
         Mockito.when(boardCardRepository.getOne(editBoardCard)).thenReturn(editBoardCard);
         Mockito.when(boardCardRepository.save(editBoardCard)).thenReturn(editBoardCard);
-        Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
+        Mockito.doNothing().when(boardCardApplicationService).edit(editCommand.getBoardCardEditCommandList().get(0), USER_UUID);
 
         wholeMachineApplicationService.edit(editCommand, USER_UUID);
 
