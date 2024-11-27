@@ -748,7 +748,9 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
         filterLatestNodes.parallelStream().forEach(item -> {
-            item.setHandlerName(accountService.getUserName(item.getHandler()));
+            UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+            item.setHandlerName(StringUtils.isEmpty(userInfo.getNickName()) ? userInfo.getUserName() : userInfo.getNickName());
+            item.setHandlerEmail(userInfo.getEmail());
         });
         return filterLatestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus))
             .collect(Collectors.toList());
