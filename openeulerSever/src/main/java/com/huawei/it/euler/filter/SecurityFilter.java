@@ -79,7 +79,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             if (StringUtils.isEmpty(referer)) {
                 isRefererInclude = false;
             } else {
-                isRefererInclude = refererCheck.equals(referer);
+                isRefererInclude = referer.startsWith(refererCheck);
             }
         }
         if (!isRefererInclude) {

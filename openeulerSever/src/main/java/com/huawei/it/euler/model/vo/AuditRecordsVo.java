@@ -31,6 +31,11 @@ public class AuditRecordsVo {
     private String handlerName;
 
     /**
+     * 处理人邮箱
+     */
+    private String handlerEmail;
+
+    /**
      * 处理结果id
      */
     private Integer handlerResultId;
