@@ -23,61 +23,61 @@ import java.util.List;
 public class HardwareWholeMachineEditCommand {
 
     @Schema(description = "主键id")
-    @NotNull(message = "主键id不能为空")
+    // @NotNull(message = "主键id不能为空")
     private Integer id;
 
     @Schema(description = "硬件厂商-中文")
-    @NotNull(message = "整机厂商中文名称不能为空")
+    // @NotNull(message = "整机厂商中文名称不能为空")
     private String hardwareFactoryZy;
 
     @Schema(description = "硬件厂商-英文")
-    @NotNull(message = "整机厂商英文名称不能为空")
+    // @NotNull(message = "整机厂商英文名称不能为空")
     private String hardwareFactoryEn;
 
     @Schema(description = "硬件型号")
-    @NotNull(message = "整机型号不能为空")
+    // @NotNull(message = "整机型号不能为空")
     private String hardwareModel;
 
     @Schema(description = "操作系统版本")
-    @NotNull(message = "适配的操作系统版本不能为空")
+    // @NotNull(message = "适配的操作系统版本不能为空")
     private String osVersion;
 
     @Schema(description = "CPU架构")
-    @NotNull(message = "架构不能为空")
+    // @NotNull(message = "架构不能为空")
     private String architecture;
 
     @Schema(description = "认证日期")
-    @NotNull(message = "认证日期不能为空")
+    // @NotNull(message = "认证日期不能为空")
     private String date;
 
     @Schema(description = "友情链接")
     private String friendlyLink;
 
     @Schema(description = "服务器产品信息链接")
-    @NotNull(message = "服务器产品链接不能为空")
+    // @NotNull(message = "服务器产品链接不能为空")
     private String productInformation;
 
     @Schema(description = "认证日期")
-    @NotNull(message = "认证日期不能为空")
+    // @NotNull(message = "认证日期不能为空")
     private String certificationTime;
 
     @Schema(description = "适配commit-id")
     private String commitID;
 
     @Schema(description = "主板型号")
-    @NotNull(message = "主板型号不能为空")
+    // @NotNull(message = "主板型号不能为空")
     private String mainboardModel;
 
     @Schema(description = "bios/UEFI版本")
-    @NotNull(message = "bios/UEFI版本不能为空")
+    // @NotNull(message = "bios/UEFI版本不能为空")
     private String biosUefi;
 
     @Schema(description = "CPU型号")
-    @NotNull(message = "CPU型号不能为空")
+    // @NotNull(message = "CPU型号不能为空")
     private String cpu;
 
     @Schema(description = "内存条配置信息")
-    @NotNull(message = "内存条配置信息不能为空")
+    // @NotNull(message = "内存条配置信息不能为空")
     private String ram;
 
     @Schema(description = "端口类型")
@@ -93,10 +93,10 @@ public class HardwareWholeMachineEditCommand {
     private String hardDiskDrive;
 
     @Schema(description = "密级")
-    @NotNull(message = "密级不能为空")
+    // @NotNull(message = "密级不能为空")
     private String securityLevel;
 
     @Valid
-    @NotNull(message = "板卡信息不能为空")
+    // @NotNull(message = "板卡信息不能为空")
     private List<HardwareBoardCardEditCommand> boardCardEditCommandList;
 }

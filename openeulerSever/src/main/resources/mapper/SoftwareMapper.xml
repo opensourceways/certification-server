@@ -301,6 +301,24 @@
         LIMIT #{offset}, #{pageSize}
     </select>
 
+    <select id="getSoftwareListOfProductType" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.product_type
+        from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
+    <select id="getSoftwareListOfTestOrganization" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.test_org_id
+        from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
+    <select id="getSoftwareListOfStatus" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.status
+        from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
     <select id="countReviewSoftwareList" resultType="java.lang.Long">
         select COUNT(*) from software_t AS s
         <include refid="whereReviewSoftwareList"/>
@@ -324,6 +342,24 @@
             </otherwise>
         </choose>
         LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="getReviewSoftwareListOfProductType" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.product_type
+        from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
+    </select>
+
+    <select id="getReviewSoftwareListOfTestOrganization" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.test_org_id
+        from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
+    </select>
+
+    <select id="getReviewSoftwareListOfStatus" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.status
+        from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
     </select>
 
     <select id="getExportSoftwareList" resultMap="softwareMap">

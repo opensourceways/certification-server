@@ -28,7 +28,7 @@ public interface Converter<S, T> {
             return PageResult.empty();
         }
         List<T> target = source.getList().stream().map(this::convert).toList();
-        return new PageResult<>(target, source.getTotal(), source.getPageNum(), source.getPageSize());
+        return new PageResult<>(target, source.getTotal(), source.getPageNum(), source.getPageSize(), source.getFilterData());
 
     }
 
