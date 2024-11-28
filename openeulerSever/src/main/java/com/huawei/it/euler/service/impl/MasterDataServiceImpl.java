@@ -104,4 +104,9 @@ public class MasterDataServiceImpl implements MasterDataService {
         });
         return computingPlatformVos;
     }
+
+    @Override
+    public List<String> findNoticeBoardList() {
+        return masterDataMapper.findNoticeBoardList();
+    }
 }
