@@ -42,4 +42,7 @@ public interface MasterDataMapper {
     Integer findCPUVendorByName(@Param("name") String name);
 
     void insertAuditLog(AuditLog auditLog);
+
+    List<String> findNoticeBoardList();
+
 }
