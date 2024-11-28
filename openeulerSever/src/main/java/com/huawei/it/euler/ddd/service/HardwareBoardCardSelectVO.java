@@ -30,6 +30,9 @@ public class HardwareBoardCardSelectVO implements Serializable {
     @Schema(description = "id集合")
     private List<String> idList;
 
+    @Schema(description = "关键字")
+    private String keyword;
+
     @Schema(description = "CPU架构")
     private String architecture;
 

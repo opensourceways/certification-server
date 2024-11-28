@@ -241,7 +241,7 @@ public class HardwareBoardCardApplicationService {
         Page<HardwareBoardCard> boardCardPage = boardCardRepository.getPage(selectVO);
 
         Page<HardwareBoardCardDto> dtoPage = new Page<>();
-        BeanUtils.copyProperties(dtoPage, boardCardPage);
+        BeanUtils.copyProperties(boardCardPage, dtoPage);
         dtoPage.setRecords(boardCardPage.getRecords().stream().map(hardwareFactory::createDto).toList());
         return dtoPage;
     }

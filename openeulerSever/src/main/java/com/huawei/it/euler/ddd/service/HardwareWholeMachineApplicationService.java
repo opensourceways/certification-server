@@ -287,7 +287,7 @@ public class HardwareWholeMachineApplicationService {
         Page<HardwareWholeMachine> wholeMachinePage = wholeMachineRepository.getPage(selectVO);
 
         Page<HardwareWholeMachineListDto> dtoPage = new Page<>();
-        BeanUtils.copyProperties(dtoPage, wholeMachinePage);
+        BeanUtils.copyProperties(wholeMachinePage, dtoPage);
         dtoPage.setRecords(hardwareFactory.createDtoList(wholeMachinePage.getRecords()));
         return dtoPage;
     }
