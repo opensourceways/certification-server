@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.service.impl;
 
+import com.huawei.it.euler.ddd.domain.notice.NoticeBoard;
 import com.huawei.it.euler.mapper.MasterDataMapper;
 import com.huawei.it.euler.model.entity.ComputingPlatform;
 import com.huawei.it.euler.model.entity.Os;
@@ -106,7 +107,7 @@ public class MasterDataServiceImpl implements MasterDataService {
     }
 
     @Override
-    public List<String> findNoticeBoardList() {
+    public List<NoticeBoard> findNoticeBoardList() {
         return masterDataMapper.findNoticeBoardList();
     }
 }

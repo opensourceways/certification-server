@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.huawei.it.euler.common.JsonResponse;
+import com.huawei.it.euler.ddd.domain.notice.NoticeBoard;
 import com.huawei.it.euler.model.vo.HashRatePlatformVo;
 import com.huawei.it.euler.model.vo.OsVo;
 import com.huawei.it.euler.model.vo.ProductVo;
@@ -95,7 +96,7 @@ public class MasterDataController {
      */
     @Operation(summary = "系统公告消息")
     @GetMapping("/software/findNoticeBoardList")
-    public JsonResponse<List<String>> findNoticeBoardList() {
+    public JsonResponse<List<NoticeBoard>> findNoticeBoardList() {
         return JsonResponse.success(masterDataService.findNoticeBoardList());
     }
 }
