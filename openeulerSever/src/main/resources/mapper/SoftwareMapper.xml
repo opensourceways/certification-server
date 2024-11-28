@@ -141,6 +141,12 @@
             <if test="software.endCertificationTime != null">
                 and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
+            <if test="software.beginApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginApplicationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.endApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endApplicationTime},'%Y-%m-%d')
+            </if>
         </where>
     </sql>
     <sql id="whereReviewSoftwareList">
@@ -196,6 +202,12 @@
             </if>
             <if test="software.endCertificationTime != null">
                 and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.beginApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginApplicationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.endApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endApplicationTime},'%Y-%m-%d')
             </if>
         </where>
     </sql>
