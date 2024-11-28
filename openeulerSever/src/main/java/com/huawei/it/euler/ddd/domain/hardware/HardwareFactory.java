@@ -112,13 +112,7 @@ public class HardwareFactory {
     }
 
     public List<HardwareWholeMachine> createWholeMachineList(List<HardwareWholeMachinePO> wholeMachinePOList) {
-        List<HardwareWholeMachine> wholeMachineList = new ArrayList<>();
-        for (HardwareWholeMachinePO wholeMachinePO : wholeMachinePOList) {
-            HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
-            BeanUtils.copyProperties(wholeMachinePO, wholeMachine);
-            wholeMachineList.add(wholeMachine);
-        }
-        return wholeMachineList;
+        return wholeMachinePOList.stream().map(this::createWholeMachine).toList();
     }
 
     public HardwareWholeMachinePO createWholeMachinePO(HardwareWholeMachine wholeMachine) {
