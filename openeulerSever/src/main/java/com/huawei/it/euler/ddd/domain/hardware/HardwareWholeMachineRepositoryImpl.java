@@ -53,6 +53,13 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
         if (selectVO.getIdList() != null && !selectVO.getIdList().isEmpty()) {
             queryWrapper.in("id", selectVO.getIdList());
         }
+        if (!StringUtils.isEmpty(selectVO.getKeyword())) {
+            queryWrapper.and(wrapper -> wrapper.like("factory_zy", selectVO.getKeyword())
+                    .or().like("factory_en", selectVO.getKeyword())
+                    .or().like("model", selectVO.getKeyword())
+                    .or().like("os_version", selectVO.getKeyword())
+                    .or().like("architecture", selectVO.getKeyword()));
+        }
         if (!StringUtils.isEmpty(selectVO.getArchitecture())) {
             queryWrapper.eq("architecture", selectVO.getArchitecture());
         }

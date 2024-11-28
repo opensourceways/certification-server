@@ -56,6 +56,12 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
         if (selectVO.getIdList() != null && !selectVO.getIdList().isEmpty()) {
             queryWrapper.in("id", selectVO.getIdList());
         }
+        if (!StringUtils.isEmpty(selectVO.getKeyword())) {
+            queryWrapper.and(wrapper -> wrapper.like("os", selectVO.getKeyword())
+                    .or().like("architecture", selectVO.getKeyword())
+                    .or().like("board_model", selectVO.getKeyword())
+                    .or().like("chip_model", selectVO.getKeyword()));
+        }
         if (!StringUtils.isEmpty(selectVO.getOs())) {
             queryWrapper.eq("os", selectVO.getOs());
         }
