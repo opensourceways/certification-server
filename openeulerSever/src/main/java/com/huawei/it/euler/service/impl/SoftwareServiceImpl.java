@@ -651,10 +651,21 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setApplicant(uuid);
         softwareQuery.setSort(parseSort(softwareQueryRequest));
         List<SoftwareVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
+
+        JSONObject filterData = new JSONObject();
+        List<String> filterOfProductType = softwareMapper.getSoftwareListOfProductType(softwareQuery);
+        filterData.put("productType", filterOfProductType);
+        List<String> filterOfTestOrganization = softwareMapper.getSoftwareListOfTestOrganization(softwareQuery);
+        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
+        filterData.put("testOrganization", list);
+        List<String> filterOfStatus = softwareMapper.getSoftwareListOfStatus(softwareQuery);
+        filterData.put("status", filterOfStatus);
+
         Long total = softwareMapper.countSoftwareList(softwareQuery);
         softwareVOPopulater.populate(currentSoftwareList);
-        return new PageResult<>(currentSoftwareList, total, curPage, pageSize);
+        return new PageResult<>(currentSoftwareList, total, curPage, pageSize, filterData);
     }
+
 
     @Override
     public PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize) {
@@ -665,10 +676,20 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setSort(parseSort(softwareQueryRequest));
         int offset = (curPage - 1) * pageSize;
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
+
+        JSONObject filterData = new JSONObject();
+        List<String> filterOfProductType = softwareMapper.getReviewSoftwareListOfProductType(softwareQuery);
+        filterData.put("productType", filterOfProductType);
+        List<String> filterOfTestOrganization = softwareMapper.getReviewSoftwareListOfTestOrganization(softwareQuery);
+        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
+        filterData.put("testOrganization", list);
+        List<String> filterOfStatus = softwareMapper.getReviewSoftwareListOfStatus(softwareQuery);
+        filterData.put("status", filterOfStatus);
+
         Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
         softwareVOPopulater.populate(reviewSoftwareList);
         updateSoftwareListStatus(reviewSoftwareList);
-        return new PageResult<>(reviewSoftwareList, total, curPage, pageSize);
+        return new PageResult<>(reviewSoftwareList, total, curPage, pageSize, filterData);
     }
 
     private void updateSoftwareListStatus(List<SoftwareVo> softwareList) {

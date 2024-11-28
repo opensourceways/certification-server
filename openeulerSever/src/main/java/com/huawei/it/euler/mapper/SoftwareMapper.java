@@ -67,6 +67,12 @@ public interface SoftwareMapper {
     List<SoftwareVo> getSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
                                          @Param("software") SoftwareQuery softwareQuery);
 
+    List<String> getSoftwareListOfProductType(@Param("software") SoftwareQuery softwareQuery);
+
+    List<String> getSoftwareListOfTestOrganization(@Param("software") SoftwareQuery softwareQuery);
+
+    List<String> getSoftwareListOfStatus(@Param("software") SoftwareQuery softwareQuery);
+
     Long countSoftwareList(@Param("software") SoftwareQuery softwareQuery);
     /**
      * 华为侧查询兼容性认证申请列表
@@ -76,6 +82,12 @@ public interface SoftwareMapper {
      */
     List<SoftwareVo> getReviewSoftwareList(@Param("offset") int offset, @Param("pageSize") int pageSize,
         @Param("software") SoftwareQuery softwareQuery);
+
+    List<String> getReviewSoftwareListOfProductType(@Param("software") SoftwareQuery softwareQuery);
+
+    List<String> getReviewSoftwareListOfTestOrganization(@Param("software") SoftwareQuery softwareQuery);
+
+    List<String> getReviewSoftwareListOfStatus(@Param("software") SoftwareQuery softwareQuery);
 
     Long countReviewSoftwareList(@Param("software") SoftwareQuery softwareQuery);
 
