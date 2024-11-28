@@ -25,4 +25,6 @@ public interface MasterDataService {
     List<String> findAllCPUVendor();
 
     List<HashRatePlatformVo> findAllComputingPlatform();
+
+    List<String> findNoticeBoardList();
 }

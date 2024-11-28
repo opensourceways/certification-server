@@ -9,6 +9,8 @@ import com.huawei.it.euler.model.vo.HashRatePlatformVo;
 import com.huawei.it.euler.model.vo.OsVo;
 import com.huawei.it.euler.model.vo.ProductVo;
 import com.huawei.it.euler.service.MasterDataService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +24,7 @@ import java.util.List;
  *
  * @since 2024/07/05
  */
+@Tag(name = "系统数据接口", description = "系统数据接口")
 @Slf4j
 @RestController
 public class MasterDataController {
@@ -81,5 +84,16 @@ public class MasterDataController {
     @PreAuthorize("hasAnyRole('user', 'china_region', 'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin')")
     public JsonResponse<List<String>> findAllCPUVendor() {
         return JsonResponse.success(masterDataService.findAllCPUVendor());
+    }
+
+    /**
+     * 系统公告消息
+     *
+     * @return JsonResponse
+     */
+    @Operation(summary = "系统公告消息")
+    @GetMapping("/software/findNoticeBoardList")
+    public JsonResponse<List<String>> findNoticeBoardList() {
+        return JsonResponse.success(masterDataService.findNoticeBoardList());
     }
 }
