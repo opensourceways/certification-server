@@ -297,7 +297,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     public JsonResponse<Map<String, Object>> findDataList(CompatibleDataSearchVo searchVo, String uuid) {
         List<Integer> role = compatibleDataMapper.selectUserRoleByUuid(uuid);
         List<CompatibleDataInfo> dataList;
-        if (role.contains(RoleEnum.OSV_USER.getRoleId())) {
+        if (role.contains(RoleEnum.OSV_USER.getRoleId()) || role.contains(RoleEnum.USER.getRoleId())) {
             searchVo.setUuid(uuid);
             dataList = compatibleDataMapper.getDataList(searchVo);
         } else {
