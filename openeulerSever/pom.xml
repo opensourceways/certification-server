@@ -12,11 +12,11 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>3.3.1</spring-boot.version>
+        <spring-boot.version>3.3.5</spring-boot.version>
         <mybatis-plus-version>3.5.5</mybatis-plus-version>
         <httpcore-httpclient-version>4.5.13</httpcore-httpclient-version>
         <jjwt-version>0.9.1</jjwt-version>
-        <spring-security-version>6.3.2</spring-security-version>
+        <spring-security-version>6.3.4</spring-security-version>
         <compress.version>1.26.1</compress.version>
         <classmate.version>1.6.0</classmate.version>
         <commons-logging-version>1.3.0</commons-logging-version>
