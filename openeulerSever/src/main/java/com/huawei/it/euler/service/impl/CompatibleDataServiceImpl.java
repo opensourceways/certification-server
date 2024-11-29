@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.huawei.it.euler.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -155,6 +156,8 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
     @Autowired
     private FileUtils fileUtils;
 
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private AccountService accountService;
@@ -295,7 +298,7 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
 
     @Override
     public JsonResponse<Map<String, Object>> findDataList(CompatibleDataSearchVo searchVo, String uuid) {
-        List<Integer> role = compatibleDataMapper.selectUserRoleByUuid(uuid);
+        List<Integer> role = userService.getUserRolesByUUID(Integer.valueOf(uuid));
         List<CompatibleDataInfo> dataList;
         if (role.contains(RoleEnum.OSV_USER.getRoleId()) || role.contains(RoleEnum.USER.getRoleId())) {
             searchVo.setUuid(uuid);

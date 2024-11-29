@@ -78,7 +78,7 @@ public class HardwareBoardCardApi {
     @Operation(summary = "批量新增业务", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "批量新增业务对象", required = true))
     @PostMapping("/batchInsert")
     @PreAuthorize("hasAnyRole('user','hardware_review')")
-    public JsonResponse<BatchInsertResponse> batchInsert(@RequestBody @Valid List<HardwareBoardCardAddCommand> addCommandList, HttpServletRequest request) throws NoLoginException, ParamException {
+    public JsonResponse<BatchInsertResponse> batchInsert(@RequestBody @Valid List<HardwareBoardCardEditCommand> addCommandList, HttpServletRequest request) throws NoLoginException, ParamException {
         String loginUuid = accountService.getLoginUuid(request);
         BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, loginUuid);
         return JsonResponse.success(batchInsertResponse);

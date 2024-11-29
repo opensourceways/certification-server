@@ -77,16 +77,19 @@ public class HardwareBoardCardApplicationServiceTest {
     @DisplayName("批量插入成功")
     void testBatchInsertSuccess() {
         HardwareBoardCardAddCommand addCommand = getBoardCardAddCommand();
-        List<HardwareBoardCardAddCommand> addCommandList = new ArrayList<>();
-        addCommandList.add(addCommand);
+        HardwareBoardCardEditCommand editCommand = getBoardCardEditCommand();
+        editCommand.setId(0);
+        List<HardwareBoardCardEditCommand> editCommandList = new ArrayList<>();
+        editCommandList.add(editCommand);
 
         HardwareBoardCard boardCard = getBoardCard(null);
 
+        Mockito.when(hardwareFactory.createAddCommand(editCommand)).thenReturn(addCommand);
         Mockito.when(hardwareFactory.createBoardCard(addCommand)).thenReturn(boardCard);
         Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(null);
         Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
 
-        BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, USER_UUID);
+        BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(editCommandList, USER_UUID);
 
         Assertions.assertEquals(1, batchInsertResponse.getSuccessCount());
         Assertions.assertEquals(0, batchInsertResponse.getFailureCount());
@@ -96,16 +99,18 @@ public class HardwareBoardCardApplicationServiceTest {
     @DisplayName("批量插入失败")
     void testBatchInsertFailed() {
         HardwareBoardCardAddCommand addCommand = getBoardCardAddCommand();
-        List<HardwareBoardCardAddCommand> addCommandList = new ArrayList<>();
-        addCommandList.add(addCommand);
+        HardwareBoardCardEditCommand editCommand = getBoardCardEditCommand();
+        List<HardwareBoardCardEditCommand> editCommandList = new ArrayList<>();
+        editCommandList.add(editCommand);
 
         HardwareBoardCard boardCard = getBoardCard(null);
 
+        Mockito.when(hardwareFactory.createAddCommand(editCommand)).thenReturn(addCommand);
         Mockito.when(hardwareFactory.createBoardCard(addCommand)).thenReturn(boardCard);
         Mockito.when(boardCardRepository.getOne(boardCard)).thenReturn(boardCard);
         Mockito.when(boardCardRepository.save(boardCard)).thenReturn(boardCard);
 
-        BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, USER_UUID);
+        BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(editCommandList, USER_UUID);
 
         Assertions.assertEquals(0, batchInsertResponse.getSuccessCount());
         Assertions.assertEquals(1, batchInsertResponse.getFailureCount());
