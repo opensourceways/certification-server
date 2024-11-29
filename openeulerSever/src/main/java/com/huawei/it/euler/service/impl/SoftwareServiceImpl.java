@@ -652,17 +652,20 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setSort(parseSort(softwareQueryRequest));
         List<SoftwareVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
 
-        JSONObject filterData = new JSONObject();
-        List<String> filterOfProductType = softwareMapper.getSoftwareListOfProductType(softwareQuery);
-        filterData.put("productType", filterOfProductType);
-        List<String> filterOfTestOrganization = softwareMapper.getSoftwareListOfTestOrganization(softwareQuery);
-        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
-        filterData.put("testOrganization", list);
-        List<String> filterOfStatus = softwareMapper.getSoftwareListOfStatus(softwareQuery);
-        filterData.put("status", filterOfStatus);
-
         Long total = softwareMapper.countSoftwareList(softwareQuery);
         softwareVOPopulater.populate(currentSoftwareList);
+
+        SoftwareQuery filterQuery = new SoftwareQuery();
+        filterQuery.setCompanyName(company.getCompanyName());
+        filterQuery.setApplicant(uuid);
+        JSONObject filterData = new JSONObject();
+        List<String> filterOfProductType = softwareMapper.getSoftwareListOfProductType(filterQuery);
+        filterData.put("productType", filterOfProductType);
+        List<String> filterOfTestOrganization = softwareMapper.getSoftwareListOfTestOrganization(filterQuery);
+        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
+        filterData.put("testOrganization", list);
+        List<String> filterOfStatus = softwareMapper.getSoftwareListOfStatus(filterQuery);
+        filterData.put("status", filterOfStatus);
         return new PageResult<>(currentSoftwareList, total, curPage, pageSize, filterData);
     }
 
@@ -676,19 +679,21 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setSort(parseSort(softwareQueryRequest));
         int offset = (curPage - 1) * pageSize;
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getReviewSoftwareList(offset, pageSize, softwareQuery);
-
-        JSONObject filterData = new JSONObject();
-        List<String> filterOfProductType = softwareMapper.getReviewSoftwareListOfProductType(softwareQuery);
-        filterData.put("productType", filterOfProductType);
-        List<String> filterOfTestOrganization = softwareMapper.getReviewSoftwareListOfTestOrganization(softwareQuery);
-        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
-        filterData.put("testOrganization", list);
-        List<String> filterOfStatus = softwareMapper.getReviewSoftwareListOfStatus(softwareQuery);
-        filterData.put("status", filterOfStatus);
-
         Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
         softwareVOPopulater.populate(reviewSoftwareList);
         updateSoftwareListStatus(reviewSoftwareList);
+
+        SoftwareQuery filterQuery = new SoftwareQuery();
+        filterQuery.setUuid(uuid);
+        filterQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
+        JSONObject filterData = new JSONObject();
+        List<String> filterOfProductType = softwareMapper.getReviewSoftwareListOfProductType(filterQuery);
+        filterData.put("productType", filterOfProductType);
+        List<String> filterOfTestOrganization = softwareMapper.getReviewSoftwareListOfTestOrganization(filterQuery);
+        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
+        filterData.put("testOrganization", list);
+        List<String> filterOfStatus = softwareMapper.getReviewSoftwareListOfStatus(filterQuery);
+        filterData.put("status", filterOfStatus);
         return new PageResult<>(reviewSoftwareList, total, curPage, pageSize, filterData);
     }
 
