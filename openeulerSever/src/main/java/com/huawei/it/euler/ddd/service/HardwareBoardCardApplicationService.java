@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -89,19 +90,42 @@ public class HardwareBoardCardApplicationService {
             }
 
             String jsonStr = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            List<HardwareBoardCardAddCommand> hardwareBoardCardAddCommands = JSONObject.parseArray(jsonStr, HardwareBoardCardAddCommand.class);
+            List<HardwareBoardCardEditCommand> hardwareBoardCardAddCommands = JSONObject.parseArray(jsonStr, HardwareBoardCardEditCommand.class);
             return batchInsert(hardwareBoardCardAddCommands, uuid);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public BatchInsertResponse batchInsert(List<HardwareBoardCardAddCommand> addCommandList, String uuid) {
-        List<InsertResponse> insertResponseList = addCommandList.stream().map(addCommand -> this.insert(addCommand, uuid)).toList();
-        int successCount = (int) insertResponseList.stream().filter(InsertResponse::isSuccess).count();
-        int failureCount = addCommandList.size() - successCount;
+    public BatchInsertResponse batchInsert(List<HardwareBoardCardEditCommand> commandList, String uuid) {
+        int successCount = 0;
+        int failureCount = 0;
+        List<InsertResponse> commandResponseList = new ArrayList<>();
+        List<HardwareBoardCardEditCommand> editCommandList = commandList.stream().filter(command -> command.getId() > 0).toList();
+        for (HardwareBoardCardEditCommand boardCardEditCommand : editCommandList) {
+            InsertResponse response = new InsertResponse();
+            response.setUnique(String.valueOf(boardCardEditCommand.getId()));
+            try {
+                edit(boardCardEditCommand, uuid);
+                response.setSuccess(true);
+                response.setMessage("操作成功!");
+                successCount++;
+            } catch (Exception e) {
+                response.setSuccess(true);
+                response.setMessage("操作失败!");
+                failureCount++;
+            }
+            commandResponseList.add(response);
+        }
+        List<HardwareBoardCardAddCommand> addCommandList = commandList.stream().filter(command -> command.getId() == 0).map(hardwareFactory::createAddCommand).toList();
+        if (!addCommandList.isEmpty()){
+            List<InsertResponse> insertResponseList = addCommandList.stream().map(addCommand -> this.insert(addCommand, uuid)).toList();
+            commandResponseList.addAll(insertResponseList);
+            successCount += (int) insertResponseList.stream().filter(InsertResponse::isSuccess).count();
+            failureCount += (int) insertResponseList.stream().filter(insertResponse -> !insertResponse.isSuccess()).count();
+        }
         BatchInsertResponse batchInsertResponse = new BatchInsertResponse();
-        batchInsertResponse.setResults(insertResponseList);
+        batchInsertResponse.setResults(commandResponseList);
         batchInsertResponse.setSuccessCount(successCount);
         batchInsertResponse.setFailureCount(failureCount);
         return batchInsertResponse;
