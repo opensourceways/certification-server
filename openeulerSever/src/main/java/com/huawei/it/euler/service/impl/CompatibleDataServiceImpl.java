@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.huawei.it.euler.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -319,9 +320,19 @@ public class CompatibleDataServiceImpl implements CompatibleDataService {
             }
             dataInfoVos.add(dataInfoVo);
         }
+
+        CompatibleDataSearchVo filterVo = new CompatibleDataSearchVo();
+        if (role.contains(RoleEnum.OSV_USER.getRoleId()) || role.contains(RoleEnum.USER.getRoleId())) {
+            filterVo.setUuid(uuid);
+        }
+        List<String> dataListOfStatus = compatibleDataMapper.getDataListOfStatus(filterVo);
+        JSONObject filterData = new JSONObject();
+        filterData.put("status", dataListOfStatus);
+
         Map<String, Object> hashMap = Maps.newHashMap();
         hashMap.put("data", ListPageUtils.getListPage(dataInfoVos, searchVo.getCurPage(), searchVo.getPageSize()));
         hashMap.put("total", dataInfoVos.size());
+        hashMap.put("filterData", filterData);
         return JsonResponse.success(hashMap);
     }
 
