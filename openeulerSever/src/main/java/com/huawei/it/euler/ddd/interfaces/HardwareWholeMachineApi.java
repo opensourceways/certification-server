@@ -49,13 +49,13 @@ public class HardwareWholeMachineApi {
     @Operation(summary = "分页查询")
     @GetMapping("/getPage")
     @PreAuthorize("hasAnyRole('user','admin','hardware_review')")
-    public JsonResponse<Page<HardwareWholeMachine>> getPage(@ParameterObject HardwareWholeMachineSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<PageResult<HardwareWholeMachine>> getPage(@ParameterObject HardwareWholeMachineSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
         UserInfo loginUser = accountService.getLoginUser(request);
         List<Integer> roleIdList = loginUser.getRoleList().stream().map(Role::getId).toList();
         if (RoleEnum.isUser(roleIdList)) {
             selectVO.setUserUuid(loginUser.getUuid());
         }
-        Page<HardwareWholeMachine> wholeMachinePage = wholeMachineApplicationService.getPage(selectVO);
+        PageResult<HardwareWholeMachine> wholeMachinePage = wholeMachineApplicationService.getPage(selectVO);
         return JsonResponse.success(wholeMachinePage);
     }
 

@@ -48,13 +48,13 @@ public class HardwareBoardCardApi {
     @Operation(summary = "分页查询")
     @GetMapping("/getPage")
     @PreAuthorize("hasAnyRole('user','hardware_review','admin')")
-    public JsonResponse<Page<HardwareBoardCard>> getPage(@ParameterObject HardwareBoardCardSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<PageResult<HardwareBoardCard>> getPage(@ParameterObject HardwareBoardCardSelectVO selectVO, HttpServletRequest request) throws NoLoginException {
         UserInfo loginUser = accountService.getLoginUser(request);
         List<Integer> roleIdList = loginUser.getRoleList().stream().map(Role::getId).toList();
         if (RoleEnum.isUser(roleIdList)) {
             selectVO.setUserUuid(loginUser.getUuid());
         }
-        Page<HardwareBoardCard> wholeMachinePage = boardCardApplicationService.getPage(selectVO);
+        PageResult<HardwareBoardCard> wholeMachinePage = boardCardApplicationService.getPage(selectVO);
         return JsonResponse.success(wholeMachinePage);
     }
 
