@@ -299,10 +299,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setProductFunctionDesc(software.getProductFunctionDesc().trim());
         software.setUsageScenesDesc(software.getUsageScenesDesc().trim());
         software.setProductVersion(software.getProductVersion().trim());
-        Integer byName = CenterEnum.findByName(software.getTestOrganization());
-        if (byName == null) {
-            throw new ParamException("该测评机构不存在，请重新选择！");
-        }
         software.setTestOrgId(CenterEnum.findByName(software.getTestOrganization()));
         // 将算力平台和服务器类型list转为json字符串
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
