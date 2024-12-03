@@ -154,13 +154,16 @@ public class HardwareBoardCardApplicationServiceTest {
         Page<HardwareBoardCard> boardCardPage = new Page<>();
         boardCardPage.setRecords(boardCardList);
 
+        PageResult<HardwareBoardCard> pageResult = new PageResult<>();
+        pageResult.setRecords(boardCardList);
+
         HardwareBoardCardSelectVO selectVO = getBoardCardSelectVO();
 
         Mockito.when(boardCardRepository.getPage(selectVO)).thenReturn(boardCardPage);
 
-        Page<HardwareBoardCard> boardCardPage1 = boardCardApplicationService.getPage(selectVO);
+        PageResult<HardwareBoardCard> boardCardPage1 = boardCardApplicationService.getPage(selectVO);
 
-        Assertions.assertEquals(boardCardPage, boardCardPage1);
+        Assertions.assertEquals(pageResult.getRecords(), boardCardPage1.getRecords());
     }
 
     @Test

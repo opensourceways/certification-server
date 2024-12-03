@@ -185,13 +185,16 @@ public class HardwareWholeMachineApplicationServiceTest {
         Page<HardwareWholeMachine> wholeMachinePage = new Page<>();
         wholeMachinePage.setRecords(wholeMachineList);
 
+        PageResult<HardwareWholeMachine> pageResult = new PageResult<>();
+        pageResult.setRecords(wholeMachineList);
+
         HardwareWholeMachineSelectVO selectVO = getWholeMachineSelectVO();
 
         Mockito.when(wholeMachineRepository.getPage(selectVO)).thenReturn(wholeMachinePage);
 
-        Page<HardwareWholeMachine> wholeMachinePage1 = wholeMachineApplicationService.getPage(selectVO);
+        PageResult<HardwareWholeMachine> wholeMachinePage1 = wholeMachineApplicationService.getPage(selectVO);
 
-        Assertions.assertEquals(wholeMachinePage, wholeMachinePage1);
+        Assertions.assertEquals(pageResult.getRecords(), wholeMachinePage1.getRecords());
     }
 
     @Test

@@ -139,8 +139,13 @@ public class HardwareWholeMachineApplicationService {
         return hardwareWholeMachine;
     }
 
-    public Page<HardwareWholeMachine> getPage(HardwareWholeMachineSelectVO selectVO) {
-        return wholeMachineRepository.getPage(selectVO);
+    public PageResult<HardwareWholeMachine> getPage(HardwareWholeMachineSelectVO selectVO) {
+        Page<HardwareWholeMachine> wholeMachinePage = wholeMachineRepository.getPage(selectVO);
+        JSONObject filter = wholeMachineRepository.getFilter(selectVO);
+        PageResult<HardwareWholeMachine> pageResult = new PageResult<>();
+        BeanUtils.copyProperties(wholeMachinePage, pageResult);
+        pageResult.setFilterData(filter);
+        return pageResult;
     }
 
     public List<String> getOs(){

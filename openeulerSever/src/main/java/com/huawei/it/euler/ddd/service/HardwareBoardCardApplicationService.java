@@ -139,8 +139,13 @@ public class HardwareBoardCardApplicationService {
         return boardCardRepository.getList(selectVO);
     }
 
-    public Page<HardwareBoardCard> getPage(HardwareBoardCardSelectVO selectVO) {
-        return boardCardRepository.getPage(selectVO);
+    public PageResult<HardwareBoardCard> getPage(HardwareBoardCardSelectVO selectVO) {
+        Page<HardwareBoardCard> boardCardPage = boardCardRepository.getPage(selectVO);
+        JSONObject filter = boardCardRepository.getFilter(selectVO);
+        PageResult<HardwareBoardCard> pageResult = new PageResult<>();
+        BeanUtils.copyProperties(boardCardPage, pageResult);
+        pageResult.setFilterData(filter);
+        return pageResult;
     }
 
     public void edit(HardwareBoardCardEditCommand editCommand, String uuid) {

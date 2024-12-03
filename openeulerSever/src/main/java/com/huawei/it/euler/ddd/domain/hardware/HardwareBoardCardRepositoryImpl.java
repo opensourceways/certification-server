@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -107,6 +108,19 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
     public List<HardwareBoardCard> getList(HardwareBoardCard boardCard) {
         HardwareBoardCardSelectVO selectVO = hardwareFactory.createBoardCardSelectVO(boardCard);
         return this.getList(selectVO);
+    }
+
+    public JSONObject getFilter(HardwareBoardCardSelectVO selectVO) {
+        QueryWrapper<HardwareBoardCardPO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("distinct status");
+        if (!StringUtils.isEmpty(selectVO.getUserUuid())) {
+            queryWrapper.eq("user_uuid", selectVO.getUserUuid());
+        }
+        List<HardwareBoardCardPO> boardCardPOList = this.list(queryWrapper);
+        List<String> list = boardCardPOList.stream().map(HardwareBoardCardPO::getStatus).toList();
+        JSONObject filterData = new JSONObject();
+        filterData.put("status", list);
+        return filterData;
     }
 
     public Page<HardwareBoardCard> getPage(HardwareBoardCardSelectVO selectVO) {

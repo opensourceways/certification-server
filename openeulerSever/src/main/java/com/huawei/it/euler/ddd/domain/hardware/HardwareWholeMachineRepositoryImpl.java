@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.hardware;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -105,6 +106,19 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
             osList.addAll(machinePOList.stream().map(HardwareWholeMachinePO::getOsVersion).distinct().toList());
         }
         return osList;
+    }
+
+    public JSONObject getFilter(HardwareWholeMachineSelectVO selectVO) {
+        QueryWrapper<HardwareWholeMachinePO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("distinct status");
+        if (!StringUtils.isEmpty(selectVO.getUserUuid())) {
+            queryWrapper.eq("user_uuid", selectVO.getUserUuid());
+        }
+        List<HardwareWholeMachinePO> wholeMachinePOList = this.list(queryWrapper);
+        List<String> list = wholeMachinePOList.stream().map(HardwareWholeMachinePO::getStatus).toList();
+        JSONObject filterData = new JSONObject();
+        filterData.put("status", list);
+        return filterData;
     }
 
     public Page<HardwareWholeMachine> getPage(HardwareWholeMachineSelectVO selectVO) {
