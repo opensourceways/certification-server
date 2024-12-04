@@ -153,9 +153,19 @@ public class HardwareWholeMachineTest {
     }
 
     @Test
+    @DisplayName("业务关闭成功")
+    public void testCloseSuccessByReject() {
+        HardwareWholeMachine wholeMachine = getWholeMachine(HardwareValueEnum.NODE_REJECT.getValue());
+
+        wholeMachine.close();
+
+        Assertions.assertEquals(HardwareValueEnum.NODE_CLOSE.getValue(),wholeMachine.getStatus());
+    }
+
+    @Test
     @DisplayName("业务关闭失败-状态不匹配")
     public void testCloseFailedStatus() {
-        HardwareWholeMachine wholeMachine = getWholeMachine(HardwareValueEnum.NODE_REJECT.getValue());
+        HardwareWholeMachine wholeMachine = getWholeMachine(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
 
         BusinessException businessException = assertThrows(BusinessException.class,
                 wholeMachine::close);

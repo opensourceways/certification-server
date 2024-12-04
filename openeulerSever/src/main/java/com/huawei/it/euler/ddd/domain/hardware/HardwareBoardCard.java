@@ -201,6 +201,7 @@ public class HardwareBoardCard {
 
     public HardwareBoardCard close() {
         if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())
                 && !HardwareValueEnum.NODE_TEMP.getValue().equals(this.getStatus())) {
             throw new BusinessException("当前板卡数据状态无法进行关闭操作！");
         }
