@@ -63,6 +63,16 @@ public class SoftwareQuery {
     private String uuid;
 
     /**
+     * 申请时间筛选-开始时间
+     */
+    private Date beginApplicationTime;
+
+    /**
+     * 申请时间筛选-结束时间
+     */
+    private Date endApplicationTime;
+
+    /**
      * 认证完成时间筛选-开始时间
      */
     private Date beginCertificationTime;

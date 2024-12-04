@@ -5,6 +5,8 @@
 package com.huawei.it.euler.ddd.infrastructure.oidc;
 
 import com.alibaba.fastjson.JSONObject;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.Claim;
 import io.jsonwebtoken.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +61,9 @@ public class OidcClient {
     @Value("${eulerlogin.managerUserInfoUrl}")
     private String managerUserInfoUrl;
 
+    @Value("${eulerlogin.registerAppUrl}")
+    private String registerAppUrl;
+
     @Value("${eulerlogin.logoutForCenter}")
     private String logoutForCenter;
 
@@ -73,15 +78,15 @@ public class OidcClient {
         return String.format("%s?client_id=%s&redirect_uri=%s", logoutUrl, clientId, frontUrl);
     }
 
-    public String getFrontRedirectUrl(){
+    public String getFrontRedirectUrl() {
         return frontCallbackUrl;
     }
 
-    public String getFrontIndexUrl(){
+    public String getFrontIndexUrl() {
         return frontUrl;
     }
 
-    public String getAccessToken(String code){
+    public String getAccessToken(String code) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("code", code);
         formData.add("grant_type", "authorization_code");
@@ -98,17 +103,17 @@ public class OidcClient {
         return JSONObject.parseObject(responseEntity.getBody()).getString("access_token");
     }
 
-    public OidcResponse getUserInfoByAccessToken(String accessToken){
+    public OidcResponse getUserInfoByAccessToken(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
         // 如果需要，还可以设置其他头，比如 Content-Type
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(userInfoUrl, HttpMethod.GET, entity, String.class);
-        return JSONObject.parseObject(responseEntity.getBody(),OidcResponse.class);
+        return JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
     }
 
-    public String getManagerToken(){
+    public String getManagerToken() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("grant_type", "token");
         jsonObject.put("app_id", clientId);
@@ -130,19 +135,33 @@ public class OidcClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(queryUrl, HttpMethod.GET, httpEntity, String.class);
-        return JSONObject.parseObject(responseEntity.getBody(),OidcResponse.class);
+        return JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
     }
 
-    public OidcResponse refreshSession(OidcCookie oidcCookie){
+    public OidcResponse registerApp(String managerToken, OidcCookie oidcCookie) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("logout_uri", logoutForCenter);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", managerToken);
+        headers.add("user-token", oidcCookie.get_U_T_());
+        headers.add(HttpHeaders.COOKIE, "_Y_G_=" + oidcCookie.get_Y_G_());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<JSONObject> httpEntity = new HttpEntity<>(jsonObject, headers);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(registerAppUrl, httpEntity, String.class);
+        return JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
+    }
+
+    public OidcResponse refreshSession(OidcCookie oidcCookie) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("token", oidcCookie.get_U_T_());
-        headers.add("Referer", "https://certification.openeuler.org");
+        headers.add("Referer", authCodeUrl);
         headers.add(HttpHeaders.COOKIE, "_Y_G_=" + oidcCookie.get_Y_G_());
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(refreshTokenUrl, HttpMethod.GET, httpEntity, String.class);
         OidcResponse oidcResponse = JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
-        if (oidcResponse != null){
+        if (oidcResponse != null) {
             List<String> cookieList = responseEntity.getHeaders().get("Set-Cookie");
             oidcResponse.setCookieList(cookieList);
         }
@@ -151,15 +170,16 @@ public class OidcClient {
 
     /**
      * parse the data for api called by euler user center
+     *
      * @param jwtStr jwt data
      * @return required data
      */
-    public String verifyJwt(String jwtStr){
+    public String verifyJwt(String jwtStr) {
         try {
-            Claims claims = Jwts.parser().setSigningKey(clientSecret).parseClaimsJws(jwtStr).getBody();
-            for (Map.Entry<String, Object> stringObjectEntry : claims.entrySet()) {
-                if ("sub".equals(stringObjectEntry.getKey())){
-                    return (String) stringObjectEntry.getValue();
+            Map<String, Claim> claims = JWT.decode(jwtStr).getClaims();
+            for (String string : claims.keySet()) {
+                if ("sub".equals(string)){
+                    return claims.get(string).asString();
                 }
             }
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException |

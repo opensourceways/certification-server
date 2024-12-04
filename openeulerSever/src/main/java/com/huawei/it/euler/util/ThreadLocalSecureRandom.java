@@ -1,11 +1,11 @@
 package com.huawei.it.euler.util;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.prng.SP800SecureRandom;
 import org.bouncycastle.crypto.prng.SP800SecureRandomBuilder;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 public class ThreadLocalSecureRandom {
 

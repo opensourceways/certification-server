@@ -4,25 +4,27 @@
 
 package com.huawei.it.euler.filter;
 
-import com.huawei.it.euler.ddd.domain.account.WhiteListService;
-import com.huawei.it.euler.util.FilterUtils;
-import com.huawei.it.euler.util.RequestUtils;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Objects;
+import com.huawei.it.euler.ddd.domain.account.WhiteListService;
+import com.huawei.it.euler.util.FilterUtils;
+import com.huawei.it.euler.util.RequestUtils;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * SecurityFilter
@@ -77,7 +79,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             if (StringUtils.isEmpty(referer)) {
                 isRefererInclude = false;
             } else {
-                isRefererInclude = refererCheck.equals(referer);
+                isRefererInclude = referer.startsWith(refererCheck);
             }
         }
         if (!isRefererInclude) {

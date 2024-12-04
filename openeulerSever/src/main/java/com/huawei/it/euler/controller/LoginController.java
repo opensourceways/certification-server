@@ -56,6 +56,7 @@ public class LoginController {
      */
     @GetMapping("/logoutForCenter")
     public JsonResponse<String> logoutForCenter(HttpServletRequest request, HttpServletResponse response) {
+        log.info("logoutForCenter starting");
         accountService.logoutForCenter(request, response);
         return JsonResponse.success();
     }
