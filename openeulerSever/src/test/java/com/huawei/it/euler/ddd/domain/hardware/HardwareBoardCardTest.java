@@ -177,9 +177,19 @@ public class HardwareBoardCardTest {
     }
 
     @Test
+    @DisplayName("业务关闭成功")
+    public void testCloseSuccessByReject() {
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_REJECT.getValue());
+
+        boardCard.close();
+
+        Assertions.assertEquals(HardwareValueEnum.NODE_CLOSE.getValue(),boardCard.getStatus());
+    }
+
+    @Test
     @DisplayName("业务关闭失败-状态不匹配")
     public void testCloseFailedStatus() {
-        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_REJECT.getValue());
+        HardwareBoardCard boardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
 
         BusinessException businessException = assertThrows(BusinessException.class,
                 boardCard::close);

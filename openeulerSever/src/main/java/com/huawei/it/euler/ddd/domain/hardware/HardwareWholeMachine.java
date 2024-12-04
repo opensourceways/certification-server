@@ -154,7 +154,8 @@ public class HardwareWholeMachine implements Serializable {
     }
 
     public HardwareWholeMachine close() {
-        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())) {
+        if (!HardwareValueEnum.NODE_WAIT_APPROVE.getValue().equals(this.getStatus())
+                && !HardwareValueEnum.NODE_REJECT.getValue().equals(this.getStatus())) {
             throw new BusinessException("当前整机数据状态无法进行关闭操作！");
         }
         this.setStatus(HardwareValueEnum.NODE_CLOSE.getValue());
