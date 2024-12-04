@@ -15,7 +15,7 @@ import lombok.Data;
 public class HardwareBoardCardEditCommand {
 
     @Schema(description = "主键id")
-    @NotNull(message = "主键id不能为空")
+//    @NotNull(message = "主键id不能为空")
     private Integer id;
 
     @Schema(description = "板卡四元组vendor id")
@@ -55,7 +55,7 @@ public class HardwareBoardCardEditCommand {
 
     @Schema(description = "驱动版本")
 //    @NotNull(message = "驱动版本不能为空")
-    @Size(max = 20, message = "驱动版本长度不能超过20")
+    @Size(max = 50, message = "驱动版本长度不能超过50")
     private String version;
 
     @Schema(description = "驱动大小")
@@ -65,7 +65,7 @@ public class HardwareBoardCardEditCommand {
 
     @Schema(description = "驱动的sha256")
 //    @NotNull(message = "驱动的sha256不能为空")
-    @Size(max = 64, message = "驱动的sha256长度不能超过64")
+    @Size(max = 260, message = "驱动的sha256长度不能超过260")
     private String sha256;
 
     @Schema(description = "驱动下载链接；内核驱动，填写inbox")
@@ -75,7 +75,7 @@ public class HardwareBoardCardEditCommand {
 
     @Schema(description = "板卡类型")
 //    @NotNull(message = "板卡类型不能为空")
-    @Size(max = 10, message = "板卡类型长度不能超过10")
+    @Size(max = 20, message = "板卡类型长度不能超过20")
     private String type;
 
     @Schema(description = "认证日期")

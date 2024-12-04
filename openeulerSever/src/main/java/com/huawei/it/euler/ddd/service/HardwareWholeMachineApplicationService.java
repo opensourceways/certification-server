@@ -16,6 +16,7 @@ import com.huawei.it.euler.model.entity.FileModel;
 import com.huawei.it.euler.model.vo.ExcelInfoVo;
 import com.huawei.it.euler.util.FileUtils;
 import com.huawei.it.euler.util.S3Utils;
+import com.huaweicloud.sdk.core.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -169,12 +172,52 @@ public class HardwareWholeMachineApplicationService {
         }
 
         List<HardwareBoardCardEditCommand> boardCardEditCommandList = editCommand.getBoardCardEditCommandList();
-        for (HardwareBoardCardEditCommand boardCardEditCommand : boardCardEditCommandList) {
-            boardCardApplicationService.edit(boardCardEditCommand, uuid);
+        List<String> removeRefBoardCardIdList = new ArrayList<>();
+        List<HardwareBoardCardEditCommand> editBoardCard = boardCardEditCommandList.stream().filter(editCommand1 -> editCommand1.getId() > 0).toList();
+        List<HardwareBoardCardEditCommand> saveBoardCard = boardCardEditCommandList.stream().filter(editCommand1 -> editCommand1.getId() == 0).toList();
+
+        List<String> newBoardCardIdList = new ArrayList<>();
+
+        String existBoardCardIds = existWholeMachine.getBoardCardIds();
+        if (!StringUtils.isEmpty(existBoardCardIds)){
+            List<String> boardCardIdList = Arrays.stream(existBoardCardIds.split(",")).toList();
+            if (!editBoardCard.isEmpty()){
+                newBoardCardIdList.addAll(editBoardCard.stream().map(editCommand1 -> String.valueOf(editCommand1.getId())).toList());
+
+                removeRefBoardCardIdList.addAll(boardCardIdList.stream().filter(id -> !newBoardCardIdList.contains(id)).toList());
+            }
         }
+
+        if (!removeRefBoardCardIdList.isEmpty()){
+            HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
+            selectVO.setIdList(removeRefBoardCardIdList);
+            List<HardwareBoardCard> boardCardList = boardCardRepository.getList(selectVO);
+            for (HardwareBoardCard boardCard : boardCardList) {
+                boardCard.removeWholeMachine(editCommand.getId());
+            }
+            boardCardRepository.saveBatch(boardCardList);
+        }
+
+        if (!editBoardCard.isEmpty()){
+            for (HardwareBoardCardEditCommand boardCardEditCommand : editBoardCard) {
+                boardCardApplicationService.edit(boardCardEditCommand, uuid);
+            }
+        }
+
+        if (!saveBoardCard.isEmpty()){
+            for (HardwareBoardCardEditCommand boardCardEditCommand : saveBoardCard) {
+                InsertResponse insert = boardCardApplicationService.insert(hardwareFactory.createAddCommand(boardCardEditCommand), uuid);
+                if (!insert.isSuccess()) {
+                    throw new BusinessException("关联板卡数据保存失败！");
+                }
+                newBoardCardIdList.add(insert.getUnique());
+            }
+        }
+
 
         BeanUtils.copyProperties(editCommand, existWholeMachine);
         BeanUtils.copyProperties(editCommand, existWholeMachine.getCompatibilityConfiguration());
+        existWholeMachine.setBoardCardIds(String.join(",", newBoardCardIdList));
         existWholeMachine.edit();
         wholeMachineRepository.save(existWholeMachine);
     }

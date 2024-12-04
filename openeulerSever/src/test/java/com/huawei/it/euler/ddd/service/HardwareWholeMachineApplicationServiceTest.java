@@ -225,6 +225,33 @@ public class HardwareWholeMachineApplicationServiceTest {
     }
 
     @Test
+    @DisplayName("编辑成功1")
+    void testEditSuccess1() {
+        HardwareWholeMachineEditCommand editCommand = getWholeMachineEditCommand();
+        HardwareWholeMachine wholeMachine = getWholeMachine(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        wholeMachine.setHardwareFactoryEn("huawei1");
+        wholeMachine.setUserUuid(USER_UUID);
+
+        HardwareWholeMachine editWholeMachine = getWholeMachine(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        editWholeMachine.setUserUuid(USER_UUID);
+
+        HardwareBoardCard editBoardCard = getBoardCard(HardwareValueEnum.NODE_WAIT_APPLY.getValue());
+        editBoardCard.setUserUuid(USER_UUID);
+
+        Mockito.when(hardwareFactory.createWholeMachine(editCommand)).thenReturn(wholeMachine);
+        Mockito.when(wholeMachineRepository.getOne(wholeMachine)).thenReturn(editWholeMachine);
+        Mockito.when(hardwareFactory.createBoardCard(editCommand.getBoardCardEditCommandList()
+                .get(0))).thenReturn(editBoardCard);
+        Mockito.when(boardCardRepository.getOne(editBoardCard)).thenReturn(editBoardCard);
+        Mockito.when(boardCardRepository.save(editBoardCard)).thenReturn(editBoardCard);
+        Mockito.doNothing().when(boardCardApplicationService).edit(editCommand.getBoardCardEditCommandList().get(0), USER_UUID);
+
+        wholeMachineApplicationService.edit(editCommand, USER_UUID);
+
+        Assertions.assertEquals(editCommand.getHardwareFactoryEn(), wholeMachine.getHardwareFactoryEn());
+    }
+
+    @Test
     @DisplayName("编辑失败-已存在")
     void testEditFailedExist() {
         HardwareWholeMachineEditCommand editCommand = getWholeMachineEditCommand();

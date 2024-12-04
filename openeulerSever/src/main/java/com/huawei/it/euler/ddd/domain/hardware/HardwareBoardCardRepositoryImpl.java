@@ -96,6 +96,7 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
         if (selectVO.getStatusList() != null && !selectVO.getStatusList().isEmpty()) {
             queryWrapper.in("status", selectVO.getStatusList());
         }
+        queryWrapper.notIn("status", HardwareValueEnum.NODE_DELETE.getValue());
         return queryWrapper;
     }
 
@@ -113,6 +114,7 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
     public JSONObject getFilter(HardwareBoardCardSelectVO selectVO) {
         QueryWrapper<HardwareBoardCardPO> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("distinct status");
+        queryWrapper.notIn("status", HardwareValueEnum.NODE_DELETE.getValue());
         if (!StringUtils.isEmpty(selectVO.getUserUuid())) {
             queryWrapper.eq("user_uuid", selectVO.getUserUuid());
         }
