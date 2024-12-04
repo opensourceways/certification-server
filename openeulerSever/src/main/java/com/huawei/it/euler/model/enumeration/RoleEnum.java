@@ -33,12 +33,14 @@ public enum RoleEnum {
     REPORT_REVIEW(11, "report_review", "报告复审"),
     // certificate issuance
     CERTIFICATE_ISSUANCE(12, "certificate_issuance", "证书签发"),
+    //hardware_review
+    HARDWARE_REVIEW(13, "hardware_review", "IHV数据审核"),
     //operator
-    OPERATOR(13, "operator", "运维人员"),
+    OPERATOR(14, "operator", "运维人员"),
     ;
 
     //可以进行授权的角色
-    private static final Set<Integer> MANAGE_IDS = new HashSet<>(Arrays.asList( 2,4,5,11,12,13));
+    private static final Set<Integer> MANAGE_IDS = new HashSet<>(Arrays.asList( 2,4,5,11,12,13,14));
 
     private final Integer roleId; // 角色id
 

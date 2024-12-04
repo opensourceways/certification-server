@@ -269,4 +269,11 @@ public class GlobalExceptionHandler {
         log.error("NoLoginException");
         return new JsonResponse(JsonResponse.NOT_LOGIN_STATUS, JsonResponse.NOT_LOGIN_MESSAGE, false);
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(value = BusinessException.class)
+    public JsonResponse<String> resolveBusinessException(Exception e){
+        log.error("BusinessException");
+        return JsonResponse.failed(e.getMessage());
+    }
 }

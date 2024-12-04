@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.service;
 
+import com.huawei.it.euler.ddd.domain.notice.NoticeBoard;
 import com.huawei.it.euler.model.vo.HashRatePlatformVo;
 import com.huawei.it.euler.model.vo.OsVo;
 import com.huawei.it.euler.model.vo.ProductVo;
@@ -25,4 +26,6 @@ public interface MasterDataService {
     List<String> findAllCPUVendor();
 
     List<HashRatePlatformVo> findAllComputingPlatform();
+
+    List<NoticeBoard> findNoticeBoardList();
 }

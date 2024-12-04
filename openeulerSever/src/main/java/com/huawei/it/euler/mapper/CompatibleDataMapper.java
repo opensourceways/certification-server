@@ -30,6 +30,8 @@ public interface CompatibleDataMapper {
 
     List<CompatibleDataInfo> getDataList(CompatibleDataSearchVo searchVo);
 
+    List<String> getDataListOfStatus(CompatibleDataSearchVo searchVo);
+
     CompatibleDataInfo selectDataByDataId(@Param("dataId") Integer dataId);
 
     CompatibleDataApproval selectDataApproval(@Param("dataId") Integer dataId);
