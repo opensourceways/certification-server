@@ -89,6 +89,7 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
         if (selectVO.getStatusList() != null && !selectVO.getStatusList().isEmpty()) {
             queryWrapper.in("status", selectVO.getStatusList());
         }
+        queryWrapper.notIn("status",HardwareValueEnum.NODE_DELETE.getValue());
         return queryWrapper;
     }
 
@@ -111,6 +112,7 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
     public JSONObject getFilter(HardwareWholeMachineSelectVO selectVO) {
         QueryWrapper<HardwareWholeMachinePO> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("distinct status");
+        queryWrapper.notIn("status",HardwareValueEnum.NODE_DELETE.getValue());
         if (!StringUtils.isEmpty(selectVO.getUserUuid())) {
             queryWrapper.eq("user_uuid", selectVO.getUserUuid());
         }
