@@ -1,19 +1,4 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
- */
-
 package com.huawei.it.euler.ddd.service;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -23,10 +8,19 @@ import com.huawei.it.euler.ddd.infrastructure.oidc.OidcAuthService;
 import com.huawei.it.euler.ddd.infrastructure.oidc.OidcCookie;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.util.LogUtils;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -80,9 +74,6 @@ public class AccountService {
 
     public boolean loginByOidc(HttpServletRequest request, HttpServletResponse response) throws Exception {
         OidcCookie oidcCookie = getOidcCookie(request);
-
-        oidcAuthService.register(oidcCookie);
-
         JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
         String uuid = loginObj.getString("userId");
 
@@ -127,6 +118,12 @@ public class AccountService {
             return false;
         }
 
+        // local login but remote no login, set local logout
+        if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
+            logout(request, response);
+            return false;
+        }
+
         // local no login but remote login, set local login
         if (StringUtils.isEmpty(sessionId) && oidcCookie != null) {
             try {
@@ -138,7 +135,38 @@ public class AccountService {
             }
         }
 
-        return sessionService.isAuth(sessionId);
+        // bot login and check login expire or not and check local user equal remote user or not
+        String loginUuid = null;
+        try {
+            boolean isLoginLocal = sessionService.isAuth(sessionId);
+            if (isLoginLocal) {
+                loginUuid = getLoginUuid(request);
+            } else {
+                sessionId = null;
+            }
+        } catch (NoLoginException ignored) {
+        }
+
+        try {
+            JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
+
+            String uuid = loginObj.getString("userId");
+            if (!uuid.equals(loginUuid)) {
+                if (!StringUtils.isEmpty(sessionId)) {
+                    sessionService.clear(sessionId);
+                }
+               return loginByOidc(request, response);
+            }
+            JSONArray cookieList = loginObj.getJSONArray("cookieList");
+            cookieConfig.writeCookieList(response,cookieList);
+        } catch (Exception ignored) {
+            if (!StringUtils.isEmpty(sessionId)) {
+                logout(request, response);
+                sessionId = null;
+            }
+        }
+
+        return StringUtils.isNotEmpty(sessionId);
     }
 
     public void refreshLogin(HttpServletRequest request) {
