@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.service;
 
+import com.huawei.it.euler.util.ObjectUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
@@ -102,5 +103,9 @@ public class HardwareBoardCardAddCommand {
 //    @NotNull(message = "密级不能为空")
     @Size(max = 10, message = "密级长度不能超过10")
     private String securityLevel;
+
+    public boolean canCreated(){
+        return !ObjectUtil.checkFieldAllNull(this);
+    }
 
 }

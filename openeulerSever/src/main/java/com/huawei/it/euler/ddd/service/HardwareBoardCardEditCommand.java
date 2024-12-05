@@ -16,7 +16,7 @@ public class HardwareBoardCardEditCommand {
 
     @Schema(description = "主键id")
 //    @NotNull(message = "主键id不能为空")
-    private Integer id;
+    private Integer id = 0;
 
     @Schema(description = "板卡四元组vendor id")
 //    @NotNull(message = "板卡四元组vendorID不能为空")

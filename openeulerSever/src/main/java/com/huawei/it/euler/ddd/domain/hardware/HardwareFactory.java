@@ -103,7 +103,8 @@ public class HardwareFactory {
         HardwareCompatibilityConfiguration compatibilityConfiguration = new HardwareCompatibilityConfiguration();
         BeanUtils.copyProperties(addCommand, compatibilityConfiguration);
         wholeMachine.setCompatibilityConfiguration(compatibilityConfiguration);
-        wholeMachine.setBoardCards(addCommand.getBoardCardAddCommandList().stream().map(this::createBoardCard).toList());
+        wholeMachine.setBoardCards(addCommand.getBoardCardAddCommandList().stream().
+                filter(HardwareBoardCardAddCommand::canCreated).map(this::createBoardCard).toList());
         return wholeMachine;
     }
 

@@ -90,6 +90,7 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
             queryWrapper.in("status", selectVO.getStatusList());
         }
         queryWrapper.notIn("status",HardwareValueEnum.NODE_DELETE.getValue());
+        queryWrapper.orderByDesc("apply_time");
         return queryWrapper;
     }
 

@@ -76,6 +76,30 @@ public class HardwareBoardCardApplicationService {
         return response;
     }
 
+    public InsertResponse insertTemp(HardwareBoardCardAddCommand addCommand, String uuid) {
+        InsertResponse response = new InsertResponse();
+
+        HardwareBoardCard boardCard = hardwareFactory.createBoardCard(addCommand);
+
+        response.setUnique(boardCard.toSimpleJsonString());
+
+        HardwareBoardCard exist = boardCardRepository.getOne(boardCard);
+        if (exist != null) {
+            response.setSuccess(false);
+            response.setMessage("当前板卡已存在！");
+            return response;
+        }
+
+        boardCard.createTemp(uuid);
+
+        boardCard = boardCardRepository.save(boardCard);
+
+        response.setUnique(String.valueOf(boardCard.getId()));
+        response.setSuccess(true);
+        response.setMessage("插入成功!");
+        return response;
+    }
+
     public ExcelInfoVo uploadTemplate(MultipartFile file, String uuid) throws InputException {
         FileModel fileModel = fileUtils.uploadFile(file, null, 1, "", uuid);
         String fileSize = file.getSize() / 1000 + "KB";
@@ -138,8 +162,10 @@ public class HardwareBoardCardApplicationService {
         approvalNodeSelectVO.setHardwareId(id);
         approvalNodeSelectVO.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
         List<HardwareApprovalNode> nodeList = approvalNodeRepository.getList(approvalNodeSelectVO);
-        List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
-        boardCard.setLastApproval(orderdList.get(0));
+        if (!nodeList.isEmpty()){
+            List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
+            boardCard.setLastApproval(orderdList.get(0));
+        }
         return boardCard;
     }
 
