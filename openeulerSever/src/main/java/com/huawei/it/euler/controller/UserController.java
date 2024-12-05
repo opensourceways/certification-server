@@ -100,6 +100,7 @@ public class UserController {
     @GetMapping("/user/getUserInfo")
     @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group',  'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<UserInfoVo> getUserInfo(HttpServletRequest request) throws NoLoginException {
+        System.out.println(">>>>>>>>>>>>>>>/user/getUserInfo");
         UserInfo loginUser = accountService.getLoginUser(request);
         UserInfoVo vo = new UserInfoVo();
         if (loginUser != null) {

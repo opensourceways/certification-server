@@ -1,5 +1,6 @@
 package com.huawei.it.euler.ddd.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.it.euler.config.CookieConfig;
@@ -77,8 +78,10 @@ public class AccountService {
         JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
         String uuid = loginObj.getString("userId");
 
+        System.out.println(">>>>>>>>>>>>>>>loginByOidc loginObj=" + JSONObject.toJSONString(loginObj));
         UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
         userInfoService.saveUser(userInfo);
+        System.out.println(">>>>>>>>>>>>>>>loginByOidc " + JSONObject.toJSONString(userInfo));
 
         String sessionId = sessionService.create();
         if (loginObj.containsKey("tokenExpireInterval")) {
@@ -138,7 +141,8 @@ public class AccountService {
                 return false;
             }
         }
-
+        System.out.println(">>>>>>>>>>>>>>>login check sessionId=" + sessionId);
+        System.out.println(">>>>>>>>>>>>>>>login check oidcCookie=" + JSONObject.toJSONString(oidcCookie));
         // bot login and check login expire or not and check local user equal remote user or not
         String loginUuid = null;
         try {
@@ -209,19 +213,21 @@ public class AccountService {
     }
 
     public UserInfo getLoginUser(HttpServletRequest request) throws NoLoginException {
+        System.out.println(">>>>>>>>>>>>>>>getLoginUser");
         String sessionId = null;
         try {
             sessionId = getSessionId(request);
         } catch (NoLoginException e) {
             throw new NoLoginException();
         }
-
+        System.out.println(">>>>>>>>>>>>>>>getLoginUser sessionId=" + sessionId);
         String uuid;
         try {
             uuid = sessionService.getUuid(sessionId);
         } catch (Exception e) {
             throw new NoLoginException();
         }
+        System.out.println(">>>>>>>>>>>>>>>getLoginUser uuid=" + uuid);
         return userInfoService.getUser(uuid);
     }
 

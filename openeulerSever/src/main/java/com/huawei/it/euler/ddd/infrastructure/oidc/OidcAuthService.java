@@ -69,13 +69,18 @@ public class OidcAuthService {
     }
 
     public UserInfo getUserInfoByCode(String code) {
+        System.out.println(">>>>>>>>>>>>>>>getUserInfoByCode code=" + code);
         String accessToken = oidcClient.getAccessToken(code);
+        System.out.println(">>>>>>>>>>>>>>>getUserInfoByCode accessToken=" + accessToken);
         OidcResponse userInfoRes = oidcClient.getUserInfoByAccessToken(accessToken);
+        System.out.println(">>>>>>>>>>>>>>>getUserInfoByCode userInfoRes=" + JSONObject.toJSONString(userInfoRes));
         return userInfoFactory.createByAccessTokenUser(userInfoRes.getData());
     }
 
     public UserInfo getUserInfo(String uuid) {
+        System.out.println(">>>>>>>>>>>>>>>getUserInfo uuid=" + uuid);
         String managerToken = getManagerToken();
+        System.out.println(">>>>>>>>>>>>>>>getUserInfo managerToken=" + managerToken);
         OidcResponse userInfoRes = oidcClient.getUserInfoByManagerToken(uuid, managerToken);
         log.info("get manager token by user");
         log.info(JSONObject.toJSONString(userInfoRes));
