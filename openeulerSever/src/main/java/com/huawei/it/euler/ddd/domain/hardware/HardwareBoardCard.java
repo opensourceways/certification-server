@@ -133,6 +133,11 @@ public class HardwareBoardCard {
      */
     private Date updateTime;
 
+    /**
+     * 最新意见
+     */
+    private HardwareApprovalNode lastApproval;
+
     public HardwareBoardCard create(String uuid) {
         this.setUserUuid(uuid);
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());

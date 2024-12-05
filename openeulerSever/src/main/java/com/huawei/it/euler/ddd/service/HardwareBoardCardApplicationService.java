@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -132,7 +133,14 @@ public class HardwareBoardCardApplicationService {
     }
 
     public HardwareBoardCard getById(Integer id) {
-        return boardCardRepository.find(id);
+        HardwareBoardCard boardCard = boardCardRepository.find(id);
+        HardwareApprovalNodeSelectVO approvalNodeSelectVO = new HardwareApprovalNodeSelectVO();
+        approvalNodeSelectVO.setHardwareId(id);
+        approvalNodeSelectVO.setHardwareType(HardwareValueEnum.TYPE_BOARD_CARD.getValue());
+        List<HardwareApprovalNode> nodeList = approvalNodeRepository.getList(approvalNodeSelectVO);
+        List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
+        boardCard.setLastApproval(orderdList.get(0));
+        return boardCard;
     }
 
     public List<HardwareBoardCard> getList(HardwareBoardCardSelectVO selectVO) {
