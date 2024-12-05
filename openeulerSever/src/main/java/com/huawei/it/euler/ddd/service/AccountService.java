@@ -78,10 +78,8 @@ public class AccountService {
         JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
         String uuid = loginObj.getString("userId");
 
-        System.out.println(">>>>>>>>>>>>>>>loginByOidc loginObj=" + JSONObject.toJSONString(loginObj));
         UserInfo userInfo = oidcAuthService.getUserInfo(uuid);
         userInfoService.saveUser(userInfo);
-        System.out.println(">>>>>>>>>>>>>>>loginByOidc " + JSONObject.toJSONString(userInfo));
 
         String sessionId = sessionService.create();
         if (loginObj.containsKey("tokenExpireInterval")) {
@@ -92,10 +90,10 @@ public class AccountService {
         }
         logUtils.insertAuditLog(request, uuid, "login", "login in", "user auto login in");
         cookieConfig.writeSessionInCookie(response, sessionId);
-        request.setAttribute("sessionId",sessionId);
+        request.setAttribute("sessionId", sessionId);
 
         JSONArray cookieList = loginObj.getJSONArray("cookieList");
-        cookieConfig.writeCookieList(response,cookieList);
+        cookieConfig.writeCookieList(response, cookieList);
 
         String token = xsrfService.refreshToken(uuid);
         cookieConfig.writeXsrfInCookie(response, xsrfService.getResponseHeaderKey(), token);
@@ -104,7 +102,6 @@ public class AccountService {
     }
 
     public boolean isLogin(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println(">>>>>>>>>>>>>>>login check");
         String sessionId = null;
         try {
             sessionId = getSessionId(request);
@@ -119,20 +116,17 @@ public class AccountService {
 
         // both no login
         if (StringUtils.isEmpty(sessionId) && oidcCookie == null) {
-            System.out.println(">>>>>>>>>>>>>>>both no login");
             return false;
         }
 
         // local login but remote no login, set local logout
         if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
-            System.out.println(">>>>>>>>>>>>>>>local login but remote no login");
             logout(request, response);
             return false;
         }
 
         // local no login but remote login, set local login
         if (StringUtils.isEmpty(sessionId) && oidcCookie != null) {
-            System.out.println(">>>>>>>>>>>>>>>local no login but remote login");
             try {
                 return loginByOidc(request, response);
             } catch (Exception e) {
@@ -141,8 +135,6 @@ public class AccountService {
                 return false;
             }
         }
-        System.out.println(">>>>>>>>>>>>>>>login check sessionId=" + sessionId);
-        System.out.println(">>>>>>>>>>>>>>>login check oidcCookie=" + JSONObject.toJSONString(oidcCookie));
         // bot login and check login expire or not and check local user equal remote user or not
         String loginUuid = null;
         try {
@@ -163,10 +155,10 @@ public class AccountService {
                 if (!StringUtils.isEmpty(sessionId)) {
                     sessionService.clear(sessionId);
                 }
-               return loginByOidc(request, response);
+                return loginByOidc(request, response);
             }
             JSONArray cookieList = loginObj.getJSONArray("cookieList");
-            cookieConfig.writeCookieList(response,cookieList);
+            cookieConfig.writeCookieList(response, cookieList);
         } catch (Exception ignored) {
             if (!StringUtils.isEmpty(sessionId)) {
                 logout(request, response);
@@ -187,7 +179,7 @@ public class AccountService {
             OidcCookie oidcCookie = getOidcCookie(request);
             JSONObject loginObj = oidcAuthService.isLogin(oidcCookie);
             String uuid = loginObj.getString("userId");
-            if (loginObj.containsKey("tokenExpireInterval")){
+            if (loginObj.containsKey("tokenExpireInterval")) {
                 int tokenExpiresIn = loginObj.getInteger("tokenExpireInterval");
                 sessionService.save(sessionId, uuid, tokenExpiresIn);
             } else {
@@ -213,21 +205,18 @@ public class AccountService {
     }
 
     public UserInfo getLoginUser(HttpServletRequest request) throws NoLoginException {
-        System.out.println(">>>>>>>>>>>>>>>getLoginUser");
         String sessionId = null;
         try {
             sessionId = getSessionId(request);
         } catch (NoLoginException e) {
             throw new NoLoginException();
         }
-        System.out.println(">>>>>>>>>>>>>>>getLoginUser sessionId=" + sessionId);
         String uuid;
         try {
             uuid = sessionService.getUuid(sessionId);
         } catch (Exception e) {
             throw new NoLoginException();
         }
-        System.out.println(">>>>>>>>>>>>>>>getLoginUser uuid=" + uuid);
         return userInfoService.getUser(uuid);
     }
 
@@ -246,20 +235,20 @@ public class AccountService {
     }
 
     private String getSessionId(HttpServletRequest request) throws NoLoginException {
-        String sessionId = cookieConfig.getCookie(request,"sessionId");
-        if (StringUtils.isEmpty(sessionId)){
+        String sessionId = cookieConfig.getCookie(request, "sessionId");
+        if (StringUtils.isEmpty(sessionId)) {
             sessionId = (String) request.getAttribute("sessionId");
         }
-        if (StringUtils.isEmpty(sessionId)){
+        if (StringUtils.isEmpty(sessionId)) {
             throw new NoLoginException();
         }
         return sessionId;
     }
 
     private OidcCookie getOidcCookie(HttpServletRequest request) throws NoLoginException {
-        String uT = cookieConfig.getCookie(request,"_U_T_");
-        String yG = cookieConfig.getCookie(request,"_Y_G_");
-        if (StringUtils.isEmpty(uT) || StringUtils.isEmpty(yG)){
+        String uT = cookieConfig.getCookie(request, "_U_T_");
+        String yG = cookieConfig.getCookie(request, "_Y_G_");
+        if (StringUtils.isEmpty(uT) || StringUtils.isEmpty(yG)) {
             throw new NoLoginException();
         }
         OidcCookie oidcCookie = new OidcCookie();
@@ -268,15 +257,15 @@ public class AccountService {
         return oidcCookie;
     }
 
-    public UserInfo getUserInfo(String uuid){
+    public UserInfo getUserInfo(String uuid) {
         return userInfoService.getUser(uuid);
     }
 
-    public List<Role> getUserRoleList(String uuid){
+    public List<Role> getUserRoleList(String uuid) {
         return roleService.getRoleInfoByUuid(uuid);
     }
 
-    public String getUserName(String uuid){
+    public String getUserName(String uuid) {
         if (StringUtils.isBlank(uuid)) {
             return null;
         }
@@ -286,26 +275,26 @@ public class AccountService {
         }
         if (StringUtils.isNotBlank(userInfo.getNickName())) {
             return userInfo.getNickName();
-        }else {
+        } else {
             return userInfo.getUserName();
         }
     }
 
-    public List<UserInfo> getUserInfoList(List<String> uuidList){
+    public List<UserInfo> getUserInfoList(List<String> uuidList) {
         return uuidList.stream().map(this::getUserInfo).filter(Objects::nonNull).toList();
     }
 
-    public List<UserInfo> getUserInfoList(int roleId){
+    public List<UserInfo> getUserInfoList(int roleId) {
         List<String> uuidList = roleService.getUuidListByRoleId(roleId);
         return uuidList.stream().map(this::getUserInfo).filter(Objects::nonNull).toList();
     }
 
-    public boolean isPartner(String uuid){
+    public boolean isPartner(String uuid) {
         List<Role> userRoleList = roleService.getRoleInfoByUuid(uuid);
         return roleService.isPartner(userRoleList);
     }
 
-    public String toLogout(){
+    public String toLogout() {
         return oidcAuthService.getLogoutUrl();
     }
 
@@ -313,18 +302,19 @@ public class AccountService {
         try {
             String sessionId = getSessionId(request);
             String uuid = sessionService.clear(sessionId);
-            cookieConfig.cleanCookie(request,response);
+            cookieConfig.cleanCookie(request, response);
             logUtils.insertAuditLog(request, uuid, "login", "login out", "user login out");
         } catch (NoLoginException e) {
             log.error("logout failed!");
             log.error(e.getMessage());
         }
     }
+
     public void logoutForCenter(HttpServletRequest request, HttpServletResponse response) {
         String authorization = request.getHeader("Authorization");
         String uuid = oidcAuthService.verifyJwt(authorization);
         sessionService.clearByUuid(uuid);
-        cookieConfig.cleanCookie(request,response);
+        cookieConfig.cleanCookie(request, response);
         logUtils.insertAuditLog(request, uuid, "login", "login out", "user login out by center");
     }
 
