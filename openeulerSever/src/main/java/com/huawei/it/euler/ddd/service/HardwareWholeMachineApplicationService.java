@@ -144,7 +144,7 @@ public class HardwareWholeMachineApplicationService {
         approvalNodeSelectVO.setHardwareId(id);
         approvalNodeSelectVO.setHardwareType(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue());
         List<HardwareApprovalNode> nodeList = approvalNodeRepository.getList(approvalNodeSelectVO);
-        if (!nodeList.isEmpty()){
+        if (!nodeList.isEmpty()) {
             List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
             hardwareWholeMachine.setLastApproval(orderdList.get(0));
         }
@@ -160,7 +160,7 @@ public class HardwareWholeMachineApplicationService {
         return pageResult;
     }
 
-    public List<String> getOs(){
+    public List<String> getOs() {
         return wholeMachineRepository.getOs();
     }
 
@@ -188,26 +188,31 @@ public class HardwareWholeMachineApplicationService {
         List<String> newBoardCardIdList = new ArrayList<>();
 
         String existBoardCardIds = existWholeMachine.getBoardCardIds();
-        if (!StringUtils.isEmpty(existBoardCardIds)){
+        if (!StringUtils.isEmpty(existBoardCardIds)) {
             List<String> boardCardIdList = Arrays.stream(existBoardCardIds.split(",")).toList();
-            if (!editBoardCard.isEmpty()){
+            if (!editBoardCard.isEmpty()) {
                 newBoardCardIdList.addAll(editBoardCard.stream().map(editCommand1 -> String.valueOf(editCommand1.getId())).toList());
 
                 removeRefBoardCardIdList.addAll(boardCardIdList.stream().filter(id -> !newBoardCardIdList.contains(id)).toList());
             }
         }
 
-        if (!removeRefBoardCardIdList.isEmpty()){
+        if (!removeRefBoardCardIdList.isEmpty()) {
             HardwareBoardCardSelectVO selectVO = new HardwareBoardCardSelectVO();
             selectVO.setIdList(removeRefBoardCardIdList);
             List<HardwareBoardCard> boardCardList = boardCardRepository.getList(selectVO);
             for (HardwareBoardCard boardCard : boardCardList) {
                 boardCard.removeWholeMachine(editCommand.getId());
+                try {
+                    boardCard.delete();
+                } catch (Exception e) {
+                    log.info(e.getMessage());
+                }
             }
             boardCardRepository.saveBatch(boardCardList);
         }
 
-        if (!editBoardCard.isEmpty()){
+        if (!editBoardCard.isEmpty()) {
             for (HardwareBoardCardEditCommand boardCardEditCommand : editBoardCard) {
                 try {
                     boardCardApplicationService.edit(boardCardEditCommand, uuid);
@@ -217,13 +222,16 @@ public class HardwareWholeMachineApplicationService {
             }
         }
 
-        if (!saveBoardCard.isEmpty()){
+        if (!saveBoardCard.isEmpty()) {
             for (HardwareBoardCardEditCommand boardCardEditCommand : saveBoardCard) {
-                InsertResponse insert = boardCardApplicationService.insertTemp(hardwareFactory.createAddCommand(boardCardEditCommand), uuid);
-                if (!insert.isSuccess()) {
-                    throw new BusinessException("关联板卡数据保存失败！");
+                HardwareBoardCardAddCommand addCommand = hardwareFactory.createAddCommand(boardCardEditCommand);
+                if (addCommand.canCreated()) {
+                    InsertResponse insert = boardCardApplicationService.insertTemp(addCommand, uuid);
+                    if (!insert.isSuccess()) {
+                        throw new BusinessException("关联板卡数据保存失败！");
+                    }
+                    newBoardCardIdList.add(insert.getUnique());
                 }
-                newBoardCardIdList.add(insert.getUnique());
             }
         }
 
