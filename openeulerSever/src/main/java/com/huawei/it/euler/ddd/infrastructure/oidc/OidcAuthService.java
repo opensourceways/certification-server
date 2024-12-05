@@ -68,18 +68,6 @@ public class OidcAuthService {
         return managerToken;
     }
 
-    public void register(OidcCookie oidcCookie) throws NoLoginException {
-        String managerToken = getManagerToken();
-        OidcResponse oidcResponse = oidcClient.registerApp(managerToken, oidcCookie);
-        if (oidcResponse == null) {
-            throw new NoLoginException();
-        }
-
-        if (HttpStatus.HTTP_OK != oidcResponse.getCode()) {
-            throw new NoLoginException();
-        }
-    }
-
     public UserInfo getUserInfoByCode(String code) {
         String accessToken = oidcClient.getAccessToken(code);
         OidcResponse userInfoRes = oidcClient.getUserInfoByAccessToken(accessToken);

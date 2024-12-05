@@ -101,6 +101,7 @@ public class AccountService {
     }
 
     public boolean isLogin(HttpServletRequest request, HttpServletResponse response) {
+        System.out.println(">>>>>>>>>>>>>>>login check");
         String sessionId = null;
         try {
             sessionId = getSessionId(request);
@@ -115,17 +116,20 @@ public class AccountService {
 
         // both no login
         if (StringUtils.isEmpty(sessionId) && oidcCookie == null) {
+            System.out.println(">>>>>>>>>>>>>>>both no login");
             return false;
         }
 
         // local login but remote no login, set local logout
         if (!StringUtils.isEmpty(sessionId) && oidcCookie == null) {
+            System.out.println(">>>>>>>>>>>>>>>local login but remote no login");
             logout(request, response);
             return false;
         }
 
         // local no login but remote login, set local login
         if (StringUtils.isEmpty(sessionId) && oidcCookie != null) {
+            System.out.println(">>>>>>>>>>>>>>>local no login but remote login");
             try {
                 return loginByOidc(request, response);
             } catch (Exception e) {
@@ -312,9 +316,7 @@ public class AccountService {
     }
     public void logoutForCenter(HttpServletRequest request, HttpServletResponse response) {
         String authorization = request.getHeader("Authorization");
-        log.info("logoutForCenter service >> authorization:" + authorization);
         String uuid = oidcAuthService.verifyJwt(authorization);
-        log.info("logoutForCenter verifyJwt success >> uuid:" + uuid);
         sessionService.clearByUuid(uuid);
         cookieConfig.cleanCookie(request,response);
         logUtils.insertAuditLog(request, uuid, "login", "login out", "user login out by center");

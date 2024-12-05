@@ -64,11 +64,13 @@ public class SessionService {
     public String clear(String sessionId) {
         try {
             String uuid = getUuid(sessionId);
-            customizeCacheService.remove(uuid);
-            String refreshKey = getRefreshKey(sessionId);
-            customizeCacheService.remove(refreshKey);
-            String sessionKey = getSessionKey(sessionId);
-            customizeCacheService.remove(sessionKey);
+            if (!StringUtils.isEmpty(uuid)){
+                customizeCacheService.remove(uuid);
+                String refreshKey = getRefreshKey(sessionId);
+                customizeCacheService.remove(refreshKey);
+                String sessionKey = getSessionKey(sessionId);
+                customizeCacheService.remove(sessionKey);
+            }
             return uuid;
         } catch (Exception e) {
             throw new RuntimeException(e);

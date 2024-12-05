@@ -61,9 +61,6 @@ public class OidcClient {
     @Value("${eulerlogin.managerUserInfoUrl}")
     private String managerUserInfoUrl;
 
-    @Value("${eulerlogin.registerAppUrl}")
-    private String registerAppUrl;
-
     @Value("${eulerlogin.logoutForCenter}")
     private String logoutForCenter;
 
@@ -138,21 +135,7 @@ public class OidcClient {
         return JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
     }
 
-    public OidcResponse registerApp(String managerToken, OidcCookie oidcCookie) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("logout_uri", logoutForCenter);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token", managerToken);
-        headers.add("user-token", oidcCookie.get_U_T_());
-        headers.add(HttpHeaders.COOKIE, "_Y_G_=" + oidcCookie.get_Y_G_());
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<JSONObject> httpEntity = new HttpEntity<>(jsonObject, headers);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(registerAppUrl, httpEntity, String.class);
-        return JSONObject.parseObject(responseEntity.getBody(), OidcResponse.class);
-    }
-
-    public OidcResponse refreshSession(OidcCookie oidcCookie) {
+    public OidcResponse refreshSession(OidcCookie oidcCookie){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("token", oidcCookie.get_U_T_());

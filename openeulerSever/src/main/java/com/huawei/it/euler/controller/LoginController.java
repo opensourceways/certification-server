@@ -37,6 +37,7 @@ public class LoginController {
 
     @GetMapping("/callback")
     public void callBack(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        System.out.println(">>>>>>>>>>>>>>>login success callback");
         accountService.login(request, response);
     }
 
