@@ -100,6 +100,11 @@ public class HardwareWholeMachine implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 最新意见
+     */
+    private HardwareApprovalNode lastApproval;
+
     public HardwareWholeMachine create(String uuid) {
         this.setUserUuid(uuid);
         this.setStatus(HardwareValueEnum.NODE_WAIT_APPLY.getValue());

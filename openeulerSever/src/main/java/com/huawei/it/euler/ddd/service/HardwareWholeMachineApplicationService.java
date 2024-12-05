@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -139,6 +140,12 @@ public class HardwareWholeMachineApplicationService {
         selectVO.setIdList(Arrays.stream(hardwareWholeMachine.getBoardCardIds().split(",")).toList());
         List<HardwareBoardCard> boardCardList = boardCardRepository.getList(selectVO);
         hardwareWholeMachine.setBoardCards(boardCardList);
+        HardwareApprovalNodeSelectVO approvalNodeSelectVO = new HardwareApprovalNodeSelectVO();
+        approvalNodeSelectVO.setHardwareId(id);
+        approvalNodeSelectVO.setHardwareType(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue());
+        List<HardwareApprovalNode> nodeList = approvalNodeRepository.getList(approvalNodeSelectVO);
+        List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
+        hardwareWholeMachine.setLastApproval(orderdList.get(0));
         return hardwareWholeMachine;
     }
 
