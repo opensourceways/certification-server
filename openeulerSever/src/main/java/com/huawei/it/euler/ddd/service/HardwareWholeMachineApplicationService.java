@@ -144,8 +144,10 @@ public class HardwareWholeMachineApplicationService {
         approvalNodeSelectVO.setHardwareId(id);
         approvalNodeSelectVO.setHardwareType(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue());
         List<HardwareApprovalNode> nodeList = approvalNodeRepository.getList(approvalNodeSelectVO);
-        List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
-        hardwareWholeMachine.setLastApproval(orderdList.get(0));
+        if (!nodeList.isEmpty()){
+            List<HardwareApprovalNode> orderdList = nodeList.stream().sorted(Comparator.comparing(HardwareApprovalNode::getHandlerTime).reversed()).toList();
+            hardwareWholeMachine.setLastApproval(orderdList.get(0));
+        }
         return hardwareWholeMachine;
     }
 
@@ -207,13 +209,17 @@ public class HardwareWholeMachineApplicationService {
 
         if (!editBoardCard.isEmpty()){
             for (HardwareBoardCardEditCommand boardCardEditCommand : editBoardCard) {
-                boardCardApplicationService.edit(boardCardEditCommand, uuid);
+                try {
+                    boardCardApplicationService.edit(boardCardEditCommand, uuid);
+                } catch (Exception e) {
+                    log.info(e.getMessage());
+                }
             }
         }
 
         if (!saveBoardCard.isEmpty()){
             for (HardwareBoardCardEditCommand boardCardEditCommand : saveBoardCard) {
-                InsertResponse insert = boardCardApplicationService.insert(hardwareFactory.createAddCommand(boardCardEditCommand), uuid);
+                InsertResponse insert = boardCardApplicationService.insertTemp(hardwareFactory.createAddCommand(boardCardEditCommand), uuid);
                 if (!insert.isSuccess()) {
                     throw new BusinessException("关联板卡数据保存失败！");
                 }
