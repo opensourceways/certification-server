@@ -6,9 +6,11 @@ package com.huawei.it.euler.controller;
 
 import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.service.AccountService;
+import com.huawei.it.euler.exception.NoLoginException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +43,11 @@ public class LoginController {
     }
 
     @GetMapping("/logout")
-    public JsonResponse<String> logout(HttpServletRequest request, HttpServletResponse response) {
+    public JsonResponse<String> logout(HttpServletRequest request, HttpServletResponse response) throws NoLoginException {
+        String loginUuid = accountService.getLoginUuid(request);
+        if (StringUtils.isEmpty(loginUuid)) {
+            throw new NoLoginException("登录已过期！");
+        }
         accountService.logout(request,response);
         String logout = accountService.toLogout();
         return JsonResponse.success(logout);

@@ -54,23 +54,23 @@ public class SessionService {
     public void save(String sessionId, String uuid, int tokenExpiresIn) throws Exception {
         String sessionKey = getSessionKey(sessionId);
         String refreshKey = getRefreshKey(sessionId);
-        String encryptedUuid = aesGcmEncryptionService.encrypt(uuid);
         long expiredTimeMillis = System.currentTimeMillis() + tokenExpiresIn / 2 * 1000L;
         System.out.println("save session ==》 sessionId=" + sessionId + "; uuid = " + uuid + "; tokenExpiresIn = " + tokenExpiresIn);
-        customizeCacheService.put(encryptedUuid, sessionId, tokenExpiresIn);
+        customizeCacheService.put(uuid, sessionId, tokenExpiresIn);
         customizeCacheService.put(refreshKey, String.valueOf(expiredTimeMillis), tokenExpiresIn);
-        customizeCacheService.put(sessionKey, encryptedUuid, tokenExpiresIn);
+        customizeCacheService.put(sessionKey, uuid, tokenExpiresIn);
     }
 
     public String clear(String sessionId) {
         try {
             String uuid = getUuid(sessionId);
-            String encryptedUuid = aesGcmEncryptionService.encrypt(uuid);
-            customizeCacheService.remove(encryptedUuid);
-            String refreshKey = getRefreshKey(sessionId);
-            customizeCacheService.remove(refreshKey);
-            String sessionKey = getSessionKey(sessionId);
-            customizeCacheService.remove(sessionKey);
+            if (!StringUtils.isEmpty(uuid)){
+                customizeCacheService.remove(uuid);
+                String refreshKey = getRefreshKey(sessionId);
+                customizeCacheService.remove(refreshKey);
+                String sessionKey = getSessionKey(sessionId);
+                customizeCacheService.remove(sessionKey);
+            }
             return uuid;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -88,16 +88,15 @@ public class SessionService {
 
     public String getUuid(String sessionId) throws Exception {
         String sessionKey = getSessionKey(sessionId);
-        String encryptedUuid = customizeCacheService.get(sessionKey);
-        if (StringUtils.isEmpty(encryptedUuid)){
+        String uuid = customizeCacheService.get(sessionKey);
+        if (StringUtils.isEmpty(uuid)){
             System.out.println("get uuid by sessionId failed ==》 sessionId=" + sessionId);
         }
-        return aesGcmEncryptionService.decrypt(encryptedUuid);
+        return uuid;
     }
 
     public String getSessionId(String uuid) throws Exception {
-        String encryptedUuid = aesGcmEncryptionService.encrypt(uuid);
-        return customizeCacheService.get(encryptedUuid);
+        return customizeCacheService.get(uuid);
     }
 
     private String getSessionKey(String sessionId) {
