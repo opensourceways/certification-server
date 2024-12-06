@@ -53,6 +53,7 @@ public class HardwareBoardCardApi {
         List<Integer> roleIdList = loginUser.getRoleList().stream().map(Role::getId).toList();
         if (RoleEnum.isUser(roleIdList)) {
             selectVO.setUserUuid(loginUser.getUuid());
+            selectVO.setSortType(RoleEnum.USER.getRole());
         }
         PageResult<HardwareBoardCard> wholeMachinePage = boardCardApplicationService.getPage(selectVO);
         return JsonResponse.success(wholeMachinePage);
