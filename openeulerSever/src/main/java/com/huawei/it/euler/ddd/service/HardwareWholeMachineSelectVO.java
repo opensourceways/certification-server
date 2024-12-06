@@ -71,4 +71,6 @@ public class HardwareWholeMachineSelectVO {
 
     @Schema(description = "请求页数量")
     private int size;
+
+    private String sortType;
 }

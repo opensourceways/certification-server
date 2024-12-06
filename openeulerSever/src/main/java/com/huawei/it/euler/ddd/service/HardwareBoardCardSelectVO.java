@@ -80,4 +80,6 @@ public class HardwareBoardCardSelectVO implements Serializable {
 
     @Schema(description = "请求页数量")
     private int size;
+
+    private String sortType;
 }

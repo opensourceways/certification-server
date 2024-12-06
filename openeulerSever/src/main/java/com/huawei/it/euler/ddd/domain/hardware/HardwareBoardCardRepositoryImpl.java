@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.huawei.it.euler.ddd.service.HardwareBoardCardSelectVO;
 import com.huawei.it.euler.exception.BusinessException;
+import com.huawei.it.euler.model.enumeration.RoleEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,11 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
             queryWrapper.in("status", selectVO.getStatusList());
         }
         queryWrapper.notIn("status", HardwareValueEnum.NODE_DELETE.getValue());
+        if (RoleEnum.USER.getRole().equals(selectVO.getSortType())){
+            queryWrapper.orderByAsc("field(status,1,-3,2,0,3,-2,-1,-4)");
+        } else {
+            queryWrapper.orderByAsc("field(status,2,-3,0,1,3,-2,-1,-4)");
+        }
         queryWrapper.orderByDesc("apply_time");
         return queryWrapper;
     }
