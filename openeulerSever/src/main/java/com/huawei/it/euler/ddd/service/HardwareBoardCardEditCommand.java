@@ -85,7 +85,7 @@ public class HardwareBoardCardEditCommand {
 
     @Schema(description = "芯片厂商")
 //    @NotNull(message = "芯片厂商不能为空")
-    @Size(max = 10, message = "芯片厂商长度不能超过10")
+    @Size(max = 100, message = "芯片厂商长度不能超过100")
     private String chipVendor;
 
     @Schema(description = "芯片型号")

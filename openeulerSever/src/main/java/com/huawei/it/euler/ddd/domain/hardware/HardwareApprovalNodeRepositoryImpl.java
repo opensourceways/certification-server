@@ -45,4 +45,9 @@ public class HardwareApprovalNodeRepositoryImpl extends ServiceImpl<HardwareAppr
         HardwareApprovalNodePO approvalNodePO = hardwareFactory.createApprovalNodePO(approvalNode);
         return this.save(approvalNodePO);
     }
+
+    public boolean saveBatch(List<HardwareApprovalNode> approvalNodeList) {
+        List<HardwareApprovalNodePO> approvalNodePOList = approvalNodeList.stream().map(hardwareFactory::createApprovalNodePO).toList();
+        return this.saveBatch(approvalNodePOList);
+    }
 }

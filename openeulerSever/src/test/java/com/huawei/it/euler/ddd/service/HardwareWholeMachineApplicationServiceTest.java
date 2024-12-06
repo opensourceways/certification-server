@@ -113,9 +113,11 @@ public class HardwareWholeMachineApplicationServiceTest {
     @Test
     @DisplayName("批量插入成功")
     void testBatchInsertSuccess() {
+        HardwareWholeMachineBatchAddCommand wholeMachineBatchAddCommand = getWholeMachineBatchAddCommand();
+        List<HardwareWholeMachineBatchAddCommand> batchAddCommandList = new ArrayList<>();
+        batchAddCommandList.add(wholeMachineBatchAddCommand);
+
         HardwareWholeMachineAddCommand addCommand = getWholeMachineAddCommand();
-        List<HardwareWholeMachineAddCommand> addCommandList = new ArrayList<>();
-        addCommandList.add(addCommand);
 
         HardwareBoardCard boardCard = getBoardCard(null);
         List<HardwareBoardCard> boardCardList = new ArrayList<>();
@@ -124,6 +126,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         HardwareWholeMachine wholeMachine = getWholeMachine(null);
 
         Mockito.when(hardwareFactory.createWholeMachine(addCommand)).thenReturn(wholeMachine);
+        Mockito.when(hardwareFactory.createWholeMachineAddCommand(wholeMachineBatchAddCommand)).thenReturn(addCommand);
         Mockito.when(wholeMachineRepository.getOne(wholeMachine)).thenReturn(null);
         Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
         Mockito.when(boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(),USER_UUID)).thenReturn(boardCardList);
@@ -131,7 +134,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         Mockito.when(wholeMachineRepository.save(wholeMachine)).thenReturn(wholeMachine);
         Mockito.doNothing().when(boardCardRepository).saveBatch(wholeMachine.getBoardCards());
 
-        BatchInsertResponse batchInsertResponse = wholeMachineApplicationService.batchInsert(addCommandList, USER_UUID);
+        BatchInsertResponse batchInsertResponse = wholeMachineApplicationService.batchInsert(batchAddCommandList, USER_UUID);
 
         Assertions.assertEquals(1, batchInsertResponse.getSuccessCount());
         Assertions.assertEquals(0, batchInsertResponse.getFailureCount());
@@ -140,16 +143,20 @@ public class HardwareWholeMachineApplicationServiceTest {
     @Test
     @DisplayName("批量插入失败")
     void testBatchInsertFailed() {
+        HardwareWholeMachineBatchAddCommand wholeMachineBatchAddCommand = getWholeMachineBatchAddCommand();
+        List<HardwareWholeMachineBatchAddCommand> batchAddCommandList = new ArrayList<>();
+        batchAddCommandList.add(wholeMachineBatchAddCommand);
+
         HardwareWholeMachineAddCommand addCommand = getWholeMachineAddCommand();
-        List<HardwareWholeMachineAddCommand> addCommandList = new ArrayList<>();
-        addCommandList.add(addCommand);
 
         HardwareWholeMachine wholeMachine = getWholeMachine(null);
 
+        Mockito.when(hardwareFactory.createWholeMachineAddCommand(wholeMachineBatchAddCommand)).thenReturn(addCommand);
         Mockito.when(hardwareFactory.createWholeMachine(addCommand)).thenReturn(wholeMachine);
         Mockito.when(wholeMachineRepository.getOne(wholeMachine)).thenReturn(wholeMachine);
 
-        BatchInsertResponse batchInsertResponse = wholeMachineApplicationService.batchInsert(addCommandList, USER_UUID);
+        BatchInsertResponse batchInsertResponse = wholeMachineApplicationService.batchInsert(
+                batchAddCommandList, USER_UUID);
 
         Assertions.assertEquals(0, batchInsertResponse.getSuccessCount());
         Assertions.assertEquals(1, batchInsertResponse.getFailureCount());
@@ -440,7 +447,6 @@ public class HardwareWholeMachineApplicationServiceTest {
         Assertions.assertEquals(HardwareValueEnum.NODE_WAIT_APPROVE.getValue(), approvalNode.getHandlerNode());
     }
 
-
     private HardwareWholeMachineAddCommand getWholeMachineAddCommand() {
         HardwareWholeMachineAddCommand wholeMachineAddCommand = new HardwareWholeMachineAddCommand();
         wholeMachineAddCommand.setHardwareFactoryZy("华为");
@@ -466,6 +472,41 @@ public class HardwareWholeMachineApplicationServiceTest {
         boardCardAddCommandList.add(boardCardAddCommand);
         wholeMachineAddCommand.setBoardCardAddCommandList(boardCardAddCommandList);
         return wholeMachineAddCommand;
+    }
+
+    private HardwareWholeMachineBatchAddCommand getWholeMachineBatchAddCommand() {
+        HardwareWholeMachineBatchAddCommand batchAddCommand = new HardwareWholeMachineBatchAddCommand();
+        batchAddCommand.setHardwareFactoryZy("华为");
+        batchAddCommand.setHardwareFactoryEn("huawei");
+        batchAddCommand.setHardwareModel("TaiShan 200 (Model 2280)");
+        batchAddCommand.setOsVersion("openEuler 22.03 LTS");
+        batchAddCommand.setArchitecture("x86_64");
+        batchAddCommand.setDate("2021.3.19");
+        batchAddCommand.setFriendlyLink("https://xx.rpm");
+
+        batchAddCommand.setCompatibilityConfiguration(getConfigurationAddCommand());
+
+        batchAddCommand.setSecurityLevel("0");
+        HardwareBoardCardAddCommand boardCardAddCommand = getBoardCardAddCommand();
+        List<HardwareBoardCardAddCommand> boardCardAddCommandList = new ArrayList<>();
+        boardCardAddCommandList.add(boardCardAddCommand);
+        batchAddCommand.setBoardCards(boardCardAddCommandList);
+        return batchAddCommand;
+    }
+
+    private HardwareCompatibilityConfigurationAddCommand getConfigurationAddCommand(){
+        HardwareCompatibilityConfigurationAddCommand addCommand = new HardwareCompatibilityConfigurationAddCommand();
+        addCommand.setProductInformation("https://xx.rpm");
+        addCommand.setCertificationTime("2021.3.19");
+        addCommand.setMainboardModel("A1B2C3");
+        addCommand.setBiosUefi("1.7");
+        addCommand.setCpu("Kunpeng-920");
+        addCommand.setRam("16*16G DIMMs");
+        addCommand.setPortsBusTypes("123");
+        addCommand.setVideoAdapter("1711");
+        addCommand.setHostBusAdapter("321");
+        addCommand.setHardDiskDrive("SP333");
+        return addCommand;
     }
 
     private HardwareBoardCardAddCommand getBoardCardAddCommand() {
