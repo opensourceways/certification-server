@@ -52,7 +52,7 @@ public class HardwareBoardCardAddCommand {
 
     @Schema(name = "version", description = "驱动版本")
 //    @NotNull(message = "驱动版本不能为空")
-    @Size(max = 20, message = "驱动版本长度不能超过20")
+    @Size(max = 50, message = "驱动版本长度不能超过50")
     private String version;
 
     @Schema(name = "driverSize", description = "驱动大小")
@@ -62,7 +62,7 @@ public class HardwareBoardCardAddCommand {
 
     @Schema(name = "sha256", description = "驱动的sha256")
 //    @NotNull(message = "驱动的sha256不能为空")
-    @Size(max = 64, message = "驱动的sha256长度不能超过64")
+    @Size(max = 260, message = "驱动的sha256长度不能超过260")
     private String sha256;
 
     @Schema(name = "downloadLink", description = "驱动下载链接；内核驱动，填写inbox")
@@ -72,7 +72,7 @@ public class HardwareBoardCardAddCommand {
 
     @Schema(name = "type", description = "板卡类型")
 //    @NotNull(message = "板卡类型不能为空")
-    @Size(max = 10, message = "板卡类型长度不能超过10")
+    @Size(max = 20, message = "板卡类型长度不能超过20")
     private String type;
 
     @Schema(name = "date", description = "认证日期")
@@ -82,7 +82,7 @@ public class HardwareBoardCardAddCommand {
 
     @Schema(name = "chipVendor", description = "芯片厂商")
 //    @NotNull(message = "芯片厂商不能为空")
-    @Size(max = 10, message = "芯片厂商长度不能超过10")
+    @Size(max = 100, message = "芯片厂商长度不能超过100")
     private String chipVendor;
 
     @Schema(name = "chipModel", description = "芯片型号")

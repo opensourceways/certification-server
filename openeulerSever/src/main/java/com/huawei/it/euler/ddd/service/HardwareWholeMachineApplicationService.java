@@ -115,7 +115,7 @@ public class HardwareWholeMachineApplicationService {
             }
 
             String jsonStr = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            List<HardwareWholeMachineAddCommand> hardwareWholeMachineAddCommands = JSONObject.parseArray(jsonStr, HardwareWholeMachineAddCommand.class);
+            List<HardwareWholeMachineBatchAddCommand> hardwareWholeMachineAddCommands = JSONObject.parseArray(jsonStr, HardwareWholeMachineBatchAddCommand.class);
             return batchInsert(hardwareWholeMachineAddCommands, uuid);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -123,10 +123,11 @@ public class HardwareWholeMachineApplicationService {
     }
 
     @Transactional
-    public BatchInsertResponse batchInsert(List<HardwareWholeMachineAddCommand> addCommandList, String uuid) {
+    public BatchInsertResponse batchInsert(List<HardwareWholeMachineBatchAddCommand> batchAddCommandList, String uuid) {
+        List<HardwareWholeMachineAddCommand> addCommandList = batchAddCommandList.stream().map(batchAddCommand -> hardwareFactory.createWholeMachineAddCommand(batchAddCommand)).toList();
         List<InsertResponse> insertResponseList = addCommandList.stream().map(addCommand -> this.insert(addCommand, uuid)).toList();
         int successCount = (int) insertResponseList.stream().filter(InsertResponse::isSuccess).count();
-        int failureCount = addCommandList.size() - successCount;
+        int failureCount = batchAddCommandList.size() - successCount;
         BatchInsertResponse batchInsertResponse = new BatchInsertResponse();
         batchInsertResponse.setResults(insertResponseList);
         batchInsertResponse.setSuccessCount(successCount);
@@ -288,6 +289,19 @@ public class HardwareWholeMachineApplicationService {
     public void pass(HardwareApprovalNode approvalNode) {
         HardwareWholeMachine wholeMachine = getById(approvalNode.getHardwareId());
 
+        List<HardwareApprovalNode> boardApprovalList = new ArrayList<>();
+        for (HardwareBoardCard boardCard : wholeMachine.getBoardCards()) {
+            if (HardwareValueEnum.NODE_TEMP.getValue().equals(boardCard.getStatus())){
+                HardwareApprovalNode boardApproval = new HardwareApprovalNode();
+                BeanUtils.copyProperties(approvalNode,boardApproval);
+                boardApproval.setHardwareId(boardCard.getId());
+                boardApproval.action(HardwareValueEnum.TYPE_BOARD_CARD.getValue(),
+                        boardCard.getStatus(), HardwareValueEnum.RESULT_PASS.getValue());
+                boardCard.pass();
+                boardApprovalList.add(boardApproval);
+            }
+        }
+
         approvalNode.action(HardwareValueEnum.TYPE_WHOLE_MACHINE.getValue(),
                 wholeMachine.getStatus(), HardwareValueEnum.RESULT_PASS.getValue());
 
@@ -296,6 +310,7 @@ public class HardwareWholeMachineApplicationService {
         boardCardRepository.saveBatch(wholeMachine.getBoardCards());
         wholeMachineRepository.save(wholeMachine);
         approvalNodeRepository.save(approvalNode);
+        approvalNodeRepository.saveBatch(boardApprovalList);
     }
 
     public void reject(HardwareApprovalNode approvalNode) {

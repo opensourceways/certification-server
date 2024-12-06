@@ -97,6 +97,14 @@ public class HardwareFactory {
         return wholeMachine;
     }
 
+    public HardwareWholeMachineAddCommand createWholeMachineAddCommand(HardwareWholeMachineBatchAddCommand batchAddCommand) {
+        HardwareWholeMachineAddCommand addCommand = new HardwareWholeMachineAddCommand();
+        BeanUtils.copyProperties(batchAddCommand,addCommand);
+        BeanUtils.copyProperties(batchAddCommand.getCompatibilityConfiguration(),addCommand);
+        addCommand.setBoardCardAddCommandList(batchAddCommand.getBoardCards());
+        return addCommand;
+    }
+
     public HardwareWholeMachine createWholeMachine(HardwareWholeMachineAddCommand addCommand) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         BeanUtils.copyProperties(addCommand, wholeMachine);
