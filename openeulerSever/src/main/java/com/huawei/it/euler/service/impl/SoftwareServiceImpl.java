@@ -156,6 +156,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("软件不属于当前用户:id:{},uuid:{}", softwareDb.getId(), uuid);
             throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
+        if (StringUtils.isEmpty(software.getProductName()) || StringUtils.isEmpty(software.getProductVersion())) {
+            throw new ParamException("产品名称/版本不能为空！");
+        }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
         String jsonHashRatePlatform = JSON.toJSON(hashratePlatformList).toString();
         // 校验OS、算力平台参数

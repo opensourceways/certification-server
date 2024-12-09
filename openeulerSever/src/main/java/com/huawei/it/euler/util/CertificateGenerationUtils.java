@@ -397,7 +397,7 @@ public class CertificateGenerationUtils {
             XEasyPdfHandler.Text.build("的兼容性测试").setMarginLeft(185F),
             XEasyPdfHandler.Text.build("2. 授权使用范围：").setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD)
                 .enableChildComponent(),
-            XEasyPdfHandler.Text.build("在甲方许可方位内使用该证明及认证徽标。").setMarginTop(-17F).setMarginLeft(185F),
+            XEasyPdfHandler.Text.build("在甲方许可范围内使用该证明及认证徽标。").setMarginTop(-17F).setMarginLeft(185F),
             XEasyPdfHandler.Text.build("3. 授权使用时间：").setMarginTop(10F).setMarginLeft(90F).setFontPath(DOCBD)
                 .enableChildComponent(),
             XEasyPdfHandler.Text.build("自证书颁发之日起36个月。").setMarginTop(-17F).setMarginLeft(185F),
