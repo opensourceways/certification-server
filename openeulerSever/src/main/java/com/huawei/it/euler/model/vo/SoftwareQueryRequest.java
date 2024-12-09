@@ -57,6 +57,18 @@ public class SoftwareQueryRequest {
     private List<@Length(max = 5, message = "筛选申请人错误") String> selectMyApplication;
 
     /**
+     * 申请时间筛选-开始时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date beginApplicationTime;
+
+    /**
+     * 申请时间筛选-结束时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date endApplicationTime;
+
+    /**
      * 认证完成时间筛选-开始时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
