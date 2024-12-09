@@ -57,4 +57,10 @@
         values (#{time}, #{hostIp}, #{uuid}, #{module}, #{operate}, #{message})
     </insert>
 
+    <select id="findNoticeBoardList" resultType="com.huawei.it.euler.ddd.domain.notice.NoticeBoard">
+        select notice_info noticeInfo,update_time updateTime
+        from notice_board_t
+        where is_active = 'y'
+    </select>
+
 </mapper>
