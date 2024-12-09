@@ -141,6 +141,12 @@
             <if test="software.endCertificationTime != null">
                 and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
+            <if test="software.beginApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginApplicationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.endApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endApplicationTime},'%Y-%m-%d')
+            </if>
         </where>
     </sql>
     <sql id="whereReviewSoftwareList">
@@ -197,6 +203,12 @@
             <if test="software.endCertificationTime != null">
                 and DATE_FORMAT(s.certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endCertificationTime},'%Y-%m-%d')
             </if>
+            <if test="software.beginApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{software.beginApplicationTime},'%Y-%m-%d')
+            </if>
+            <if test="software.endApplicationTime != null">
+                and DATE_FORMAT(s.application_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{software.endApplicationTime},'%Y-%m-%d')
+            </if>
         </where>
     </sql>
 
@@ -211,7 +223,7 @@
         <include refid="baseFields"/>
         from software_t where status = 9
         <if test="testOrganization != null and testOrganization != ''">
-            and test_organization = #{testOrganization}
+            and (test_organization = #{testOrganization} or test_organization_cp = #{testOrganization})
         </if>
         <if test="osName != null and osName != ''">
             and os_name = #{osName}
@@ -289,6 +301,24 @@
         LIMIT #{offset}, #{pageSize}
     </select>
 
+    <select id="getSoftwareListOfProductType" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.product_type
+        from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
+    <select id="getSoftwareListOfTestOrganization" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.test_org_id
+        from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
+    <select id="getSoftwareListOfStatus" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.status
+        from software_t AS s
+        <include refid="whereSoftwareList"/>
+    </select>
+
     <select id="countReviewSoftwareList" resultType="java.lang.Long">
         select COUNT(*) from software_t AS s
         <include refid="whereReviewSoftwareList"/>
@@ -312,6 +342,24 @@
             </otherwise>
         </choose>
         LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="getReviewSoftwareListOfProductType" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.product_type
+        from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
+    </select>
+
+    <select id="getReviewSoftwareListOfTestOrganization" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.test_org_id
+        from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
+    </select>
+
+    <select id="getReviewSoftwareListOfStatus" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery" resultType="java.lang.String">
+        select distinct s.status
+        from software_t AS s
+        <include refid="whereReviewSoftwareList"/>
     </select>
 
     <select id="getExportSoftwareList" resultMap="softwareMap">

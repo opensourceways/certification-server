@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.mapper;
 
+import com.huawei.it.euler.ddd.domain.notice.NoticeBoard;
 import com.huawei.it.euler.model.entity.AuditLog;
 import com.huawei.it.euler.model.entity.ComputingPlatform;
 import com.huawei.it.euler.model.entity.Os;
@@ -42,4 +43,7 @@ public interface MasterDataMapper {
     Integer findCPUVendorByName(@Param("name") String name);
 
     void insertAuditLog(AuditLog auditLog);
+
+    List<NoticeBoard> findNoticeBoardList();
+
 }

@@ -104,7 +104,7 @@ public class CompatibleDataController {
      * @return JsonResponse
      */
     @PostMapping("/findDataList")
-    @PreAuthorize("hasAnyRole('OSV_user', 'flag_store')")
+    @PreAuthorize("hasAnyRole('OSV_user', 'hardware_review', 'flag_store')")
     public JsonResponse<Map<String, Object>> findDataList(
             @RequestBody @Valid CompatibleDataSearchVo searchVo, HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
@@ -118,7 +118,7 @@ public class CompatibleDataController {
      * @return JsonResponse
      */
     @GetMapping("/getDataDetailInfo")
-    @PreAuthorize("hasAnyRole('OSV_user', 'flag_store')")
+    @PreAuthorize("hasAnyRole('OSV_user', 'hardware_review', 'flag_store')")
     public JsonResponse<CompatibleDataInfo> getDataDetailInfo(
             @RequestParam("dataId") @NotNull(message = "数据id不能为空") Integer dataId) {
         CompatibleDataInfo dataInfo = compatibleDataMapper.selectDataByDataId(dataId);
@@ -135,7 +135,7 @@ public class CompatibleDataController {
      * @return JsonResponse
      */
     @GetMapping("/getDataApprovalInfo")
-    @PreAuthorize("hasAnyRole('OSV_user', 'flag_store')")
+    @PreAuthorize("hasAnyRole('OSV_user', 'hardware_review', 'flag_store')")
     public JsonResponse<CompatibleDataApproval> getDataApprovalInfo(
             @RequestParam("dataId") @NotNull(message = "数据id不能为空") Integer dataId) {
         CompatibleDataApproval approval = compatibleDataMapper.selectDataApproval(dataId);
@@ -153,7 +153,7 @@ public class CompatibleDataController {
      * @return JsonResponse
      */
     @PostMapping("/approvalCompatibleData")
-    @PreAuthorize("hasAnyRole('flag_store')")
+    @PreAuthorize("hasAnyRole('flag_store', 'hardware_review')")
     public JsonResponse<String> approvalCompatibleData(
             @RequestBody @Valid ApprovalDataVo vo, HttpServletRequest request) throws NoLoginException {
         String uuid = accountService.getLoginUuid(request);
