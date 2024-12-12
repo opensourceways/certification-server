@@ -11,12 +11,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.huawei.it.euler.ddd.domain.eventbus.RejectToUserNodeEvent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,6 +126,9 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     @Autowired
     private SoftwareVOPopulater softwareVOPopulater;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     public SoftwareVo findById(Integer id, String uuid) {
@@ -446,6 +451,9 @@ public class SoftwareServiceImpl implements SoftwareService {
                 software.setAuthenticationStatus(NodeEnum.findById(software.getStatus()) + "已驳回");
                 software.setStatus(nextNodeNumber);
                 getHandlerBack(nextNodeNumber, software);
+                if (RoleEnum.USER.getRoleId().equals(software.getReviewRole())) {
+                    rejectToUser(vo, software);
+                }
                 break;
             case 3: // 转审
                 software.setReviewer(vo.getTransferredUser());
@@ -563,6 +571,12 @@ public class SoftwareServiceImpl implements SoftwareService {
     private void setUserAsReviewer(Software software) {
         software.setReviewer(software.getUserUuid());
         software.setReviewRole(RoleEnum.USER.getRoleId());
+    }
+
+    private void rejectToUser(ProcessVo vo, Software software) {
+        UserInfo userInfo = accountService.getUserInfo(software.getUserUuid());
+        RejectToUserNodeEvent event = new RejectToUserNodeEvent(this, software, userInfo, vo);
+        eventPublisher.publishEvent(event);
     }
 
     private void setProgramReviewerAsReviewer(Software software, Integer status) {
