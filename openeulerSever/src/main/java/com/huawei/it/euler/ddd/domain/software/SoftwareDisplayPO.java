@@ -15,7 +15,7 @@ import lombok.Data;
 public class SoftwareDisplayPO {
 
     @TableId(type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     private String uuid;
 

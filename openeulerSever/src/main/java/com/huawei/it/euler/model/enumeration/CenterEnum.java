@@ -25,6 +25,18 @@ import lombok.Getter;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum CenterEnum {
     // openEuler社区
+    OLD_USER(1, "openEuler开源社区"),
+    // 江苏openEuler生态创新中心
+    OLD_CHINA_REGION(2, "江苏鲲鹏&欧拉生态创新中心"),
+    // 四川openEuler生态创新中心
+    OLD_SIG_GROUP(4, "四川鲲鹏&欧拉生态创新中心"),
+    // 长江openEuler生态创新中心
+    OLD_EULER_IC(5, "长江鲲鹏&欧拉生态创新中心"),
+    // 湖南openEuler生态创新中心
+    OLD_FLAG_STORE(6, "湖南欧拉生态创新中心"),
+    // 北京openEuler生态创新中心
+    OLD_ADMIN(7, "北京欧拉生态创新中心"),
+    // openEuler社区
     USER(1, "openEuler社区"),
     // 江苏openEuler生态创新中心
     CHINA_REGION(2, "江苏openEuler生态创新中心"),
@@ -53,7 +65,10 @@ public enum CenterEnum {
 
     static {
         for (CenterEnum status : values()) {
-            CENTER_ENUM_MAP.put(status.getId(), status);
+            if (status != OLD_USER && status != OLD_CHINA_REGION && status != OLD_SIG_GROUP
+                    && status != OLD_EULER_IC && status != OLD_FLAG_STORE && status != OLD_ADMIN) {
+                CENTER_ENUM_MAP.put(status.getId(), status);
+            }
         }
     }
 
@@ -77,6 +92,6 @@ public enum CenterEnum {
     }
 
     public static List<CenterEnum> getAllCenters() {
-        return Arrays.asList(values());
+        return CENTER_ENUM_MAP.values().stream().toList();
     }
 }

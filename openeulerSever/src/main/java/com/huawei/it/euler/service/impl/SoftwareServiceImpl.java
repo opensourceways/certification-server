@@ -162,6 +162,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("软件不属于当前用户:id:{},uuid:{}", softwareDb.getId(), uuid);
             throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
+        if (StringUtils.isEmpty(software.getProductName()) || StringUtils.isEmpty(software.getProductVersion())) {
+            throw new ParamException("产品名称/版本不能为空！");
+        }
         List<ComputingPlatformVo> hashratePlatformList = software.getHashratePlatformList();
         String jsonHashRatePlatform = JSON.toJSON(hashratePlatformList).toString();
         // 校验OS、算力平台参数
@@ -700,10 +703,24 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setApplicant(uuid);
         softwareQuery.setSort(parseSort(softwareQueryRequest));
         List<SoftwareVo> currentSoftwareList = softwareMapper.getSoftwareList(offset, pageSize, softwareQuery);
+
         Long total = softwareMapper.countSoftwareList(softwareQuery);
         softwareVOPopulater.populate(currentSoftwareList);
-        return new PageResult<>(currentSoftwareList, total, curPage, pageSize);
+
+        SoftwareQuery filterQuery = new SoftwareQuery();
+        filterQuery.setCompanyName(company.getCompanyName());
+        filterQuery.setApplicant(uuid);
+        JSONObject filterData = new JSONObject();
+        List<String> filterOfProductType = softwareMapper.getSoftwareListOfProductType(filterQuery);
+        filterData.put("productType", filterOfProductType);
+        List<String> filterOfTestOrganization = softwareMapper.getSoftwareListOfTestOrganization(filterQuery);
+        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
+        filterData.put("testOrganization", list);
+        List<String> filterOfStatus = softwareMapper.getSoftwareListOfStatus(filterQuery);
+        filterData.put("status", filterOfStatus);
+        return new PageResult<>(currentSoftwareList, total, curPage, pageSize, filterData);
     }
+
 
     @Override
     public PageResult<SoftwareVo> getReviewSoftwareList(SoftwareQueryRequest softwareQueryRequest, String uuid,Integer curPage,Integer pageSize) {
@@ -717,7 +734,19 @@ public class SoftwareServiceImpl implements SoftwareService {
         Long total = softwareMapper.countReviewSoftwareList(softwareQuery);
         softwareVOPopulater.populate(reviewSoftwareList);
         updateSoftwareListStatus(reviewSoftwareList);
-        return new PageResult<>(reviewSoftwareList, total, curPage, pageSize);
+
+        SoftwareQuery filterQuery = new SoftwareQuery();
+        filterQuery.setUuid(uuid);
+        filterQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
+        JSONObject filterData = new JSONObject();
+        List<String> filterOfProductType = softwareMapper.getReviewSoftwareListOfProductType(filterQuery);
+        filterData.put("productType", filterOfProductType);
+        List<String> filterOfTestOrganization = softwareMapper.getReviewSoftwareListOfTestOrganization(filterQuery);
+        List<String> list = filterOfTestOrganization.stream().map(item -> CenterEnum.findById(Integer.parseInt(item))).distinct().toList();
+        filterData.put("testOrganization", list);
+        List<String> filterOfStatus = softwareMapper.getReviewSoftwareListOfStatus(filterQuery);
+        filterData.put("status", filterOfStatus);
+        return new PageResult<>(reviewSoftwareList, total, curPage, pageSize, filterData);
     }
 
     private void updateSoftwareListStatus(List<SoftwareVo> softwareList) {
@@ -797,7 +826,9 @@ public class SoftwareServiceImpl implements SoftwareService {
         filterLatestNodes.addAll(unFinishedNodes);
         checkPartnerNode(filterLatestNodes, software);
         filterLatestNodes.parallelStream().forEach(item -> {
-            item.setHandlerName(accountService.getUserName(item.getHandler()));
+            UserInfo userInfo = accountService.getUserInfo(item.getHandler());
+            item.setHandlerName(StringUtils.isEmpty(userInfo.getNickName()) ? userInfo.getUserName() : userInfo.getNickName());
+            item.setHandlerEmail(userInfo.getEmail());
         });
         return filterLatestNodes.stream().sorted(Comparator.comparing(AuditRecordsVo::getStatus))
             .collect(Collectors.toList());

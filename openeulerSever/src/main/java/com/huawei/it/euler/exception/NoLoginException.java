@@ -4,6 +4,9 @@
 
 package com.huawei.it.euler.exception;
 
+/**
+ * 未登录异常
+ */
 public class NoLoginException extends Exception{
 
     public NoLoginException() {
