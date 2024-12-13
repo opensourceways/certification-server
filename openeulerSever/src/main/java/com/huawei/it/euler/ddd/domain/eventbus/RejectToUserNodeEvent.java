@@ -21,14 +21,11 @@ public class RejectToUserNodeEvent extends ApplicationEvent {
 
     private final Software software;
 
-    private final UserInfo user;
-
     private final ProcessVo processVo;
 
-    public RejectToUserNodeEvent(Object source, Software software, UserInfo user, ProcessVo processVo) {
+    public RejectToUserNodeEvent(Object source, Software software, ProcessVo processVo) {
         super(source);
         this.software = software;
-        this.user = user;
         this.processVo = processVo;
     }
 

@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.huawei.it.euler.ddd.domain.eventbus.ApplyIntelTestEvent;
 import com.huawei.it.euler.ddd.domain.eventbus.RejectToUserNodeEvent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -275,9 +276,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setReviewer(nextNode.getHandler());
         software.setReviewRole(approvalPath.get(0).getRoleId());
         // 更新软件信息表
-        softwareMapper.updateSoftware(SoftwareVOToEntityConverter.INSTANCE.convert(software));
+        Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
+        softwareMapper.updateSoftware(convert);
         // 发送邮件通知
-        sendEmail(software, uuid);
+        sendEmail(convert);
         return softwareId;
     }
 
@@ -574,8 +576,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private void rejectToUser(ProcessVo vo, Software software) {
-        UserInfo userInfo = accountService.getUserInfo(software.getUserUuid());
-        RejectToUserNodeEvent event = new RejectToUserNodeEvent(this, software, userInfo, vo);
+        RejectToUserNodeEvent event = new RejectToUserNodeEvent(this, software, vo);
         eventPublisher.publishEvent(event);
     }
 
@@ -1014,7 +1015,7 @@ public class SoftwareServiceImpl implements SoftwareService {
      *
      * @param software test info
      */
-    private void sendEmail(SoftwareVo software, String uuid) {
+    private void sendEmail(Software software) {
         ApprovalScenario approvalScenario = approvalScenarioService.findById(software.getAsId());
         if (approvalScenario == null) {
             return;
@@ -1022,46 +1023,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        List<UserInfo> userInfoList = accountService.getUserInfoList(8);
-        List<String> receiverList = new ArrayList<>();
-        for (UserInfo userInfo : userInfoList) {
-            if (!StringUtils.isEmpty(userInfo.getEmail())) {
-                receiverList.add(userInfo.getEmail());
-            }
-        }
-
-        String subject = "英特尔先进技术评测业务申请";
-
-        Map<String, String> replaceMap = new HashMap<>();
-        replaceMap.put("companyName", software.getCompanyName());
-        replaceMap.put("productName", software.getProductName());
-        replaceMap.put("productFunctionDesc", software.getProductFunctionDesc());
-        replaceMap.put("usageScenesDesc", software.getUsageScenesDesc());
-        replaceMap.put("productVersion", software.getProductVersion());
-        replaceMap.put("osName", software.getOsName());
-        replaceMap.put("osVersion", software.getOsVersion());
-
-        JSONArray jsonArray = JSON.parseArray(software.getJsonHashRatePlatform());
-        List<ComputingPlatformVo> computingPlatformVos = new ArrayList<>();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            ComputingPlatformVo computingPlatformVo = JSON.toJavaObject(jsonObject, ComputingPlatformVo.class);
-            computingPlatformVos.add(computingPlatformVo);
-        }
-        List<String> platformString = computingPlatformVos.stream().map(item -> {
-            String platform = String.join("、", item.getServerTypes());
-            return item.getPlatformName() + "/" + item.getServerProvider() + "/" + platform;
-        }).toList();
-
-        replaceMap.put("jsonHashRatePlatform", StringUtils.join(platformString, "<br>"));
-        replaceMap.put("productType", software.getProductType());
-
-        UserInfo userInfo = accountService.getUserInfo(uuid);
-        replaceMap.put("userName", userInfo.getUserName());
-        replaceMap.put("userEmail", userInfo.getEmail());
-        replaceMap.put("userPhone", userInfo.getPhone());
-        String content = emailConfig.getIntelNoticeEmailContent(replaceMap);
-        emailConfig.sendMail(receiverList, subject, content, new ArrayList<>());
+        ApplyIntelTestEvent event = new ApplyIntelTestEvent(this,software);
+        eventPublisher.publishEvent(event);
     }
 
     @Override

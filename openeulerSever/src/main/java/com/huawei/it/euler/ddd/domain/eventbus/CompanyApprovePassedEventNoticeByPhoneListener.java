@@ -7,7 +7,7 @@ package com.huawei.it.euler.ddd.domain.eventbus;
 import com.huawei.it.euler.config.extension.SmsConfig;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.ddd.service.AccountService;
-import com.huawei.it.euler.model.entity.Software;
+import com.huawei.it.euler.model.vo.CompanyAuditVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,13 +16,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * 测评业务驳回到用户节点事件 邮件通知监听器
+ * 企业审核通过事件 短信通知监听器
  *
  * @author zhaoyan
- * @since 2024-12-11
+ * @since 2024-12-13
  */
 @Component
-public class RejectToUserNodeEventNoticeByPhoneListener {
+public class CompanyApprovePassedEventNoticeByPhoneListener {
 
     @Value("${sns.templateId}")
     private String templateId;
@@ -35,15 +35,16 @@ public class RejectToUserNodeEventNoticeByPhoneListener {
 
     @TransactionalEventListener
     @Async
-    public void phoneNoticeListener(RejectToUserNodeEvent event) {
-        Software software = event.getSoftware();
-        UserInfo userInfo = accountService.getUserInfo(software.getUserUuid());
-        if (StringUtils.isEmpty(userInfo.getEmail()) && StringUtils.isEmpty(userInfo.getPhone())) {
-            String templateParas = "[\"" + userInfo.getUserName() + "\",\"" + software.getProductName() + "\"]";
+    public void phoneNoticeListener(CompanyApprovePassedEvent event) {
+        CompanyAuditVo companyAuditVo = event.getCompanyAuditVo();
+        UserInfo userInfo = accountService.getUserInfo(companyAuditVo.getUserUuid());
+        if (!StringUtils.isEmpty(userInfo.getPhone())){
+            String status = companyAuditVo.getResult() ? "通过" : "驳回";
+            String comment = companyAuditVo.getComment();
+            String templateParas = "[\"" + status + "\",\"" + comment + "\"]";
 //            String phone = userInfo.getPhone();
             String phone = "18765950879";
             smsConfig.sendNotification(templateId, phone, templateParas);
         }
     }
-
 }

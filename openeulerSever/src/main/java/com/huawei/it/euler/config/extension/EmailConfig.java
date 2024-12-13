@@ -32,6 +32,7 @@ public class EmailConfig {
     private static final Logger logger = LoggerFactory.getLogger(EmailConfig.class);
 
     private static final String INTELNOTICETEMPLATE = "/docs/IntelNoticeEmailTemplate.html";
+    private static final String REJECTNOTICETEMPLATE = "/docs/RejectNoticeEmailTemplate.html";
 
     @Value("${email.host}")
     private String host;
@@ -120,6 +121,21 @@ public class EmailConfig {
 
     public String getIntelNoticeEmailContent(Map<String,String> dataMap) {
         ClassPathResource resource = new ClassPathResource(INTELNOTICETEMPLATE);
+        try {
+            String contentAsString = resource.getContentAsString(StandardCharsets.UTF_8);
+            for (Map.Entry<String, String> stringStringEntry : dataMap.entrySet()) {
+                String value = stringStringEntry.getValue();
+                value = StringUtils.isEmpty(value) ? "--" : value;
+                contentAsString = contentAsString.replace("${" + stringStringEntry.getKey() + "}", value);
+            }
+            return contentAsString;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getRejectNoticeEmailContent(Map<String,String> dataMap) {
+        ClassPathResource resource = new ClassPathResource(REJECTNOTICETEMPLATE);
         try {
             String contentAsString = resource.getContentAsString(StandardCharsets.UTF_8);
             for (Map.Entry<String, String> stringStringEntry : dataMap.entrySet()) {
