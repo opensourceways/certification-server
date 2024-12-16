@@ -4,12 +4,9 @@
 
 package com.huawei.it.euler.util;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 /**

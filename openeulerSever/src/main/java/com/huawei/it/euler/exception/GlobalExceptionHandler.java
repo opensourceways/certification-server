@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
     public JsonResponse<String> handler(IllegalArgumentException exception, HttpServletRequest request) {
         log.error("URL: {}, IllegalArgumentException, errorMessage: {}",
                 request.getRequestURL(), exception.getMessage());
-        return JsonResponse.failed(ERROR_MESSAGE);
+        return JsonResponse.failed("非法参数");
     }
 
     /**
@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AccessDeniedException.class)
     public JsonResponse<String> handler(AccessDeniedException exception, HttpServletRequest request) {
         log.error("URL: {}, AccessDeniedException, errorMessage: {}", request.getRequestURL(), exception.getMessage());
-        return JsonResponse.failed(ERROR_MESSAGE);
+        return JsonResponse.failed("无操作权限");
     }
 
     /**

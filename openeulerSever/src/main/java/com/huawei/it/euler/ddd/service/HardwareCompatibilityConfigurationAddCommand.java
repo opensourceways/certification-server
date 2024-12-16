@@ -23,11 +23,9 @@ public class HardwareCompatibilityConfigurationAddCommand implements Serializabl
 
     @Schema(description = "服务器产品信息链接")
     @Size(max = 255, message = "服务器产品信息链接长度不能超过255")
-    // @NotNull(message = "服务器产品链接不能为空")
     private String productInformation;
 
     @Schema(description = "认证日期")
-    // @NotNull(message = "认证日期不能为空")
     @Size(max = 10, message = "认证日期长度不能超过10")
     private String certificationTime;
 
@@ -36,22 +34,18 @@ public class HardwareCompatibilityConfigurationAddCommand implements Serializabl
     private String commitID;
 
     @Schema(description = "主板型号")
-    // @NotNull(message = "主板型号不能为空")
     @Size(max = 100, message = "主板型号长度不能超过100")
     private String mainboardModel;
 
     @Schema(description = "bios/UEFI版本")
-    // @NotNull(message = "bios/UEFI版本不能为空")
     @Size(max = 50, message = "bios/UEFI版本长度不能超过50")
     private String biosUefi;
 
     @Schema(description = "CPU型号")
-    // @NotNull(message = "CPU型号不能为空")
     @Size(max = 100, message = "CPU型号长度不能超过100")
     private String cpu;
 
     @Schema(description = "内存条配置信息")
-    // @NotNull(message = "内存条配置信息不能为空")
     @Size(max = 50, message = "内存条配置信息长度不能超过50")
     private String ram;
 

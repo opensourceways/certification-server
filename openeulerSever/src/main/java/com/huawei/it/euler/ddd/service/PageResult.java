@@ -6,7 +6,6 @@ package com.huawei.it.euler.ddd.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.Data;
 
 /**
  * 自定义分页对象
