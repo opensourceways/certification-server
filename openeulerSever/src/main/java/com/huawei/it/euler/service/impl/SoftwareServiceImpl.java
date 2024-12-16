@@ -307,6 +307,8 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException("该测评机构不存在，请重新选择！");
         }
         software.setTestOrgId(CenterEnum.findByName(software.getTestOrganization()));
+        software.setInitOsName(software.getOsName());
+        software.setInitOsVersion(software.getOsVersion());
         // 将算力平台和服务器类型list转为json字符串
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
