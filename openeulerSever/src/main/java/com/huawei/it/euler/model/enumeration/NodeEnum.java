@@ -41,7 +41,9 @@ public enum NodeEnum {
     // 证书签发
     CERTIFICATE_ISSUANCE(8, "证书签发"),
     // 完成
-    FINISHED(9, "已完成"),;
+    FINISHED(9, "已完成"),
+    // 废弃
+    VOIDED(-1, "已作废");
 
     private final Integer id; // id
 
