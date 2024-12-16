@@ -387,7 +387,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     public String testingPhase(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid, NodeEnum.TESTING_PHASE.getId());
-        if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
+        if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId()) &&
+                !Objects.equals(vo.getHandlerResult(), HandlerResultEnum.REJECT.getId())) {
             LOGGER.error("非法的审核结果参数:id:{},handlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
             throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
@@ -395,9 +396,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         attachmentQuery.setSoftwareId(software.getId());
         attachmentQuery.setFileType("testReport");
         List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
-        if (CollectionUtil.isEmpty(attachmentsVos)) {
-            LOGGER.error("未上传测试报告:id:{}", vo.getSoftwareId());
-            throw new ParamException(ErrorCodes.FILE_NOT_EXIST.getMessage());
+        if (Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
+            if (CollectionUtil.isEmpty(attachmentsVos)) {
+                LOGGER.error("未上传测试报告:id:{}", vo.getSoftwareId());
+                throw new ParamException(ErrorCodes.FILE_NOT_EXIST.getMessage());
+            }
+        } else {
+            if (!CollectionUtil.isEmpty(attachmentsVos)) {
+                for (AttachmentsVo attachmentsVo : attachmentsVos) {
+                    softwareMapper.deleteAttachments(attachmentsVo.getFileId());
+                }
+            }
         }
         updateNextSoftware(vo, software, uuid);
         return String.valueOf(vo.getSoftwareId());
