@@ -582,20 +582,20 @@ public class SoftwareServiceImpl implements SoftwareService {
                 break;
             case 3: // 审批流程
                 if (IntelTestEnum.CPU_VENDOR.getName().equals(software.getCpuVendor())) {
-                    setProgramReviewerAsReviewer(software, NodeEnum.TESTING_PHASE.getId());
+                    setReviewerByHistory(software, NodeEnum.TESTING_PHASE.getId());
                 } else {
                     setUserAsReviewer(software);
                 }
                 break;
             case 4:// 报告初审
-                setProgramReviewerAsReviewer(software, NodeEnum.REPORT_REVIEW.getId());
+                setReviewerByHistory(software, NodeEnum.REPORT_REVIEW.getId());
                 break;
             case 9:// 已完成
                 software.setReviewer(null);
                 software.setReviewRole(null);
                 break;
             default:
-                setApprovalAsReviewer(software, nextNodeNumber);
+                setReviewerByHistory(software, nextNodeNumber);
                 break;
         }
         return software;
@@ -616,6 +616,14 @@ public class SoftwareServiceImpl implements SoftwareService {
         ApprovalPathNode approvalPathNode =
             approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), nextNodeNumber);
         software.setReviewer(approvalPathNode.getUserUuid());
+        software.setReviewRole(approvalPathNode.getRoleId());
+    }
+
+    private void setReviewerByHistory(Software software, Integer status){
+        Node node = nodeMapper.findLatestFinishedNode(software.getId(), status);
+        software.setReviewer(node.getHandler());
+        ApprovalPathNode approvalPathNode =
+                approvalPathNodeService.findANodeByAsIdAndSoftwareStatus(software.getAsId(), status);
         software.setReviewRole(approvalPathNode.getRoleId());
     }
 
