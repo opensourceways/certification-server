@@ -54,7 +54,7 @@ public class HardwareBoardCardApi {
     @Operation(summary = "根据id查询对象", parameters = {@Parameter(name = "id", description = "板卡id")})
     @GetMapping("/getById")
     @PreAuthorize("hasAnyRole('user','hardware_review','admin')")
-    public JsonResponse<HardwareBoardCard> getById(@RequestParam("id") @NotNull(message = "id不能为空") Integer id, HttpServletRequest request) throws NoLoginException {
+    public JsonResponse<HardwareBoardCard> getById(@RequestParam("id") @NotNull(message = "id不能为空") Integer id) {
         HardwareBoardCard wholeMachine = boardCardApplicationService.getById(id);
         return JsonResponse.success(wholeMachine);
     }
