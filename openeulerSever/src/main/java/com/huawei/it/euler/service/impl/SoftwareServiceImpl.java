@@ -504,9 +504,9 @@ public class SoftwareServiceImpl implements SoftwareService {
             LOGGER.error("软件不属于当前用户:id:{},uuid:{}", id, uuid);
             throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
         }
-        if (software.getStatus().equals(NodeEnum.APPLY.getId())
-                || software.getStatus().equals(NodeEnum.FINISHED.getId())
-                || software.getStatus().equals(NodeEnum.VOIDED.getId())) {
+        if (!software.getStatus().equals(NodeEnum.TESTING_PHASE.getId())
+                && !software.getStatus().equals(NodeEnum.CERTIFICATE_CONFIRMATION.getId())
+                && !software.getStatus().equals(NodeEnum.FINISHED.getId())) {
             LOGGER.error("软件状态错误:id:{},status:{}", id, software.getStatus());
             throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
