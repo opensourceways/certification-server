@@ -10,27 +10,19 @@ import com.huawei.it.euler.ddd.domain.account.Role;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.ddd.domain.hardware.*;
 import com.huawei.it.euler.ddd.service.*;
-import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.NoLoginException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
-import com.huawei.it.euler.model.vo.ExcelInfoVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.Length;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -84,26 +76,6 @@ public class HardwareBoardCardApi {
         BatchInsertResponse batchInsertResponse = boardCardApplicationService.batchInsert(addCommandList, loginUuid);
         return JsonResponse.success(batchInsertResponse);
     }
-
-    /*@Operation(summary = "批量上传-上传文件")
-    @PostMapping(value = "/uploadTemplate",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public JsonResponse<ExcelInfoVo> uploadTemplate(@RequestParam("file") @NotNull(message = "模板文件不能为空") MultipartFile file,
-                                                    HttpServletRequest request) throws InputException, NoLoginException {
-        String uuid = accountService.getLoginUuid(request);
-        ExcelInfoVo excelInfoVo = boardCardApplicationService.uploadTemplate(file, uuid);
-        return JsonResponse.success(excelInfoVo);
-    }*/
-
-    /*@Operation(summary = "批量上传-读取文件")
-    @GetMapping("/upload")
-    public JsonResponse<BatchInsertResponse> readCompatibleData(HttpServletRequest request,
-                                                                @RequestParam("fileId") @NotBlank(message = "附件id不能为空") @Length(max = 50, message = "附件id超出范围")
-                                                                String fileId) throws NoLoginException {
-        String uuid = accountService.getLoginUuid(request);
-        BatchInsertResponse batchInsertResponse = boardCardApplicationService.readJsonData(fileId, uuid);
-        return JsonResponse.success(batchInsertResponse);
-    }*/
-
     @Operation(summary = "编辑")
     @PostMapping("/edit")
     @PreAuthorize("hasAnyRole('user','hardware_review')")
