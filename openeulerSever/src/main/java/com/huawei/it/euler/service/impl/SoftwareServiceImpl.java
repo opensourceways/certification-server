@@ -512,12 +512,24 @@ public class SoftwareServiceImpl implements SoftwareService {
         }
         software.setStatus(NodeEnum.VOIDED.getId());
         softwareMapper.updateSoftware(software);
+        Date now = new Date();
         Node latestNode = nodeMapper.findLatestNodeById(id);
-        latestNode.setHandlerResult(HandlerResultEnum.VOID.getId());
-        latestNode.setTransferredComments("业务作废！");
-        latestNode.setHandlerTime(new Date());
-        latestNode.setHandler(uuid);
-        nodeMapper.updateNodeById(latestNode);
+        if (latestNode == null){
+            latestNode = new Node();
+            latestNode.setSoftwareId(software.getId());
+            latestNode.setNodeName(HandlerResultEnum.VOID.getName());
+            latestNode.setHandler(uuid);
+            latestNode.setHandlerTime(now);
+            latestNode.setHandlerResult(HandlerResultEnum.VOID.getId());
+            latestNode.setTransferredComments("业务作废！");
+            nodeMapper.insertNode(latestNode);
+        } else {
+            latestNode.setHandlerResult(HandlerResultEnum.VOID.getId());
+            latestNode.setTransferredComments("业务作废！");
+            latestNode.setHandlerTime(now);
+            latestNode.setHandler(uuid);
+            nodeMapper.updateNodeById(latestNode);
+        }
     }
 
     public String deleteSoftware(Integer id, String uuid) {
