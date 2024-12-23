@@ -13,7 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.huawei.it.euler.ddd.domain.eventbus.CompanyApprovePassedEvent;
+import com.huawei.it.euler.ddd.service.company.cqe.CompanyApproveResultEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,6 +230,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @Transactional
     public JsonResponse<String> approveCompany(CompanyAuditVo companyAuditVo) throws Exception {
         if (companyAuditVo == null || companyAuditVo.getUserUuid() == null) {
             return JsonResponse.failed("请求参数不完整");
@@ -247,7 +248,7 @@ public class CompanyServiceImpl implements CompanyService {
         dbCompany.setApprovalComment(companyAuditVo.getComment());
         companyMapper.updateCompany(dbCompany);
         // 审核结果发送给申请用户
-        CompanyApprovePassedEvent event = new CompanyApprovePassedEvent(this,companyAuditVo);
+        CompanyApproveResultEvent event = new CompanyApproveResultEvent(this, companyAuditVo);
         eventPublisher.publishEvent(event);
         return JsonResponse.success();
     }

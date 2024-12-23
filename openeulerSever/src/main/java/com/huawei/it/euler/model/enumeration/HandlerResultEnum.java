@@ -18,11 +18,11 @@ public enum HandlerResultEnum {
     // accept
     ACCEPT(1, "通过"),
     // reject
-    REJECT(2, "已驳回"),
+    REJECT(2, "驳回"),
     // transfer
     TRANSFER(3, "转审"),
     // withdraw
-    WITHDRAW(4, "已撤销");
+    WITHDRAW(4, "撤销");
 
     private final Integer id; // id
 

@@ -2,31 +2,29 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
  */
 
-package com.huawei.it.euler.ddd.domain.eventbus;
+package com.huawei.it.euler.ddd.service.software.cqe;
 
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.model.entity.Software;
-import com.huawei.it.euler.model.vo.ProcessVo;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * 测评业务驳回到用户节点事件
+ * 申请英特尔测评事件
  *
  * @author zhaoyan
  * @since 2024-12-11
  */
 @Getter
-public class RejectToUserNodeEvent extends ApplicationEvent {
+public class ApplyIntelTestEvent extends ApplicationEvent {
 
     private final Software software;
 
-    private final ProcessVo processVo;
+    private final UserInfo applicant;
 
-    public RejectToUserNodeEvent(Object source, Software software, ProcessVo processVo) {
+    public ApplyIntelTestEvent(Object source, Software software, UserInfo applicant) {
         super(source);
         this.software = software;
-        this.processVo = processVo;
+        this.applicant = applicant;
     }
-
 }

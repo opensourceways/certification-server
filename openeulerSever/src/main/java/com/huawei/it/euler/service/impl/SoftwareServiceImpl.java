@@ -11,8 +11,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.huawei.it.euler.ddd.domain.eventbus.ApplyIntelTestEvent;
-import com.huawei.it.euler.ddd.domain.eventbus.RejectToUserNodeEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelTestEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.ApproveEvent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.base.CaseFormat;
 import com.huawei.it.euler.common.JsonResponse;
-import com.huawei.it.euler.config.extension.EmailConfig;
+import com.huawei.it.euler.ddd.infrastructure.email.EmailService;
 import com.huawei.it.euler.controller.converter.SoftwareVOToDTOConverter;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.ddd.service.AccountService;
@@ -117,7 +117,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     private ApprovalScenarioService approvalScenarioService;
 
     @Autowired
-    private EmailConfig emailConfig;
+    private EmailService emailService;
 
     @Autowired
     private AccountService accountService;
@@ -579,7 +579,7 @@ public class SoftwareServiceImpl implements SoftwareService {
     }
 
     private void rejectToUser(ProcessVo vo, Software software) {
-        RejectToUserNodeEvent event = new RejectToUserNodeEvent(this, software, vo);
+        ApproveEvent event = new ApproveEvent(this, software, vo);
         eventPublisher.publishEvent(event);
     }
 
@@ -1054,7 +1054,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         if (!"intel".equals(approvalScenario.getName())) {
             return;
         }
-        ApplyIntelTestEvent event = new ApplyIntelTestEvent(this,software);
+        UserInfo applicant = accountService.getUserInfo(software.getUserUuid());
+        ApplyIntelTestEvent event = new ApplyIntelTestEvent(this, software, applicant);
         eventPublisher.publishEvent(event);
     }
 
