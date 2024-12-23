@@ -303,6 +303,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setUsageScenesDesc(software.getUsageScenesDesc().trim());
         software.setProductVersion(software.getProductVersion().trim());
         software.setTestOrgId(CenterEnum.findByName(software.getTestOrganization()));
+        software.setInitOsName(software.getOsName());
+        software.setInitOsVersion(software.getOsVersion());
         // 将算力平台和服务器类型list转为json字符串
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
