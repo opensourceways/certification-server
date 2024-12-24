@@ -115,7 +115,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "删除")
     @PostMapping("/delete")
-    @PreAuthorize("hasRole('user')")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<Boolean> delete(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));
@@ -125,7 +125,7 @@ public class HardwareBoardCardApi {
 
     @Operation(summary = "申请")
     @PostMapping("/apply")
-    @PreAuthorize("hasRole('user')")
+    @PreAuthorize("hasAnyRole('user','hardware_review')")
     public JsonResponse<Boolean> apply(@RequestBody @Valid HardwareApprovalNode approvalNode, HttpServletRequest request) throws NoLoginException {
         String loginUuid = accountService.getLoginUuid(request);
         approvalNode.setHandlerUuid(Integer.valueOf(loginUuid));

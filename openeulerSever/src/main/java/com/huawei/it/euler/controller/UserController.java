@@ -98,7 +98,7 @@ public class UserController {
      * @return JsonResponse
      */
     @GetMapping("/user/getUserInfo")
-    @PreAuthorize("hasAnyRole('user', 'china_region', 'sig_group',  'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
+    @PreAuthorize("hasAnyRole('user', 'china_region', 'hardware_review', 'sig_group',  'euler_ic', 'program_review','report_review','certificate_issuance', 'openatom_intel', 'flag_store', 'admin', 'OSV_user')")
     public JsonResponse<UserInfoVo> getUserInfo(HttpServletRequest request) throws NoLoginException {
         UserInfo loginUser = accountService.getLoginUser(request);
         UserInfoVo vo = new UserInfoVo();
