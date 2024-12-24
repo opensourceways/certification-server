@@ -521,6 +521,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
         }
         software.setStatus(NodeEnum.VOIDED.getId());
+        software.setReviewer(null);
         softwareMapper.updateSoftware(software);
         Date now = new Date();
         Node latestNode = nodeMapper.findLatestNodeById(id);
