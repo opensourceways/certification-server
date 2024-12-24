@@ -261,7 +261,10 @@ public class SoftwareServiceImpl implements SoftwareService {
             softwareId = softwareConvert.getId();
             software.setId(softwareId);
         } else {
-            softwareMapper.recommit(SoftwareVOToEntityConverter.INSTANCE.convert(software));
+            Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
+            softwareMapper.recommit(convert);
+            // 发送邮件通知
+            sendEmail(convert);
             // 调用审核接口
             ProcessVo processVo = new ProcessVo();
             processVo.setSoftwareId(software.getId());
@@ -282,7 +285,7 @@ public class SoftwareServiceImpl implements SoftwareService {
         Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
         softwareMapper.updateSoftware(convert);
         // 发送邮件通知
-//        sendEmail(software, uuid);
+        sendEmail(convert);
         return softwareId;
     }
 
