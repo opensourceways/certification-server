@@ -47,7 +47,6 @@ public class CompanyApplicationService {
     public void companyApproveNoticeListener(CompanyApproveResultEvent event) {
         CompanyAuditVo companyAuditVo = event.getCompanyAuditVo();
         UserInfo userInfo = accountService.getUserInfo(companyAuditVo.getUserUuid());
-        userInfo.setPhone("18765950879");
         NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);
         noticeMessage = noticeApplicationService.sendNotice(noticeMessage);
         noticeMessageRepository.record(noticeMessage);

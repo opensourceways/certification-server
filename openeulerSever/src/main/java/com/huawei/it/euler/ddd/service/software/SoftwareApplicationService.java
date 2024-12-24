@@ -66,8 +66,6 @@ public class SoftwareApplicationService {
     public void progressNoticeHandler(ApproveEvent event) {
         Software software = event.getSoftware();
         UserInfo userInfo = accountService.getUserInfo(software.getUserUuid());
-        userInfo.setEmail(null);
-        userInfo.setPhone("18765950879");
         NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);
         noticeMessage = noticeApplicationService.sendNotice(noticeMessage);
         noticeMessageRepository.record(noticeMessage);
