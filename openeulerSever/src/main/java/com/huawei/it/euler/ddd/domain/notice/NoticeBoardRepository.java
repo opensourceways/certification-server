@@ -18,4 +18,11 @@ public interface NoticeBoardRepository {
      * @return 有效系统公告集合
      */
     public List<NoticeBoard> findActiveList();
+
+    /**
+     * 发布系统公告
+     * @param noticeBoard 系统公告
+     * @return 已发布系统公告
+     */
+    public NoticeBoard publish(NoticeBoard noticeBoard);
 }

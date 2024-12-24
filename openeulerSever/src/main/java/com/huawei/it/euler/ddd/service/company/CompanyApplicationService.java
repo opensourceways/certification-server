@@ -5,8 +5,11 @@
 package com.huawei.it.euler.ddd.service.company;
 
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
+import com.huawei.it.euler.ddd.domain.company.primitive.ApproveResult;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessageRepository;
 import com.huawei.it.euler.ddd.domain.notice.policy.SendManager;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafKaMessageDTO;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafkaMessageTemplate;
 import com.huawei.it.euler.ddd.service.company.cqe.CompanyApproveResultEvent;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessage;
 import com.huawei.it.euler.ddd.service.AccountService;
@@ -44,11 +47,30 @@ public class CompanyApplicationService {
      */
     @TransactionalEventListener
     @Async
-    public void companyApproveNoticeListener(CompanyApproveResultEvent event) {
+    public void companyApproveNotice(CompanyApproveResultEvent event) {
         CompanyAuditVo companyAuditVo = event.getCompanyAuditVo();
         UserInfo userInfo = accountService.getUserInfo(companyAuditVo.getUserUuid());
         NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);
         noticeMessage = noticeApplicationService.sendNotice(noticeMessage);
         noticeMessageRepository.record(noticeMessage);
+    }
+
+    /**
+     * 处理企业审核结果事件，通知到企业申请人
+     * @param event 企业审核结果事件
+     */
+    @TransactionalEventListener
+    @Async
+    public void companyApproveKafka(CompanyApproveResultEvent event) {
+        CompanyAuditVo companyAuditVo = event.getCompanyAuditVo();
+        UserInfo userInfo = accountService.getUserInfo(companyAuditVo.getUserUuid());
+        KafKaMessageDTO messageDTO = new KafKaMessageDTO();
+        messageDTO.setUser(userInfo.getUuid());
+        messageDTO.setType(KafkaMessageTemplate.TYPE_NOTICE);
+        String companyNoticeContent = KafkaMessageTemplate.getCompanyNoticeContent(
+                ApproveResult.findDesc(companyAuditVo.getResult()), companyAuditVo.getComment());
+        messageDTO.setContent(companyNoticeContent);
+        messageDTO.setRedirectUrl(KafkaMessageTemplate.URL_INDEX);
+        noticeApplicationService.sendKafka(messageDTO);
     }
 }

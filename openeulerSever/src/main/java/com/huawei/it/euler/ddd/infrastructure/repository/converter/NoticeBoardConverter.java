@@ -16,5 +16,7 @@ import org.mapstruct.Mapper;
  */
 @Mapper(componentModel = "spring")
 public interface NoticeBoardConverter {
+    NoticeBoardPO toPO(NoticeBoard noticeBoard);
+
     NoticeBoard toDO(NoticeBoardPO noticeBoardPO);
 }
