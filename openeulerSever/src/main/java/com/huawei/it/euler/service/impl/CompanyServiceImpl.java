@@ -7,30 +7,20 @@ package com.huawei.it.euler.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.net.ssl.SSLContext;
-
+import com.huawei.it.euler.ddd.service.company.cqe.CompanyApproveResultEvent;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,11 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cloud.apigateway.sdk.utils.Client;
-import com.cloud.apigateway.sdk.utils.Request;
 import com.huawei.it.euler.common.JsonResponse;
-import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.exception.InputException;
 import com.huawei.it.euler.exception.ParamException;
 import com.huawei.it.euler.mapper.CompanyMapper;
@@ -74,7 +60,6 @@ import com.huaweicloud.sdk.ocr.v1.region.OcrRegion;
 
 import cn.hutool.core.util.ObjectUtil;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -105,21 +90,6 @@ public class CompanyServiceImpl implements CompanyService {
     private static final String SIGNATURE_ALGORITHM_SDK_HMAC_SHA256 = "SDK-HMAC-SHA256";
 
     private static final Integer COMPANY_INIT_NUM = 10000;
-
-    @Value("${sns.templateId}")
-    private String templateId;
-
-    @Value("${sns.messageUrl}")
-    private String messageUrl;
-
-    @Value("${sns.senderId}")
-    private String senderId;
-
-    @Value("${sns.appKey}")
-    private String appKey;
-
-    @Value("${sns.appSecret}")
-    private String appSecret;
 
     @Value("${ocr.ak}")
     private String ocrAK;
@@ -153,9 +123,7 @@ public class CompanyServiceImpl implements CompanyService {
     private CompanyVerifyClient companyVerifyClient;
 
     @Autowired
-    private AccountService accountService;
-
-    private static CloseableHttpClient client = null;
+    private ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -262,6 +230,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @Transactional
     public JsonResponse<String> approveCompany(CompanyAuditVo companyAuditVo) throws Exception {
         if (companyAuditVo == null || companyAuditVo.getUserUuid() == null) {
             return JsonResponse.failed("请求参数不完整");
@@ -279,49 +248,9 @@ public class CompanyServiceImpl implements CompanyService {
         dbCompany.setApprovalComment(companyAuditVo.getComment());
         companyMapper.updateCompany(dbCompany);
         // 审核结果发送给申请用户
-        sendEmailNotification(companyAuditVo);
+        CompanyApproveResultEvent event = new CompanyApproveResultEvent(this, companyAuditVo);
+        eventPublisher.publishEvent(event);
         return JsonResponse.success();
-    }
-
-    @SneakyThrows
-    private void sendEmailNotification(CompanyAuditVo companyAuditVo) {
-        client = createIgnoreSSLHttpClient();
-        Company company = companyMapper.findCompanyByUserUuid(companyAuditVo.getUserUuid());
-        UserInfo userInfo = accountService.getUserInfo(company.getUserUuid());
-        if (userInfo.getPhone() == null) {
-            log.warn("telephone is null.");
-            return;
-        }
-        String status = companyAuditVo.getResult() ? "通过" : "驳回";
-        String comment = companyAuditVo.getComment();
-        String templateParas = "[\"" + status + "\",\"" + comment + "\"]";
-        String statusCallBack = "";
-        String signature = "";
-        String body =
-            buildRequestBody(senderId, userInfo.getPhone(), templateId, templateParas, statusCallBack, signature);
-        if (body.isEmpty()) {
-            log.warn("body is null.");
-            return;
-        }
-
-        Request request = new Request();
-        request.setKey(appKey);
-        request.setSecret(appSecret);
-        request.setMethod("POST");
-        request.setUrl(messageUrl);
-        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
-        request.setBody(body);
-        try {
-            HttpRequestBase signedRequest = Client.sign(request, SIGNATURE_ALGORITHM_SDK_HMAC_SHA256);
-            HttpResponse response = client.execute(signedRequest);
-            HttpEntity resEntity = response.getEntity();
-            if (resEntity != null) {
-                log.info("Processing Body with name: {} and value: {}", System.getProperty("line.separator"),
-                    EntityUtils.toString(resEntity, "UTF-8"));
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
     }
 
     @Override
@@ -464,30 +393,5 @@ public class CompanyServiceImpl implements CompanyService {
             str = StringPropertyUtils.reduceEmailSensitivity(str);
         }
         return str;
-    }
-
-    private String buildRequestBody(String sender, String receiver, String templateId, String templateParas,
-        String statusCallBack, String signature) throws UnsupportedEncodingException {
-        StringBuilder body = new StringBuilder();
-        appendToBody(body, "from=", sender);
-        appendToBody(body, "&to=", receiver);
-        appendToBody(body, "&templateId=", templateId);
-        appendToBody(body, "&templateParas=", templateParas);
-        appendToBody(body, "&statusCallback=", statusCallBack);
-        appendToBody(body, "&signature=", signature);
-        return body.toString();
-    }
-
-    private void appendToBody(StringBuilder body, String key, String value) throws UnsupportedEncodingException {
-        if (null != value && !value.isEmpty()) {
-            body.append(key).append(URLEncoder.encode(value, "UTF-8"));
-        }
-    }
-
-    private CloseableHttpClient createIgnoreSSLHttpClient() throws Exception {
-        SSLContext sslContext =
-            new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
-        return HttpClients.custom()
-            .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE)).build();
     }
 }
