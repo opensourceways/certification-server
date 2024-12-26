@@ -4,16 +4,13 @@
 
 package com.huawei.it.euler.ddd.interfaces;
 
-import com.huawei.it.euler.common.JsonResponse;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.domain.software.SoftwareStatistics;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.ddd.service.software.SoftwareApplicationService;
 import com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery;
 import com.huawei.it.euler.exception.NoLoginException;
-import com.huawei.it.euler.exception.ParamException;
-import com.huawei.it.euler.model.entity.Software;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.io.IOException;
 
 /**
  * 测评业务接口
@@ -39,10 +36,17 @@ public class SoftwareApi {
     @Autowired
     private AccountService accountService;
 
-    @PostMapping("/statistics")
-    public JsonResponse<List<SoftwareStatistics>> statistics(@RequestBody @Valid SoftwareStatisticsQuery query, HttpServletRequest request) throws NoLoginException, ParamException {
+    /**
+     * 统计导出
+     *
+     * @param query 查询参数
+     * @param response response
+     * @param request request
+     */
+    @PostMapping("/exportStatistics")
+    public void exportStatistics(@RequestBody @Valid SoftwareStatisticsQuery query, HttpServletResponse response,
+                       HttpServletRequest request) throws NoLoginException, IOException {
         UserInfo loginUser = accountService.getLoginUser(request);
-        List<SoftwareStatistics> statisticsList = applicationService.statistics(query, loginUser);
-        return JsonResponse.success(statisticsList);
+        applicationService.exportStatistics(query, response, loginUser);
     }
 }

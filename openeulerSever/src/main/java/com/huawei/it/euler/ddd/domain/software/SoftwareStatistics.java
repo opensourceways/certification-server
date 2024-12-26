@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.software;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
 /**
@@ -18,6 +19,7 @@ public class SoftwareStatistics {
     /**
      * 业务数量
      */
+    @ExcelProperty("数量")
     private Integer count;
 
     /**
@@ -28,20 +30,20 @@ public class SoftwareStatistics {
     /**
      * 日期周期
      */
+    @ExcelProperty("日期")
     private String datePeriod;
 
     /**
      * 测评机构
      */
+    @ExcelProperty("测评机构")
     private String testOrganization;
 
 
     /**
      * 产品类型
      */
+    @ExcelProperty("产品类型")
     private String productType;
-
-
-
 
 }

@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 测评业务统计查询对象
  *
@@ -35,4 +37,15 @@ public class SoftwareStatisticsQuery {
     @Schema(description = "时间筛选对象：截止日期")
     private String endDate;
 
+    /**
+     * 测评机构
+     */
+    @Schema(description = "测评机构")
+    private List<Integer> testOrgIdList;
+
+    /**
+     * 产品类型
+     */
+    @Schema(description = "产品类型")
+    private List<String> productTypeList;
 }
