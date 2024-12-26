@@ -9,6 +9,8 @@ import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.ddd.service.software.SoftwareApplicationService;
 import com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery;
 import com.huawei.it.euler.exception.NoLoginException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ import java.io.IOException;
  * @author zhaoyan
  * @since 2024-12-25
  */
+@Tag(name = "测评业务接口", description = "测评业务接口")
 @RestController
 @RequestMapping("/software")
 public class SoftwareApi {
@@ -36,13 +39,7 @@ public class SoftwareApi {
     @Autowired
     private AccountService accountService;
 
-    /**
-     * 统计导出
-     *
-     * @param query 查询参数
-     * @param response response
-     * @param request request
-     */
+    @Operation(summary = "测评业务统计数据导出")
     @PostMapping("/exportStatistics")
     public void exportStatistics(@RequestBody @Valid SoftwareStatisticsQuery query, HttpServletResponse response,
                        HttpServletRequest request) throws NoLoginException, IOException {
