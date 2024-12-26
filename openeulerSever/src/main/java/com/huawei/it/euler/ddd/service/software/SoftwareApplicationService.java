@@ -5,7 +5,6 @@
 package com.huawei.it.euler.ddd.service.software;
 
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
-import com.huawei.it.euler.ddd.domain.account.UserInfoService;
 import com.huawei.it.euler.ddd.domain.software.SoftwareStatistics;
 import com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessage;
@@ -29,7 +28,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * 测评业务 application service
+ * 测评业务 Application service
  *
  * @author zhaoyan
  * @since 2024-12-19
@@ -55,7 +54,13 @@ public class SoftwareApplicationService {
     @Autowired
     private NoticeApplicationService noticeApplicationService;
 
-
+    /**
+     * 测评业务统计数据导出
+     * @param query 查询参数
+     * @param response 数据响应
+     * @param loginUser 登录账号
+     * @throws IOException IO异常
+     */
     public void exportStatistics(SoftwareStatisticsQuery query, HttpServletResponse response, UserInfo loginUser) throws IOException {
         List<SoftwareStatistics> statistics = mapper.statistics(query);
         if (query.getProductTypeList() != null && !query.getProductTypeList().isEmpty()){
