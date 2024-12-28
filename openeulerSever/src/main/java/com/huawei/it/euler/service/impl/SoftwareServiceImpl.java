@@ -11,8 +11,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelTestEvent;
-import com.huawei.it.euler.ddd.service.software.cqe.ApproveEvent;
+import com.huawei.it.euler.ddd.domain.software.primitive.IntelScenario;
+import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.ApproveIntelEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.RejectToUserEvent;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -260,6 +262,17 @@ public class SoftwareServiceImpl implements SoftwareService {
             softwareMapper.insertSoftware(softwareConvert);
             softwareId = softwareConvert.getId();
             software.setId(softwareId);
+            // 设置节点表当前信息 1-认证申请
+            setCurNode(uuid, softwareId);
+            // 设置节点表下一个节点状态 2-方案审核
+            Node nextNode = new Node();
+            setNextNode(software, nextNode, approvalPath);
+            software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
+            software.setReviewer(nextNode.getHandler());
+            software.setReviewRole(approvalPath.get(0).getRoleId());
+            // 更新软件信息表
+            Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
+            softwareMapper.updateSoftware(convert);
         } else {
             Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
             softwareMapper.recommit(convert);
@@ -271,21 +284,12 @@ public class SoftwareServiceImpl implements SoftwareService {
             processVo.setHandlerResult(HandlerResultEnum.ACCEPT.getId());
             processVo.setTransferredComments("通过");
             commonProcess(processVo, uuid, NodeEnum.APPLY.getId());
-            return software.getId();
         }
-        // 设置节点表当前信息 1-认证申请
-        setCurNode(uuid, softwareId);
-        // 设置节点表下一个节点状态 2-方案审核
-        Node nextNode = new Node();
-        setNextNode(software, nextNode, approvalPath);
-        software.setStatus(NodeEnum.PROGRAM_REVIEW.getId());
-        software.setReviewer(nextNode.getHandler());
-        software.setReviewRole(approvalPath.get(0).getRoleId());
-        // 更新软件信息表
-        Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
-        softwareMapper.updateSoftware(convert);
-        // 发送邮件通知
-        sendEmail(convert);
+        if (IntelScenario.isIntel(software.getAsId())){
+            UserInfo applicant = accountService.getUserInfo(software.getUserUuid());
+            ApplyIntelEvent event = new ApplyIntelEvent(this, SoftwareVOToEntityConverter.INSTANCE.convert(software), applicant);
+            eventPublisher.publishEvent(event);
+        }
         return softwareId;
     }
 
@@ -463,6 +467,10 @@ public class SoftwareServiceImpl implements SoftwareService {
      */
     private Software getNextNode(ProcessVo vo, Software software) {
         Integer nextNodeNumber = software.getStatus();
+        if (NodeEnum.PROGRAM_REVIEW.getId().equals(nextNodeNumber) && IntelScenario.isIntel(software.getAsId())) {
+            ApproveIntelEvent event = new ApproveIntelEvent(this, software);
+            eventPublisher.publishEvent(event);
+        }
         switch (vo.getHandlerResult()) {
             case 1: // 通过
                 nextNodeNumber = getNextNodeNumber(software.getCpuVendor(), nextNodeNumber, true);
@@ -475,7 +483,8 @@ public class SoftwareServiceImpl implements SoftwareService {
                 software.setStatus(nextNodeNumber);
                 getHandlerBack(nextNodeNumber, software);
                 if (RoleEnum.USER.getRoleId().equals(software.getReviewRole())) {
-                    rejectToUser(vo, software);
+                    RejectToUserEvent event = new RejectToUserEvent(this, software, vo);
+                    eventPublisher.publishEvent(event);
                 }
                 break;
             case 3: // 转审
@@ -630,11 +639,6 @@ public class SoftwareServiceImpl implements SoftwareService {
     private void setUserAsReviewer(Software software) {
         software.setReviewer(software.getUserUuid());
         software.setReviewRole(RoleEnum.USER.getRoleId());
-    }
-
-    private void rejectToUser(ProcessVo vo, Software software) {
-        ApproveEvent event = new ApproveEvent(this, software, vo);
-        eventPublisher.publishEvent(event);
     }
 
     private void setProgramReviewerAsReviewer(Software software, Integer status) {
@@ -1093,24 +1097,6 @@ public class SoftwareServiceImpl implements SoftwareService {
         certificate.setHashratePlatform(hashRatePlatform);
         checkCertificateInfo(certificate.getOsName(), certificate.getOsVersion(), hashRatePlatform);
         certificateGenerationUtils.previewCertificate(certificate, response);
-    }
-
-    /**
-     * send test apply to innovation center
-     *
-     * @param software test info
-     */
-    private void sendEmail(Software software) {
-        ApprovalScenario approvalScenario = approvalScenarioService.findById(software.getAsId());
-        if (approvalScenario == null) {
-            return;
-        }
-        if (!"intel".equals(approvalScenario.getName())) {
-            return;
-        }
-        UserInfo applicant = accountService.getUserInfo(software.getUserUuid());
-        ApplyIntelTestEvent event = new ApplyIntelTestEvent(this, software, applicant);
-        eventPublisher.publishEvent(event);
     }
 
     @Override

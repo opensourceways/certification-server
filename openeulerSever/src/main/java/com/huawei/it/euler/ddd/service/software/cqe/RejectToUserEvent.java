@@ -10,19 +10,19 @@ import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * 测评业务审核事件
+ * 测评业务驳回到用户事件
  *
  * @author zhaoyan
  * @since 2024-12-11
  */
 @Getter
-public class ApproveEvent extends ApplicationEvent {
+public class RejectToUserEvent extends ApplicationEvent {
 
     private final Software software;
 
     private final ProcessVo processVo;
 
-    public ApproveEvent(Object source, Software software, ProcessVo processVo) {
+    public RejectToUserEvent(Object source, Software software, ProcessVo processVo) {
         super(source);
         this.software = software;
         this.processVo = processVo;

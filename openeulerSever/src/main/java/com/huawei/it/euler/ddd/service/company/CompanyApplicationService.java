@@ -44,7 +44,7 @@ public class CompanyApplicationService {
      */
     @TransactionalEventListener
     @Async
-    public void companyApproveNoticeListener(CompanyApproveResultEvent event) {
+    public void companyApproveNotice(CompanyApproveResultEvent event) {
         CompanyAuditVo companyAuditVo = event.getCompanyAuditVo();
         UserInfo userInfo = accountService.getUserInfo(companyAuditVo.getUserUuid());
         NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);

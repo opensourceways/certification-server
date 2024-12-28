@@ -7,6 +7,7 @@ package com.huawei.it.euler.ddd.domain.notice;
 import com.huawei.it.euler.ddd.domain.notice.primitive.MsgType;
 import com.huawei.it.euler.ddd.domain.notice.primitive.SendType;
 import com.huawei.it.euler.ddd.domain.notice.primitive.Status;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafKaMessageDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -59,6 +60,11 @@ public class NoticeMessage {
      * 消息内容
      */
     public String content;
+
+    /**
+     * KafKa消息内容
+     */
+    public KafKaMessageDTO kafKaMessageDTO;
 
     /**
      * 消息状态

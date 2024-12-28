@@ -38,4 +38,11 @@ public class NoticeBoardRepositoryImpl implements NoticeBoardRepository {
         List<NoticeBoardPO> noticeBoardPOList = mapper.selectList(queryWrapper);
         return noticeBoardPOList.stream().map(converter::toDO).toList();
     }
+
+    @Override
+    public NoticeBoard publish(NoticeBoard noticeBoard) {
+        NoticeBoardPO noticeBoardPO = converter.toPO(noticeBoard);
+        mapper.insert(noticeBoardPO);
+        return converter.toDO(noticeBoardPO);
+    }
 }

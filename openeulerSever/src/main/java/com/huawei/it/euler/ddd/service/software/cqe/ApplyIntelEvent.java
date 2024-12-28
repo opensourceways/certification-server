@@ -16,13 +16,13 @@ import org.springframework.context.ApplicationEvent;
  * @since 2024-12-11
  */
 @Getter
-public class ApplyIntelTestEvent extends ApplicationEvent {
+public class ApplyIntelEvent extends ApplicationEvent {
 
     private final Software software;
 
     private final UserInfo applicant;
 
-    public ApplyIntelTestEvent(Object source, Software software, UserInfo applicant) {
+    public ApplyIntelEvent(Object source, Software software, UserInfo applicant) {
         super(source);
         this.software = software;
         this.applicant = applicant;

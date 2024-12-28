@@ -12,8 +12,9 @@ import com.huawei.it.euler.ddd.domain.notice.NoticeMessageRepository;
 import com.huawei.it.euler.ddd.domain.notice.policy.SendManager;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.ddd.service.notice.NoticeApplicationService;
-import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelTestEvent;
-import com.huawei.it.euler.ddd.service.software.cqe.ApproveEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.ApproveIntelEvent;
+import com.huawei.it.euler.ddd.service.software.cqe.RejectToUserEvent;
 import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
@@ -75,7 +76,7 @@ public class SoftwareApplicationService {
      */
     @TransactionalEventListener
     @Async
-    public void intelApplyNotice(ApplyIntelTestEvent event) {
+    public void applyIntelNotice(ApplyIntelEvent event) {
         List<UserInfo> userInfoList = accountService.getUserInfoList(RoleEnum.OPENATOM_INTEL.getRoleId());
         for (UserInfo userInfo : userInfoList) {
             NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);
@@ -85,12 +86,12 @@ public class SoftwareApplicationService {
     }
 
     /**
-     * 测评业务申请事件处理，驳回到伙伴节点场景， 通知伙伴
+     * 英特尔测评业务审核事件处理，取消待办
      * @param event 测评业务申请事件
      */
     @TransactionalEventListener
     @Async
-    public void progressNoticeHandler(ApproveEvent event) {
+    public void approveIntelNotice(ApproveIntelEvent event) {
         Software software = event.getSoftware();
         UserInfo userInfo = accountService.getUserInfo(software.getUserUuid());
         NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);
@@ -98,4 +99,17 @@ public class SoftwareApplicationService {
         noticeMessageRepository.record(noticeMessage);
     }
 
+    /**
+     * 测评业务申请事件处理，驳回到伙伴节点场景， 通知伙伴
+     * @param event 测评业务申请事件
+     */
+    @TransactionalEventListener
+    @Async
+    public void rejectToUserNotice(RejectToUserEvent event) {
+        Software software = event.getSoftware();
+        UserInfo userInfo = accountService.getUserInfo(software.getUserUuid());
+        NoticeMessage noticeMessage = sendManager.prepareNotice(userInfo, event);
+        noticeMessage = noticeApplicationService.sendNotice(noticeMessage);
+        noticeMessageRepository.record(noticeMessage);
+    }
 }

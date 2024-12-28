@@ -13,6 +13,11 @@ package com.huawei.it.euler.ddd.infrastructure.email;
 public class EmailTemplateVariable {
 
     /**
+     * 用户中心自动生成邮箱，该邮箱无法收到邮件
+     */
+    public static final String AUTO_GENERATE_EMAIL = "@user.noreply.osinfra.cn";
+
+    /**
      * 测评业务进度通知模板
      */
     public static final String PROGRESS_NOTICE_TEMPLATE_PATH = "/docs/ProgressNoticeEmailTemplate.html";

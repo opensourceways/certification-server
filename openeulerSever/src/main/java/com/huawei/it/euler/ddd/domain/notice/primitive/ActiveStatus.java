@@ -7,22 +7,21 @@ package com.huawei.it.euler.ddd.domain.notice.primitive;
 import lombok.Getter;
 
 /**
- * 发送方式枚举
+ * 系统公告状态
  *
  * @author zhaoyan
- * @since 2024-12-19
+ * @since 2024-12-24
  */
 @Getter
-public enum SendType {
-    PHONE("phone", "手机"),
-    EMAIL("email", "邮箱"),
-    KAFKA("kafka", "kafka消息中心");
+public enum ActiveStatus {
+    ACTIVE("y", "有效"),
+    INACTIVE("n", "无效");
 
     private final String value;
 
     private final String desc;
 
-    SendType(String value, String desc) {
+    ActiveStatus(String value, String desc) {
         this.value = value;
         this.desc = desc;
     }

@@ -11,6 +11,8 @@ import com.huawei.it.euler.ddd.domain.notice.primitive.CompanyApproveNoticeVaria
 import com.huawei.it.euler.ddd.domain.notice.primitive.MsgType;
 import com.huawei.it.euler.ddd.domain.notice.primitive.SendType;
 import com.huawei.it.euler.ddd.domain.notice.policy.SendPolicy;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafKaMessageDTO;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafkaMessageTemplate;
 import com.huawei.it.euler.ddd.infrastructure.sms.SmsProperties;
 import com.huawei.it.euler.ddd.service.company.cqe.CompanyApproveResultEvent;
 import com.huawei.it.euler.model.vo.CompanyAuditVo;
@@ -18,13 +20,15 @@ import com.huawei.it.euler.util.SpringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
+import java.util.Date;
+
 /**
  * 企业审核通知策略
  *
  * @author zhaoyan
  * @since 2024-12-19
  */
-public class CompanyApproveNoticePolicy implements SendPolicy {
+public class CompanyApprovePhoneNoticePolicy implements SendPolicy {
 
     @Override
     public boolean canSend(UserInfo userInfo, ApplicationEvent event) {
@@ -40,17 +44,27 @@ public class CompanyApproveNoticePolicy implements SendPolicy {
         CompanyApproveResultEvent approveResultEvent = (CompanyApproveResultEvent) event;
         CompanyAuditVo companyAuditVo = approveResultEvent.getCompanyAuditVo();
 
-        CompanyApproveNoticeVariable approveNoticeVariable = new CompanyApproveNoticeVariable();
-        approveNoticeVariable.setResult(ApproveResult.findDesc(companyAuditVo.getResult()));
-        approveNoticeVariable.setComment(companyAuditVo.getComment());
-
         NoticeMessage noticeMessage = new NoticeMessage();
         noticeMessage.setMsgType(MsgType.COMPANY_APPROVE);
         noticeMessage.setReceiver(userInfo.getPhone());
         noticeMessage.setSendType(SendType.PHONE);
         SmsProperties smsProperties = SpringUtil.getBean("smsProperties", SmsProperties.class);
         noticeMessage.setTemplate(smsProperties.getTemplateId());
+
+        String result = ApproveResult.findDesc(companyAuditVo.getResult());
+        CompanyApproveNoticeVariable approveNoticeVariable = new CompanyApproveNoticeVariable();
+        approveNoticeVariable.setResult(result);
+        approveNoticeVariable.setComment(companyAuditVo.getComment());
         noticeMessage.setContent(approveNoticeVariable.getPhoneTemplateParameters());
+
+        KafKaMessageDTO messageDTO = new KafKaMessageDTO();
+        messageDTO.setUser(userInfo.getUuid());
+        messageDTO.setType(KafkaMessageTemplate.TYPE_NOTICE);
+        String companyNoticeContent = KafkaMessageTemplate.getCompanyNoticeContent(result, companyAuditVo.getComment());
+        messageDTO.setContent(companyNoticeContent);
+        messageDTO.setRedirectUrl(KafkaMessageTemplate.URL_INDEX);
+        messageDTO.setCreateTime(new Date());
+        noticeMessage.setKafKaMessageDTO(messageDTO);
         return noticeMessage;
     }
 }
