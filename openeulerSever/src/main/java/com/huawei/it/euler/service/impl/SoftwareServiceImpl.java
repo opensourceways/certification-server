@@ -1035,8 +1035,10 @@ public class SoftwareServiceImpl implements SoftwareService {
         softwareQuery.setUuid(uuid);
         softwareQuery.setDataScope(userService.getUserAllDateScope(Integer.valueOf(uuid)));
         List<SoftwareVo> reviewSoftwareList = softwareMapper.getExportSoftwareList(softwareQuery);
-        List<Attachments> fileKeys =
-            softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList());
+        List<Attachments> fileKeys = new ArrayList<>();
+        if (!reviewSoftwareList.isEmpty()){
+            fileKeys.addAll(softwareMapper.getCertificationIds(reviewSoftwareList.stream().map(SoftwareVo::getId).toList()));
+        }
         return fileUtils.streamFiles(fileKeys);
     }
 
