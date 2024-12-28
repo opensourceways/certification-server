@@ -274,10 +274,7 @@ public class SoftwareServiceImpl implements SoftwareService {
             Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
             softwareMapper.updateSoftware(convert);
         } else {
-            Software convert = SoftwareVOToEntityConverter.INSTANCE.convert(software);
-            softwareMapper.recommit(convert);
-            // 发送邮件通知
-            sendEmail(convert);
+            softwareMapper.recommit(SoftwareVOToEntityConverter.INSTANCE.convert(software));
             // 调用审核接口
             ProcessVo processVo = new ProcessVo();
             processVo.setSoftwareId(software.getId());
