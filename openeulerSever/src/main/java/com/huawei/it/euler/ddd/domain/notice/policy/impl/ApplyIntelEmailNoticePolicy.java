@@ -10,21 +10,24 @@ import com.huawei.it.euler.ddd.domain.notice.policy.SendPolicy;
 import com.huawei.it.euler.ddd.domain.notice.primitive.ApplyIntelTestEventNoticeVariable;
 import com.huawei.it.euler.ddd.domain.notice.primitive.MsgType;
 import com.huawei.it.euler.ddd.domain.notice.primitive.SendType;
+import com.huawei.it.euler.ddd.domain.software.primitive.IntelScenario;
 import com.huawei.it.euler.ddd.infrastructure.email.EmailTemplateVariable;
-import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelTestEvent;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafKaMessageDTO;
+import com.huawei.it.euler.ddd.infrastructure.kafka.KafkaMessageTemplate;
+import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelEvent;
 import com.huawei.it.euler.model.entity.Software;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
+import java.util.Date;
+
 /**
- * 英特尔测评业务申请策略
+ * 英特尔测评业务申请通知策略
  *
  * @author zhaoyan
  * @since 2024-12-20
  */
-public class ApplyIntelNoticePolicy implements SendPolicy {
-
-    private static final Integer INTEL_APPROVAL_SCENARIO = 8;
+public class ApplyIntelEmailNoticePolicy implements SendPolicy {
 
     @Override
     public boolean canSend(UserInfo userInfo, ApplicationEvent event) {
@@ -33,20 +36,27 @@ public class ApplyIntelNoticePolicy implements SendPolicy {
             return false;
         }
         // 非测评审批事件
-        if (!(event instanceof ApplyIntelTestEvent approveEvent)){
+        if (!(event instanceof ApplyIntelEvent approveEvent)){
             return false;
         }
 
         Software software = approveEvent.getSoftware();
         // 是否英特尔业务
-        return INTEL_APPROVAL_SCENARIO.equals(software.getAsId());
+        return IntelScenario.isIntel(software.getAsId());
     }
 
     @Override
     public NoticeMessage prepareSend(UserInfo userInfo, ApplicationEvent event) {
-        ApplyIntelTestEvent applyIntelTestEvent = (ApplyIntelTestEvent) event;
-        Software software = applyIntelTestEvent.getSoftware();
-        UserInfo applicant = applyIntelTestEvent.getApplicant();
+        ApplyIntelEvent applyIntelEvent = (ApplyIntelEvent) event;
+        Software software = applyIntelEvent.getSoftware();
+        UserInfo applicant = applyIntelEvent.getApplicant();
+
+        NoticeMessage noticeMessage = new NoticeMessage();
+        noticeMessage.setReceiver(userInfo.getEmail());
+        noticeMessage.setMsgType(MsgType.INTEL_APPLY_NOTICE);
+        noticeMessage.setSendType(SendType.EMAIL);
+        noticeMessage.setTemplate(EmailTemplateVariable.APPLY_INTEL_NOTICE_PATH);
+        noticeMessage.setSubject(EmailTemplateVariable.APPLY_INTEL_NOTICE_SUBJECT);
 
         ApplyIntelTestEventNoticeVariable variable = new ApplyIntelTestEventNoticeVariable();
         variable.setCompanyName(software.getCompanyName());
@@ -61,14 +71,18 @@ public class ApplyIntelNoticePolicy implements SendPolicy {
         variable.setUserName(applicant.getUserName());
         variable.setUserEmail(applicant.getEmail());
         variable.setUserPhone(applicant.getPhone());
-
-        NoticeMessage noticeMessage = new NoticeMessage();
-        noticeMessage.setReceiver(userInfo.getEmail());
-        noticeMessage.setMsgType(MsgType.INTEL_APPLY_NOTICE);
-        noticeMessage.setSendType(SendType.EMAIL);
-        noticeMessage.setTemplate(EmailTemplateVariable.APPLY_INTEL_NOTICE_PATH);
-        noticeMessage.setSubject(EmailTemplateVariable.APPLY_INTEL_NOTICE_SUBJECT);
         noticeMessage.setContent(variable.getEmailContent());
+
+        KafKaMessageDTO messageDTO = new KafKaMessageDTO();
+        messageDTO.setUser(userInfo.getUuid());
+        messageDTO.setType(KafkaMessageTemplate.TYPE_TODO);
+        messageDTO.setTodoId(software.getId());
+        messageDTO.setTodoStatus(KafkaMessageTemplate.TODO_STATUS_CREATE);
+        messageDTO.setContent(KafkaMessageTemplate.CONTENT_TODO);
+        messageDTO.setRedirectUrl(KafkaMessageTemplate.getSoftwareDetailUrl(String.valueOf(software.getId()),software.getProductName()));
+        messageDTO.setCreateTime(new Date());
+        noticeMessage.setKafKaMessageDTO(messageDTO);
+
         noticeMessage.sendCreate();
         return noticeMessage;
     }

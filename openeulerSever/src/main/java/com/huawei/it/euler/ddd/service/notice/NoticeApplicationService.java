@@ -25,10 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 系统消息通知 application service
@@ -83,19 +80,11 @@ public class NoticeApplicationService {
         messageDTO.setType(KafkaMessageTemplate.TYPE_NOTICE);
         messageDTO.setContent(noticeBoard.getNoticeInfo());
         messageDTO.setRedirectUrl(KafkaMessageTemplate.URL_INDEX);
+        messageDTO.setCreateTime(new Date());
         sendKafka(messageDTO);
-
         return noticeBoard;
     }
 
-    /**
-     * kafka 消息发送
-     * @param messageDTO kafka消息
-     */
-    public void sendKafka(KafKaMessageDTO messageDTO){
-        messageDTO.setRedirectUrl(origin + messageDTO.getRedirectUrl());
-        kafkaTemplate.send(KafkaMessageTemplate.TOPIC, JSONObject.toJSONString(messageDTO));
-    }
 
     /**
      * 发送消息
@@ -104,9 +93,15 @@ public class NoticeApplicationService {
      */
     public NoticeMessage sendNotice(NoticeMessage noticeMessage) {
         if (SendType.PHONE.equals(noticeMessage.getSendType())) {
+            sendKafka(noticeMessage.getKafKaMessageDTO());
             return sendSms(noticeMessage);
         } else if (SendType.EMAIL.equals(noticeMessage.getSendType())) {
+            sendKafka(noticeMessage.getKafKaMessageDTO());
             return sendEmail(noticeMessage);
+        } else if (SendType.KAFKA.equals(noticeMessage.getSendType())) {
+            sendKafka(noticeMessage.getKafKaMessageDTO());
+            noticeMessage.sendSuccess();
+            return noticeMessage;
         } else {
             return noticeMessage;
         }
@@ -148,5 +143,18 @@ public class NoticeApplicationService {
             noticeMessage.sendFailed(smsResponse.getDescription());
         }
         return noticeMessage;
+    }
+
+    /**
+     * kafka 消息发送
+     * @param messageDTO kafka消息
+     */
+    public void sendKafka(KafKaMessageDTO messageDTO){
+        try {
+            messageDTO.setRedirectUrl(origin + messageDTO.getRedirectUrl());
+            kafkaTemplate.send(KafkaMessageTemplate.TOPIC, JSONObject.toJSONString(messageDTO));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

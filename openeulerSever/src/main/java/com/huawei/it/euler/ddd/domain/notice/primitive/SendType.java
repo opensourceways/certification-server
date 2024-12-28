@@ -15,7 +15,8 @@ import lombok.Getter;
 @Getter
 public enum SendType {
     PHONE("phone", "手机"),
-    EMAIL("email", "邮箱");
+    EMAIL("email", "邮箱"),
+    KAFKA("kafka", "kafka消息中心");
 
     private final String value;
 

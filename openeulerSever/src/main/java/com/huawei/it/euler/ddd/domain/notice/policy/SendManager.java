@@ -6,8 +6,9 @@ package com.huawei.it.euler.ddd.domain.notice.policy;
 
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessage;
-import com.huawei.it.euler.ddd.domain.notice.policy.impl.ApplyIntelNoticePolicy;
-import com.huawei.it.euler.ddd.domain.notice.policy.impl.CompanyApproveNoticePolicy;
+import com.huawei.it.euler.ddd.domain.notice.policy.impl.ApplyIntelEmailNoticePolicy;
+import com.huawei.it.euler.ddd.domain.notice.policy.impl.ApproveIntelKafkaNoticePolicy;
+import com.huawei.it.euler.ddd.domain.notice.policy.impl.CompanyApprovePhoneNoticePolicy;
 import com.huawei.it.euler.ddd.domain.notice.policy.impl.RejectToUserEmailNoticePolicy;
 import com.huawei.it.euler.ddd.domain.notice.policy.impl.RejectToUserPhoneNoticePolicy;
 import org.springframework.context.ApplicationEvent;
@@ -27,8 +28,9 @@ public class SendManager {
 
     private static final List<SendPolicy> POLICIES = new ArrayList<>();
     static {
-        POLICIES.add(new ApplyIntelNoticePolicy());
-        POLICIES.add(new CompanyApproveNoticePolicy());
+        POLICIES.add(new ApplyIntelEmailNoticePolicy());
+        POLICIES.add(new ApproveIntelKafkaNoticePolicy());
+        POLICIES.add(new CompanyApprovePhoneNoticePolicy());
         POLICIES.add(new RejectToUserEmailNoticePolicy());
         POLICIES.add(new RejectToUserPhoneNoticePolicy());
     }
@@ -50,7 +52,7 @@ public class SendManager {
         noticeMessage.setReceiver(userInfo.getUuid());
         noticeMessage.setContent(event.getSource().toString());
         noticeMessage.sendCreate();
-        noticeMessage.sendFailed("policy mismatch");
+        noticeMessage.sendFailed("no handle policy");
         return noticeMessage;
     }
 }

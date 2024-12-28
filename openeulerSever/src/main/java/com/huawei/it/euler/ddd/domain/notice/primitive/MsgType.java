@@ -15,7 +15,8 @@ import lombok.Getter;
 @Getter
 public enum MsgType {
     COMPANY_APPROVE("companyApproveResultNotice", "企业审核结果通知"),
-    INTEL_APPLY_NOTICE("intelApplyNotice", "英特尔认证申请通知"),
+    INTEL_APPLY_NOTICE("applyIntelNotice", "英特尔认证申请通知"),
+    INTEL_APPROVE_NOTICE("approveIntelNotice", "英特尔认证审核通知"),
     SOFTWARE_PROGRESS_NOTICE("softwareProgressNotice", "测评业务进度通知");
 
     private final String value;
