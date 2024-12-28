@@ -15,9 +15,11 @@ import com.huawei.it.euler.ddd.service.notice.NoticeApplicationService;
 import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelEvent;
 import com.huawei.it.euler.ddd.service.software.cqe.ApproveIntelEvent;
 import com.huawei.it.euler.ddd.service.software.cqe.RejectToUserEvent;
+import com.huawei.it.euler.mapper.RoleMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.model.entity.Software;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
+import com.huawei.it.euler.model.vo.RoleVo;
 import com.huawei.it.euler.util.ExcelUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 测评业务 Application service
@@ -37,8 +42,13 @@ import java.util.List;
 @Service
 public class SoftwareApplicationService {
 
+    private static final Integer ALL_PERMISSION = 0;
+
     @Autowired
     private SoftwareMapper mapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Autowired
     private ExcelUtils excelUtils;
@@ -63,6 +73,11 @@ public class SoftwareApplicationService {
      * @throws IOException IO异常
      */
     public void exportStatistics(SoftwareStatisticsQuery query, HttpServletResponse response, UserInfo loginUser) throws IOException {
+        Set<Integer> dateScopeSet = roleMapper.findRoleInfoByUserId(Integer.valueOf(loginUser.getUuid()))
+                .stream().map(RoleVo::getDataScope).filter(Objects::nonNull).collect(Collectors.toSet());
+        if (!dateScopeSet.isEmpty() && !dateScopeSet.contains(ALL_PERMISSION)) {
+            query.setTestOrgIdList(dateScopeSet.stream().toList());
+        }
         List<SoftwareStatistics> statistics = mapper.statistics(query);
         if (query.getProductTypeList() != null && !query.getProductTypeList().isEmpty()){
             statistics = statistics.stream().filter(item -> query.getProductTypeList().contains(item.getProductType())).toList();
