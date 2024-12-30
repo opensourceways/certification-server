@@ -18,7 +18,7 @@ public enum HandlerResultEnum {
     // accept
     ACCEPT(1, "通过"),
     // reject
-    REJECT(2, "已驳回"),
+    REJECT(2, "驳回"),
     // transfer
     TRANSFER(3, "转审"),
     // withdraw
