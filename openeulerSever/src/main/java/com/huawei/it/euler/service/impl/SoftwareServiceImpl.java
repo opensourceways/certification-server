@@ -314,6 +314,8 @@ public class SoftwareServiceImpl implements SoftwareService {
         software.setUsageScenesDesc(software.getUsageScenesDesc().trim());
         software.setProductVersion(software.getProductVersion().trim());
         software.setTestOrgId(CenterEnum.findByName(software.getTestOrganization()));
+        software.setInitOsName(software.getOsName());
+        software.setInitOsVersion(software.getOsVersion());
         // 将算力平台和服务器类型list转为json字符串
         String hashRatePlatform = JSON.toJSON(software.getHashratePlatformList()).toString();
         software.setJsonHashRatePlatform(hashRatePlatform);
@@ -394,7 +396,8 @@ public class SoftwareServiceImpl implements SoftwareService {
 
     public String testingPhase(ProcessVo vo, String uuid) {
         Software software = checkCommonProcess(vo, uuid, NodeEnum.TESTING_PHASE.getId());
-        if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
+        if (!Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId()) &&
+                !Objects.equals(vo.getHandlerResult(), HandlerResultEnum.REJECT.getId())) {
             LOGGER.error("非法的审核结果参数:id:{},handlerResult:{}", vo.getSoftwareId(), vo.getHandlerResult());
             throw new ParamException(ErrorCodes.INVALID_PARAMETERS.getMessage());
         }
@@ -402,9 +405,17 @@ public class SoftwareServiceImpl implements SoftwareService {
         attachmentQuery.setSoftwareId(software.getId());
         attachmentQuery.setFileType("testReport");
         List<AttachmentsVo> attachmentsVos = softwareMapper.getAttachmentsNames(attachmentQuery);
-        if (CollectionUtil.isEmpty(attachmentsVos)) {
-            LOGGER.error("未上传测试报告:id:{}", vo.getSoftwareId());
-            throw new ParamException(ErrorCodes.FILE_NOT_EXIST.getMessage());
+        if (Objects.equals(vo.getHandlerResult(), HandlerResultEnum.ACCEPT.getId())) {
+            if (CollectionUtil.isEmpty(attachmentsVos)) {
+                LOGGER.error("未上传测试报告:id:{}", vo.getSoftwareId());
+                throw new ParamException(ErrorCodes.FILE_NOT_EXIST.getMessage());
+            }
+        } else {
+            if (!CollectionUtil.isEmpty(attachmentsVos)) {
+                for (AttachmentsVo attachmentsVo : attachmentsVos) {
+                    softwareMapper.deleteAttachments(attachmentsVo.getFileId());
+                }
+            }
         }
         updateNextSoftware(vo, software, uuid);
         return String.valueOf(vo.getSoftwareId());
@@ -498,6 +509,42 @@ public class SoftwareServiceImpl implements SoftwareService {
                 return curNode - 2;
             }
             return curNode - 1;
+        }
+    }
+
+    @Override
+    public void voidSoftware(Integer id, String uuid) {
+        Software software = findById(id);
+        if (!Objects.equals(software.getUserUuid(), uuid)) {
+            LOGGER.error("软件不属于当前用户:id:{},uuid:{}", id, uuid);
+            throw new ParamException(ErrorCodes.UNAUTHORIZED_OPERATION.getMessage());
+        }
+        if (!software.getStatus().equals(NodeEnum.TESTING_PHASE.getId())
+                && !software.getStatus().equals(NodeEnum.CERTIFICATE_CONFIRMATION.getId())
+                && !software.getStatus().equals(NodeEnum.FINISHED.getId())) {
+            LOGGER.error("软件状态错误:id:{},status:{}", id, software.getStatus());
+            throw new ParamException(ErrorCodes.APPROVAL_PROCESS_STATUS_ERROR.getMessage());
+        }
+        software.setStatus(NodeEnum.VOIDED.getId());
+        software.setReviewer(null);
+        softwareMapper.updateSoftware(software);
+        Date now = new Date();
+        Node latestNode = nodeMapper.findLatestNodeById(id);
+        if (latestNode == null){
+            latestNode = new Node();
+            latestNode.setSoftwareId(software.getId());
+            latestNode.setNodeName(HandlerResultEnum.VOID.getName());
+            latestNode.setHandler(uuid);
+            latestNode.setHandlerTime(now);
+            latestNode.setHandlerResult(HandlerResultEnum.VOID.getId());
+            latestNode.setTransferredComments("业务作废！");
+            nodeMapper.insertNode(latestNode);
+        } else {
+            latestNode.setHandlerResult(HandlerResultEnum.VOID.getId());
+            latestNode.setTransferredComments("业务作废！");
+            latestNode.setHandlerTime(now);
+            latestNode.setHandler(uuid);
+            nodeMapper.updateNodeById(latestNode);
         }
     }
 
