@@ -1,4 +1,4 @@
-package com.huawei.it.euler.config.extension;
+package com.huawei.it.euler.ddd.infrastructure.email;
 
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
@@ -16,34 +16,19 @@ import jakarta.mail.internet.MimeMultipart;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 @Component
-public class EmailConfig {
-    private static final Logger logger = LoggerFactory.getLogger(EmailConfig.class);
+public class EmailService {
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    private static final String INTELNOTICETEMPLATE = "/docs/IntelNoticeEmailTemplate.html";
-
-    @Value("${email.host}")
-    private String host;
-
-    @Value("${email.port}")
-    private String port;
-
-    @Value("${email.userName}")
-    private String userName;
-
-    @Value("${email.pwd}")
-    private String password;
+    @Autowired
+    private EmailProperties emailProperties;
 
     /**
      * create email session instance after init.
@@ -52,8 +37,8 @@ public class EmailConfig {
      */
     private Session getMailSession() {
         Properties props = new Properties();
-        props.put("mail.smtp.host", host);
-        props.put("mail.smtp.port", port);
+        props.put("mail.smtp.host", emailProperties.getHost());
+        props.put("mail.smtp.port", emailProperties.getPort());
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.ssl.enable", "true");
@@ -63,7 +48,7 @@ public class EmailConfig {
         return Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(userName, password);
+                return new PasswordAuthentication(emailProperties.getUserName(), emailProperties.getPwd());
             }
         });
     }
@@ -76,11 +61,11 @@ public class EmailConfig {
      * @param content        email content
      * @param attachmentList attachment collection, enable null
      */
-    public void sendMail(List<String> receiverList, String subject, String content, List<String> attachmentList) {
+    public EmailResponse sendMail(List<String> receiverList, String subject, String content, List<String> attachmentList) {
         Session session = getMailSession();
         Message message = new MimeMessage(session);
         try {
-            message.setFrom(new InternetAddress(userName));
+            message.setFrom(new InternetAddress(emailProperties.getUserName()));
 
             // Add multiple recipients
             for (String recipient : receiverList) {
@@ -113,23 +98,10 @@ public class EmailConfig {
 
             // Send the email
             Transport.send(message);
+            return EmailResponse.sendSuccess();
         } catch (MessagingException e) {
             logger.error(String.format("email send error, parameters: receiverList-%s,subject-%s, exception==>", StringUtils.join(receiverList, ","), content), e);
-        }
-    }
-
-    public String getIntelNoticeEmailContent(Map<String,String> dataMap) {
-        ClassPathResource resource = new ClassPathResource(INTELNOTICETEMPLATE);
-        try {
-            String contentAsString = resource.getContentAsString(StandardCharsets.UTF_8);
-            for (Map.Entry<String, String> stringStringEntry : dataMap.entrySet()) {
-                String value = stringStringEntry.getValue();
-                value = StringUtils.isEmpty(value) ? "--" : value;
-                contentAsString = contentAsString.replace("${" + stringStringEntry.getKey() + "}", value);
-            }
-            return contentAsString;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return EmailResponse.sendExceptionResponse(e.getMessage());
         }
     }
 }

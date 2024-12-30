@@ -145,6 +145,14 @@ public interface SoftwareService {
     List<AuditRecordsVo> getNodeList(Integer softwareId, String uuid);
 
     /**
+     * 作废测评业务
+     *
+     * @param id 流程id
+     * @param uuid uuid
+     */
+    void voidSoftware(Integer id, String uuid);
+
+    /**
      * 删除审批信息
      *
      * @param id 流程id
