@@ -570,8 +570,7 @@
             test_organization
         ORDER BY
             test_organization,
-            datePeriod,
-            FIELD( productType, 'ISV', 'IHV-server', 'IHV-board', 'OSV' );
+            datePeriod;
     </select>
 
 </mapper>
