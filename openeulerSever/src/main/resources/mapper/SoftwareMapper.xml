@@ -89,9 +89,9 @@
 
     <resultMap id="SoftwareStatisticsMap" type="com.huawei.it.euler.ddd.domain.software.SoftwareStatistics">
         <result column="sum" property="count"/>
-        <result column="datePeriod" property="datePeriod"/>
+        <result column="certification_time" property="datePeriod"/>
         <result column="test_organization" property="testOrganization"/>
-        <result column="productType" property="productType"/>
+        <result column="product_type" property="productType"/>
     </resultMap>
 
     <sql id="baseFields">
@@ -524,9 +524,9 @@
 
     <select id="statistics" parameterType="com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery" resultMap="SoftwareStatisticsMap">
         SELECT
-            COUNT( 1 ) AS sum,
-            product_type AS productType,
-            certification_time as datePeriod,
+            1 AS sum,
+            product_type,
+            certification_time,
             test_organization
         FROM
             software_t
@@ -546,12 +546,12 @@
             </foreach>
         </if>
         GROUP BY
-            productType,
-            datePeriod,
+            product_type,
+            certification_time,
             test_organization
         ORDER BY
             test_organization,
-            datePeriod;
+            certification_time;
     </select>
 
 </mapper>
