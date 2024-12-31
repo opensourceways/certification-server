@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.domain.software;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
@@ -25,6 +26,7 @@ public class SoftwareStatistics {
     /**
      * 时间筛选对象
      */
+    @ExcelIgnore
     private String dateKey;
 
     /**

@@ -57,6 +57,17 @@ public enum Dimension {
     PRODUCT_TYPE_ISV("ISV","独立软件厂商"),
 
     /**
+     * 产业定义:ISV-行业软件
+     */
+    PRODUCT_TYPE_ISV_ORI_INDUSTRY_SOFT("行业软件/","行业软件"),
+
+    /**
+     * 产业定义:ISV-基础软件
+     */
+    PRODUCT_TYPE_ISV_ORI_BASE_SOFT("基础软件/","基础软件"),
+
+
+    /**
      * 产业定义:IHV=IHV-server+IHV-server
      */
     PRODUCT_TYPE_IHV("IHV","独立硬件厂商"),
@@ -67,14 +78,29 @@ public enum Dimension {
     PRODUCT_TYPE_OSV("OSV","操作系统厂商"),
 
     /**
+     * 产业定义:OSV
+     */
+    PRODUCT_TYPE_OSV_ORI("基础软件/操作系统","操作系统"),
+
+    /**
      * 产业定义:IHV-server
      */
     PRODUCT_TYPE_IHV_SERVER("IHV-server","硬件-服务器整机"),
 
     /**
+     * 产业定义:IHV-server
+     */
+    PRODUCT_TYPE_IHV_SERVER_ORI("硬件/服务器整机","硬件-服务器整机"),
+
+    /**
      * 产业定义:IHV-board
      */
-    PRODUCT_TYPE_IHV_BOARD("IHV-board","硬件-板卡");
+    PRODUCT_TYPE_IHV_BOARD("IHV-board","硬件-板卡"),
+
+    /**
+     * 产业定义:IHV-board
+     */
+    PRODUCT_TYPE_IHV_BOARD_ORI("硬件/","硬件-板卡");
 
     private final String value;
     private final String desc;
@@ -92,6 +118,21 @@ public enum Dimension {
             return PRODUCT_TYPE_ARCH_SOUTH.getValue();
         } else {
             return PRODUCT_TYPE_ARCH_OS.getValue();
+        }
+    }
+
+    public static String getProductType(String originalProductType){
+        if ((originalProductType.startsWith(PRODUCT_TYPE_ISV_ORI_INDUSTRY_SOFT.getValue())
+                || originalProductType.startsWith(PRODUCT_TYPE_ISV_ORI_BASE_SOFT.getValue()))
+                && !originalProductType.equals(PRODUCT_TYPE_OSV_ORI.getValue())){
+            return PRODUCT_TYPE_ISV.getValue();
+        } else if (originalProductType.startsWith(PRODUCT_TYPE_IHV_BOARD_ORI.getValue())
+                && !originalProductType.equals(PRODUCT_TYPE_IHV_SERVER_ORI.getValue())){
+            return PRODUCT_TYPE_IHV_BOARD.getValue();
+        } else if (originalProductType.equals(PRODUCT_TYPE_IHV_SERVER_ORI.getValue())){
+            return PRODUCT_TYPE_IHV_SERVER.getValue();
+        } else {
+            return PRODUCT_TYPE_OSV.getValue();
         }
     }
 }

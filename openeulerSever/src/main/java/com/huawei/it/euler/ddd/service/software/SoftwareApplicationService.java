@@ -9,6 +9,7 @@ import com.huawei.it.euler.ddd.domain.notice.NoticeMessage;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessageRepository;
 import com.huawei.it.euler.ddd.domain.notice.policy.SendManager;
 import com.huawei.it.euler.ddd.domain.software.SoftwareStatistics;
+import com.huawei.it.euler.ddd.domain.software.primitive.Dimension;
 import com.huawei.it.euler.ddd.service.AccountService;
 import com.huawei.it.euler.ddd.service.notice.NoticeApplicationService;
 import com.huawei.it.euler.ddd.service.software.cqe.ApplyIntelEvent;
@@ -28,9 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -79,10 +80,30 @@ public class SoftwareApplicationService {
             query.setTestOrgIdList(dateScopeSet.stream().toList());
         }
         List<SoftwareStatistics> statistics = mapper.statistics(query);
-        if (query.getProductTypeList() != null && !query.getProductTypeList().isEmpty()){
+        statistics = statistics.stream().peek(softwareStatistics -> {
+            softwareStatistics.setProductType(Dimension.getProductType(softwareStatistics.getProductType()));
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime datePeriod = LocalDateTime.parse(softwareStatistics.getDatePeriod(), dateTimeFormatter);
+            DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+            softwareStatistics.setDatePeriod(datePeriod.format(yearMonthFormatter));
+        }).toList();
+        if (query.getProductTypeList() != null && !query.getProductTypeList().isEmpty()) {
             statistics = statistics.stream().filter(item -> query.getProductTypeList().contains(item.getProductType())).toList();
         }
-        excelUtils.exportSoftWareStatistics(statistics, response);
+
+        Map<String, Map<String, Map<String, List<SoftwareStatistics>>>> collect = statistics.stream().collect(Collectors.groupingBy(SoftwareStatistics::getTestOrganization,
+                Collectors.groupingBy(SoftwareStatistics::getProductType,
+                        Collectors.groupingBy(SoftwareStatistics::getDatePeriod))));
+        List<SoftwareStatistics> exportData = new ArrayList<>();
+        collect.forEach((testOrg, productMap) -> productMap.forEach((product, dateMap) -> dateMap.forEach((date, dataList) -> {
+            SoftwareStatistics softwareStatistics = new SoftwareStatistics();
+            softwareStatistics.setTestOrganization(testOrg);
+            softwareStatistics.setDatePeriod(date);
+            softwareStatistics.setProductType(product);
+            softwareStatistics.setCount(dataList.size());
+            exportData.add(softwareStatistics);
+        })));
+        excelUtils.exportSoftWareStatistics(exportData, response);
     }
 
     /**

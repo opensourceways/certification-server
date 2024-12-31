@@ -524,39 +524,20 @@
 
     <select id="statistics" parameterType="com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery" resultMap="SoftwareStatisticsMap">
         SELECT
-         COUNT( 1 ) AS sum,
-         (CASE
-            WHEN ( product_type LIKE '行业软件/%' OR product_type LIKE '基础软件/%' ) AND product_type != '基础软件/操作系统' THEN
-                'ISV'
-            WHEN product_type LIKE '硬件/%' AND product_type != '硬件/服务器整机' THEN
-                'IHV-board'
-            WHEN product_type = '硬件/服务器整机' THEN
-                'IHV-server'
-            ELSE 'OSV' END
-          ) AS productType,
-        <if test="dateKey == 'application_time'">
-            DATE_FORMAT( application_time, '%Y-%m' ) AS datePeriod,
-        </if>
-        <if test="dateKey == 'certification_time'">
-            DATE_FORMAT( certification_time, '%Y-%m' ) AS datePeriod,
-        </if>
-        test_organization
+            COUNT( 1 ) AS sum,
+            product_type AS productType,
+            certification_time as datePeriod,
+            test_organization
         FROM
             software_t
         WHERE
             delete_flag = 0
           AND `status` = 9
-        <if test="dateKey == 'certification_time' and beginDate != null">
+        <if test="beginDate != null">
             and DATE_FORMAT(certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
         </if>
-        <if test="dateKey == 'certification_time' and endDate != null">
+        <if test="endDate != null">
             and DATE_FORMAT(certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-        </if>
-        <if test="dateKey == 'application_time' and beginDate != null">
-            and DATE_FORMAT(application_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-        </if>
-        <if test="dateKey == 'application_time' and endDate != null">
-            and DATE_FORMAT(application_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
         </if>
         <if test="testOrgIdList != null and testOrgIdList.size() > 0">
             and test_org_id in
