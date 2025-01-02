@@ -88,7 +88,6 @@
     </resultMap>
 
     <resultMap id="SoftwareStatisticsMap" type="com.huawei.it.euler.ddd.domain.software.SoftwareStatistics">
-        <result column="sum" property="count"/>
         <result column="certification_time" property="datePeriod"/>
         <result column="test_organization" property="testOrganization"/>
         <result column="product_type" property="productType"/>
@@ -524,27 +523,12 @@
 
     <select id="statistics" parameterType="com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery" resultMap="SoftwareStatisticsMap">
         SELECT
-            1 AS sum,
             product_type,
             certification_time,
             test_organization
         FROM
             software_t
-        WHERE
-            delete_flag = 0
-          AND `status` = 9
-        <if test="beginDate != null">
-            and DATE_FORMAT(certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-        </if>
-        <if test="endDate != null">
-            and DATE_FORMAT(certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-        </if>
-        <if test="testOrgIdList != null and testOrgIdList.size() > 0">
-            and test_org_id in
-            <foreach collection="testOrgIdList" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
+        <include refid="whereStatistics"/>
         GROUP BY
             product_type,
             certification_time,
@@ -553,5 +537,22 @@
             test_organization,
             certification_time;
     </select>
-
+    <sql id="whereStatistics">
+        <where>
+            delete_flag = 0
+            AND `status` = 9
+            <if test="beginDate != null">
+                and DATE_FORMAT(certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
+            </if>
+            <if test="endDate != null">
+                and DATE_FORMAT(certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+            </if>
+            <if test="testOrgIdList != null and testOrgIdList.size() > 0">
+                and test_org_id in
+                <foreach collection="testOrgIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
 </mapper>
