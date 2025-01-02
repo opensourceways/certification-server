@@ -87,12 +87,6 @@
         <result column="transferred_comments" property="transferredComments"/>
     </resultMap>
 
-    <resultMap id="SoftwareStatisticsMap" type="com.huawei.it.euler.ddd.domain.software.SoftwareStatistics">
-        <result column="certification_time" property="datePeriod"/>
-        <result column="test_organization" property="testOrganization"/>
-        <result column="product_type" property="productType"/>
-    </resultMap>
-
     <sql id="baseFields">
         id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
         init_os_name, init_os_version, hashrate_platform, server_type, product_type, test_organization,test_org_id, status, update_time, application_time,
@@ -520,39 +514,4 @@
         set delete_flag = 1
         where id = #{id}
     </delete>
-
-    <select id="statistics" parameterType="com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery" resultMap="SoftwareStatisticsMap">
-        SELECT
-            product_type,
-            certification_time,
-            test_organization
-        FROM
-            software_t
-        <include refid="whereStatistics"/>
-        GROUP BY
-            product_type,
-            certification_time,
-            test_organization
-        ORDER BY
-            test_organization,
-            certification_time;
-    </select>
-    <sql id="whereStatistics">
-        <where>
-            delete_flag = 0
-            AND `status` = 9
-            <if test="beginDate != null">
-                and DATE_FORMAT(certification_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-            </if>
-            <if test="endDate != null">
-                and DATE_FORMAT(certification_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-            </if>
-            <if test="testOrgIdList != null and testOrgIdList.size() > 0">
-                and test_org_id in
-                <foreach collection="testOrgIdList" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-    </sql>
 </mapper>

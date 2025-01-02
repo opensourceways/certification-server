@@ -4,6 +4,7 @@
 
 package com.huawei.it.euler.ddd.service.software;
 
+import cn.hutool.core.date.DateUtil;
 import com.huawei.it.euler.ddd.domain.account.UserInfo;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessage;
 import com.huawei.it.euler.ddd.domain.notice.NoticeMessageRepository;
@@ -19,8 +20,11 @@ import com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery;
 import com.huawei.it.euler.mapper.RoleMapper;
 import com.huawei.it.euler.mapper.SoftwareMapper;
 import com.huawei.it.euler.model.entity.Software;
+import com.huawei.it.euler.model.entity.SoftwareQuery;
+import com.huawei.it.euler.model.enumeration.NodeEnum;
 import com.huawei.it.euler.model.enumeration.RoleEnum;
 import com.huawei.it.euler.model.vo.RoleVo;
+import com.huawei.it.euler.model.vo.SoftwareVo;
 import com.huawei.it.euler.util.ExcelUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,27 +78,47 @@ public class SoftwareApplicationService {
      * @throws IOException IO异常
      */
     public void exportStatistics(SoftwareStatisticsQuery query, HttpServletResponse response, UserInfo loginUser) throws IOException {
+        List<SoftwareStatistics> exportData = new ArrayList<>();
+        SoftwareQuery softwareQuery = new SoftwareQuery();
         Set<Integer> dateScopeSet = roleMapper.findRoleInfoByUserId(Integer.valueOf(loginUser.getUuid()))
                 .stream().map(RoleVo::getDataScope).filter(Objects::nonNull).collect(Collectors.toSet());
         if (!dateScopeSet.isEmpty() && !dateScopeSet.contains(ALL_PERMISSION)) {
-            query.setTestOrgIdList(dateScopeSet.stream().toList());
+            List<Integer> list = dateScopeSet.stream().toList();
+            List<Integer> filter = query.getTestOrgIdList().stream().filter(list::contains).toList();
+            if (filter.isEmpty()){
+                excelUtils.exportSoftWareStatistics(exportData, response);
+                return;
+            }
+            softwareQuery.setTestOrgId(filter);
+        } else {
+            softwareQuery.setTestOrgId(query.getTestOrgIdList());
         }
-        List<SoftwareStatistics> statistics = mapper.statistics(query);
-        statistics = statistics.stream().peek(softwareStatistics -> {
-            softwareStatistics.setProductType(Dimension.getProductType(softwareStatistics.getProductType()));
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime datePeriod = LocalDateTime.parse(softwareStatistics.getDatePeriod(), dateTimeFormatter);
-            DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
-            softwareStatistics.setDatePeriod(datePeriod.format(yearMonthFormatter));
+        softwareQuery.setBeginCertificationTime(query.getBeginDate());
+        softwareQuery.setEndCertificationTime(query.getEndDate());
+        List<Integer> statusId = new ArrayList<>();
+        statusId.add(NodeEnum.FINISHED.getId());
+        softwareQuery.setStatusId(statusId);
+        Long count = mapper.countSoftwareList(softwareQuery);
+        List<SoftwareVo> softwareList = mapper.getSoftwareList(0, Math.toIntExact(count), softwareQuery);
+        List<SoftwareStatistics> statistics = softwareList.stream().map(softwareVo -> {
+            SoftwareStatistics softwareStatistics = new SoftwareStatistics();
+            softwareStatistics.setProductType(Dimension.getProductType(softwareVo.getProductType()));
+            softwareStatistics.setTestOrganization(softwareVo.getTestOrganization());
+            softwareStatistics.setDatePeriod(DateUtil.format(softwareVo.getCertificationTime(), "yyyy-MM"));
+            return softwareStatistics;
         }).toList();
         if (query.getProductTypeList() != null && !query.getProductTypeList().isEmpty()) {
             statistics = statistics.stream().filter(item -> query.getProductTypeList().contains(item.getProductType())).toList();
         }
 
+        if (statistics.isEmpty()){
+            excelUtils.exportSoftWareStatistics(exportData, response);
+            return;
+        }
+
         Map<String, Map<String, Map<String, List<SoftwareStatistics>>>> collect = statistics.stream().collect(Collectors.groupingBy(SoftwareStatistics::getTestOrganization,
                 Collectors.groupingBy(SoftwareStatistics::getProductType,
                         Collectors.groupingBy(SoftwareStatistics::getDatePeriod))));
-        List<SoftwareStatistics> exportData = new ArrayList<>();
         collect.forEach((testOrg, productMap) -> productMap.forEach((product, dateMap) -> dateMap.forEach((date, dataList) -> {
             SoftwareStatistics softwareStatistics = new SoftwareStatistics();
             softwareStatistics.setTestOrganization(testOrg);

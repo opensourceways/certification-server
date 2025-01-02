@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,14 +34,14 @@ public class SoftwareStatisticsQuery {
      */
     @Schema(description = "时间筛选：开始日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private String beginDate;
+    private Date beginDate;
 
     /**
      * 统计区间：截止日期
      */
     @Schema(description = "时间筛选对象：截止日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private String endDate;
+    private Date endDate;
 
     /**
      * 测评机构

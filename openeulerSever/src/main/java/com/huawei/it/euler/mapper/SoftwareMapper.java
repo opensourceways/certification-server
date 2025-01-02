@@ -6,8 +6,6 @@ package com.huawei.it.euler.mapper;
 
 import java.util.List;
 
-import com.huawei.it.euler.ddd.domain.software.SoftwareStatistics;
-import com.huawei.it.euler.ddd.service.software.cqe.SoftwareStatisticsQuery;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -212,6 +210,4 @@ public interface SoftwareMapper {
      * @return softwareId
      */
     Integer deleteSoftware(Integer id);
-
-    List<SoftwareStatistics> statistics(SoftwareStatisticsQuery query);
 }
