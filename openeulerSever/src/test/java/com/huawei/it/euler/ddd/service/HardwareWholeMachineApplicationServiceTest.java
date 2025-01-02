@@ -449,9 +449,10 @@ public class HardwareWholeMachineApplicationServiceTest {
 
     private HardwareWholeMachineAddCommand getWholeMachineAddCommand() {
         HardwareWholeMachineAddCommand wholeMachineAddCommand = new HardwareWholeMachineAddCommand();
-        wholeMachineAddCommand.setHardwareFactoryZy("华为");
+        wholeMachineAddCommand.setHardwareFactory("华为");
         wholeMachineAddCommand.setHardwareFactoryEn("huawei");
-        wholeMachineAddCommand.setHardwareModel("TaiShan 200 (Model 2280)");
+        wholeMachineAddCommand.setHardwareModel("泰山 200 (Model 2280)");
+        wholeMachineAddCommand.setHardwareModelEn("TaiShan 200 (Model 2280)");
         wholeMachineAddCommand.setOsVersion("openEuler 22.03 LTS");
         wholeMachineAddCommand.setArchitecture("x86_64");
         wholeMachineAddCommand.setDate("2021.3.19");
@@ -476,9 +477,10 @@ public class HardwareWholeMachineApplicationServiceTest {
 
     private HardwareWholeMachineBatchAddCommand getWholeMachineBatchAddCommand() {
         HardwareWholeMachineBatchAddCommand batchAddCommand = new HardwareWholeMachineBatchAddCommand();
-        batchAddCommand.setHardwareFactoryZy("华为");
+        batchAddCommand.setHardwareFactory("华为");
         batchAddCommand.setHardwareFactoryEn("huawei");
-        batchAddCommand.setHardwareModel("TaiShan 200 (Model 2280)");
+        batchAddCommand.setHardwareModel("泰山 200 (Model 2280)");
+        batchAddCommand.setHardwareModelEn("TaiShan 200 (Model 2280)");
         batchAddCommand.setOsVersion("openEuler 22.03 LTS");
         batchAddCommand.setArchitecture("x86_64");
         batchAddCommand.setDate("2021.3.19");
@@ -506,6 +508,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         addCommand.setVideoAdapter("1711");
         addCommand.setHostBusAdapter("321");
         addCommand.setHardDiskDrive("SP333");
+        addCommand.setHardDiskDriveEn("SP333");
         return addCommand;
     }
 
@@ -534,9 +537,10 @@ public class HardwareWholeMachineApplicationServiceTest {
     private HardwareWholeMachine getWholeMachine(String status) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         wholeMachine.setId(HARDWARE_ID);
-        wholeMachine.setHardwareFactoryZy("华为");
+        wholeMachine.setHardwareFactory("华为");
         wholeMachine.setHardwareFactoryEn("huawei");
-        wholeMachine.setHardwareModel("TaiShan 200 (Model 2280)");
+        wholeMachine.setHardwareModel("泰山 200 (Model 2280)");
+        wholeMachine.setHardwareModelEn("TaiShan 200 (Model 2280)");
         wholeMachine.setOsVersion("openEuler 22.03 LTS");
         wholeMachine.setArchitecture("x86_64");
         wholeMachine.setDate("2021.3.19");
@@ -564,6 +568,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         configuration.setVideoAdapter("1711");
         configuration.setHostBusAdapter("321");
         configuration.setHardDiskDrive("SP333");
+        configuration.setHardDiskDriveEn("SP333");
         return configuration;
     }
 
@@ -615,9 +620,10 @@ public class HardwareWholeMachineApplicationServiceTest {
 
     private HardwareWholeMachineEditCommand getWholeMachineEditCommand() {
         HardwareWholeMachineEditCommand wholeMachineEditCommand = new HardwareWholeMachineEditCommand();
-        wholeMachineEditCommand.setHardwareFactoryZy("华为");
+        wholeMachineEditCommand.setHardwareFactory("华为");
         wholeMachineEditCommand.setHardwareFactoryEn("huawei1");
-        wholeMachineEditCommand.setHardwareModel("TaiShan 200 (Model 2280)");
+        wholeMachineEditCommand.setHardwareModel("泰山 200 (Model 2280)");
+        wholeMachineEditCommand.setHardwareModelEn("TaiShan 200 (Model 2280)");
         wholeMachineEditCommand.setOsVersion("openEuler 22.03 LTS");
         wholeMachineEditCommand.setArchitecture("x86_64");
         wholeMachineEditCommand.setDate("2021.3.19");
@@ -632,6 +638,7 @@ public class HardwareWholeMachineApplicationServiceTest {
         wholeMachineEditCommand.setVideoAdapter("1711");
         wholeMachineEditCommand.setHostBusAdapter("321");
         wholeMachineEditCommand.setHardDiskDrive("SP333");
+        wholeMachineEditCommand.setHardDiskDriveEn("SP333");
         wholeMachineEditCommand.setSecurityLevel("0");
         HardwareBoardCardEditCommand boardCardEditCommand = getBoardCardEditCommand();
         List<HardwareBoardCardEditCommand> boardCardEditCommandList = new ArrayList<>();

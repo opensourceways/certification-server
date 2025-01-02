@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -145,7 +143,13 @@ public class HardwareBoardCardRepositoryImpl extends ServiceImpl<HardwareBoardCa
     public List<HardwareBoardCard> findOrSaveTemp(List<HardwareBoardCard> boardCardList,String uuid){
         List<HardwareBoardCard> findList = new ArrayList<>();
 
-        Map<Boolean, List<HardwareBoardCard>> existCheck = boardCardList.stream().
+        ArrayList<HardwareBoardCard> distinctList = boardCardList.stream().collect(Collectors.collectingAndThen(
+                Collectors.toCollection(() -> new TreeSet<>(
+                        Comparator.comparing(obj -> obj.getOs() + ";" + obj.getArchitecture() + ";" + obj.getBoardModel() + ";" + obj.getChipModel())
+                )), ArrayList::new
+        ));
+
+        Map<Boolean, List<HardwareBoardCard>> existCheck = distinctList.stream().
                 collect(Collectors.groupingBy(boardCard -> this.getOne(boardCard) != null));
 
         List<HardwareBoardCard> unExistList = existCheck.get(false);

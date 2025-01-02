@@ -71,11 +71,11 @@ public class HardwareBoardCardAddCommand {
     private String chipVendor;
 
     @Schema(name = "chipModel", description = "芯片型号")
-    @Size(max = 50, message = "芯片型号长度不能超过50")
+    @Size(max = 100, message = "芯片型号长度不能超过100")
     private String chipModel;
 
     @Schema(name = "boardModel", description = "板卡型号")
-    @Size(max = 50, message = "板卡型号长度不能超过50")
+    @Size(max = 100, message = "板卡型号长度不能超过100")
     private String boardModel;
 
     @Schema(name = "item", description = "编码")
