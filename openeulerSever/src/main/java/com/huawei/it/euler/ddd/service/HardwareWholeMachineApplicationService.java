@@ -88,11 +88,13 @@ public class HardwareWholeMachineApplicationService {
             return response;
         }
 
-        List<HardwareBoardCard> boardCardList = boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(), uuid);
-        insert = wholeMachineService.refBoardCard2WholeMachine(insert, boardCardList);
+        if (wholeMachine.getBoardCards() != null && !wholeMachine.getBoardCards().isEmpty()){
+            List<HardwareBoardCard> boardCardList = boardCardRepository.findOrSaveTemp(wholeMachine.getBoardCards(), uuid);
+            insert = wholeMachineService.refBoardCard2WholeMachine(insert, boardCardList);
 
-        wholeMachineRepository.save(insert);
-        boardCardRepository.saveBatch(insert.getBoardCards());
+            wholeMachineRepository.save(insert);
+            boardCardRepository.saveBatch(insert.getBoardCards());
+        }
 
         response.setUnique(String.valueOf(insert.getId()));
         response.setSuccess(true);

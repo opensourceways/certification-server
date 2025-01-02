@@ -33,8 +33,8 @@ public class HardwareWholeMachinePO implements Serializable {
     /**
      * 硬件厂商-中文
      */
-    @TableField("factory_zy")
-    private String hardwareFactoryZy;
+    @TableField("factory_zh")
+    private String hardwareFactory;
 
     /**
      * 硬件厂商-英文
@@ -45,8 +45,14 @@ public class HardwareWholeMachinePO implements Serializable {
     /**
      * 硬件型号
      */
-    @TableField("model")
+    @TableField("model_zh")
     private String hardwareModel;
+
+    /**
+     * 硬件型号
+     */
+    @TableField("model_en")
+    private String hardwareModelEn;
 
     /**
      * 操作系统版本
@@ -141,8 +147,14 @@ public class HardwareWholeMachinePO implements Serializable {
     /**
      * 硬盘驱动
      */
-    @TableField("hard_disk_drive")
+    @TableField("hard_disk_drive_zh")
     private String hardDiskDrive;
+
+    /**
+     * 硬盘驱动
+     */
+    @TableField("hard_disk_drive_en")
+    private String hardDiskDriveEn;
 
     /**
      * 密级

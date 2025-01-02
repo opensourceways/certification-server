@@ -176,9 +176,10 @@ public class HardwareWholeMachineTest {
     private HardwareWholeMachine getWholeMachine(String status) {
         HardwareWholeMachine wholeMachine = new HardwareWholeMachine();
         wholeMachine.setId(HARDWARE_ID);
-        wholeMachine.setHardwareFactoryZy("华为");
+        wholeMachine.setHardwareFactory("华为");
         wholeMachine.setHardwareFactoryEn("huawei");
-        wholeMachine.setHardwareModel("TaiShan 200 (Model 2280)");
+        wholeMachine.setHardwareModel("泰山 200 (Model 2280)");
+        wholeMachine.setHardwareModelEn("TaiShan 200 (Model 2280)");
         wholeMachine.setOsVersion("openEuler 22.03 LTS");
         wholeMachine.setArchitecture("aarch64");
         wholeMachine.setDate("2020/12/04");

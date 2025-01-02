@@ -24,7 +24,7 @@ public class HardwareWholeMachineAddCommand {
 
     @Schema(description = "硬件厂商-中文")
     @Size(max = 500, message = "硬件厂商-中文长度不能超过500")
-    private String hardwareFactoryZy;
+    private String hardwareFactory;
 
     @Schema(description = "硬件厂商-英文")
     @Size(max = 500, message = "硬件厂商-英文长度不能超过500")
@@ -33,6 +33,10 @@ public class HardwareWholeMachineAddCommand {
     @Schema(description = "硬件型号")
     @Size(max = 50, message = "硬件型号长度不能超过50")
     private String hardwareModel;
+
+    @Schema(description = "硬件型号-英文")
+    @Size(max = 50, message = "硬件型号长度不能超过50")
+    private String hardwareModelEn;
 
     @Schema(description = "操作系统版本")
     @Size(max = 50, message = "操作系统版本长度不能超过50")
@@ -79,20 +83,24 @@ public class HardwareWholeMachineAddCommand {
     private String ram;
 
     @Schema(description = "端口类型")
-    @Size(max = 50, message = "端口类型长度不能超过50")
+    @Size(max = 200, message = "端口类型长度不能超过200")
     private String portsBusTypes;
 
     @Schema(description = "视频适配器")
-    @Size(max = 50, message = "视频适配器长度不能超过50")
+    @Size(max = 200, message = "视频适配器长度不能超过200")
     private String videoAdapter;
 
     @Schema(description = "整机总线适配器")
-    @Size(max = 50, message = "整机总线适配器长度不能超过50")
+    @Size(max = 200, message = "整机总线适配器长度不能超过200")
     private String hostBusAdapter;
 
-    @Schema(description = "硬盘驱动")
-    @Size(max = 50, message = "硬盘驱动长度不能超过50")
+    @Schema(description = "硬盘驱动-中文")
+    @Size(max = 200, message = "硬盘驱动长度不能超过200")
     private String hardDiskDrive;
+
+    @Schema(description = "硬盘驱动-英文")
+    @Size(max = 200, message = "硬盘驱动长度不能超过200")
+    private String hardDiskDriveEN;
 
     @Schema(description = "密级")
     @Size(max = 10, message = "密级长度不能超过10")
