@@ -70,8 +70,13 @@ public class HardwareCompatibilityConfiguration implements Serializable {
     private String hostBusAdapter;
 
     /**
-     * 硬盘驱动
+     * 硬盘驱动-中文
      */
     private String hardDiskDrive;
+
+    /**
+     * 硬盘驱动-英文
+     */
+    private String hardDiskDriveEn;
 
 }

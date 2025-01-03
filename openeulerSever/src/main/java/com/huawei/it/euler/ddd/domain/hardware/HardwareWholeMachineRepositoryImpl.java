@@ -33,9 +33,10 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
 
     public HardwareWholeMachine getOne(HardwareWholeMachine wholeMachine) {
         QueryWrapper<HardwareWholeMachinePO> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("factory_zy", wholeMachine.getHardwareFactoryZy());
+        queryWrapper.eq("factory_zh", wholeMachine.getHardwareFactory());
         queryWrapper.eq("factory_en", wholeMachine.getHardwareFactoryEn());
-        queryWrapper.eq("model", wholeMachine.getHardwareModel());
+        queryWrapper.eq("model_zh", wholeMachine.getHardwareModel());
+        queryWrapper.eq("model_en", wholeMachine.getHardwareModelEn());
         queryWrapper.eq("os_version", wholeMachine.getOsVersion());
         queryWrapper.eq("architecture", wholeMachine.getArchitecture());
         queryWrapper.eq("date", wholeMachine.getDate());
@@ -56,9 +57,10 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
             queryWrapper.in("id", selectVO.getIdList());
         }
         if (!StringUtils.isEmpty(selectVO.getKeyword())) {
-            queryWrapper.and(wrapper -> wrapper.like("factory_zy", selectVO.getKeyword())
+            queryWrapper.and(wrapper -> wrapper.like("factory_zh", selectVO.getKeyword())
                     .or().like("factory_en", selectVO.getKeyword())
-                    .or().like("model", selectVO.getKeyword())
+                    .or().like("model_zh", selectVO.getKeyword())
+                    .or().like("model_en", selectVO.getKeyword())
                     .or().like("os_version", selectVO.getKeyword())
                     .or().like("architecture", selectVO.getKeyword()));
         }
@@ -66,11 +68,12 @@ public class HardwareWholeMachineRepositoryImpl extends ServiceImpl<HardwareWhol
             queryWrapper.eq("architecture", selectVO.getArchitecture());
         }
         if (!StringUtils.isEmpty(selectVO.getHardwareFactory())) {
-            queryWrapper.and(wrapper -> wrapper.like("factory_zy", selectVO.getHardwareFactory())
+            queryWrapper.and(wrapper -> wrapper.like("factory_zh", selectVO.getHardwareFactory())
                     .or().like("factory_en", selectVO.getHardwareFactory()));
         }
         if (!StringUtils.isEmpty(selectVO.getHardwareModel())) {
-            queryWrapper.like("model", selectVO.getHardwareModel());
+            queryWrapper.and(wrapper -> wrapper.like("model_zh", selectVO.getHardwareModel())
+                    .or().like("model_en", selectVO.getHardwareModel()));
         }
         if (!StringUtils.isEmpty(selectVO.getOsVersion())) {
             queryWrapper.like("os_version", selectVO.getOsVersion());

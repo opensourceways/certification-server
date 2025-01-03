@@ -50,18 +50,22 @@ public class HardwareCompatibilityConfigurationAddCommand implements Serializabl
     private String ram;
 
     @Schema(description = "端口类型")
-    @Size(max = 50, message = "端口类型长度不能超过50")
+    @Size(max = 200, message = "端口类型长度不能超过200")
     private String portsBusTypes;
 
     @Schema(description = "视频适配器")
-    @Size(max = 100, message = "视频适配器长度不能超过100")
+    @Size(max = 200, message = "视频适配器长度不能超过200")
     private String videoAdapter;
 
     @Schema(description = "整机总线适配器")
-    @Size(max = 100, message = "整机总线适配器长度不能超过100")
+    @Size(max = 200, message = "整机总线适配器长度不能超过200")
     private String hostBusAdapter;
 
-    @Schema(description = "硬盘驱动")
-    @Size(max = 100, message = "硬盘驱动长度不能超过100")
+    @Schema(description = "硬盘驱动-中文")
+    @Size(max = 200, message = "硬盘驱动长度不能超过200")
     private String hardDiskDrive;
+
+    @Schema(description = "硬盘驱动-英文")
+    @Size(max = 200, message = "硬盘驱动长度不能超过200")
+    private String hardDiskDriveEn;
 }

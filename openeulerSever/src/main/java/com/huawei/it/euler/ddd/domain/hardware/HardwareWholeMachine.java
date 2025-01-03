@@ -28,7 +28,7 @@ public class HardwareWholeMachine implements Serializable {
     /**
      * 整机厂商-中文
      */
-    private String hardwareFactoryZy;
+    private String hardwareFactory;
 
     /**
      * 硬件厂商-英文
@@ -36,9 +36,14 @@ public class HardwareWholeMachine implements Serializable {
     private String hardwareFactoryEn;
 
     /**
-     * 硬件型号
+     * 硬件型号-英文
      */
     private String hardwareModel;
+
+    /**
+     * 硬件型号-英文
+     */
+    private String hardwareModelEn;
 
     /**
      * 操作系统版本
@@ -170,9 +175,10 @@ public class HardwareWholeMachine implements Serializable {
 
     public String toSimpleJsonString() {
         JSONObject simple = new JSONObject();
-        simple.put("整机厂商中文名称", this.getHardwareFactoryZy());
+        simple.put("整机厂商中文名称", this.getHardwareFactory());
         simple.put("整机厂商英文名称", this.getHardwareFactoryEn());
-        simple.put("整机型号", this.getHardwareModel());
+        simple.put("整机型号中文", this.getHardwareModel());
+        simple.put("整机型号英文", this.getHardwareModelEn());
         simple.put("操作系统版本", this.getOsVersion());
         simple.put("架构", this.getArchitecture());
         simple.put("认证日期", this.getDate());

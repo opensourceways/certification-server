@@ -27,15 +27,19 @@ public class HardwareWholeMachineEditCommand {
 
     @Schema(description = "硬件厂商-中文")
     @Size(max = 500, message = "硬件厂商-中文长度不能超过500")
-    private String hardwareFactoryZy;
+    private String hardwareFactory;
 
     @Schema(description = "硬件厂商-英文")
     @Size(max = 500, message = "硬件厂商-英文长度不能超过500")
     private String hardwareFactoryEn;
 
-    @Schema(description = "硬件型号")
+    @Schema(description = "硬件型号-中文")
     @Size(max = 50, message = "硬件型号长度不能超过50")
     private String hardwareModel;
+
+    @Schema(description = "硬件型号-英文")
+    @Size(max = 50, message = "硬件型号长度不能超过50")
+    private String hardwareModelEn;
 
     @Schema(description = "操作系统版本")
     @Size(max = 50, message = "操作系统版本长度不能超过50")
@@ -93,9 +97,13 @@ public class HardwareWholeMachineEditCommand {
     @Size(max = 50, message = "整机总线适配器长度不能超过50")
     private String hostBusAdapter;
 
-    @Schema(description = "硬盘驱动")
+    @Schema(description = "硬盘驱动-中文")
     @Size(max = 50, message = "硬盘驱动长度不能超过50")
     private String hardDiskDrive;
+
+    @Schema(description = "硬盘驱动-英文")
+    @Size(max = 50, message = "硬盘驱动长度不能超过50")
+    private String hardDiskDriveEn;
 
     @Schema(description = "密级")
     // @NotNull(message = "密级不能为空")
