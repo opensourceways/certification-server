@@ -62,6 +62,18 @@ public class SoftwareDTO {
     private String osVersion;
 
     /**
+     * 初始os名称
+     */
+    @ExcelProperty("初始os名称")
+    private String initOsName;
+
+    /**
+     * 初始os版本
+     */
+    @ExcelProperty("初始os版本")
+    private String initOsVersion;
+
+    /**
      * 产品功能介绍
      */
     @ExcelProperty("产品功能介绍")

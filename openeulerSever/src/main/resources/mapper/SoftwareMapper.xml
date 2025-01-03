@@ -12,6 +12,8 @@
         <result column="product_version" property="productVersion"/>
         <result column="os_name" property="osName"/>
         <result column="os_version" property="osVersion"/>
+        <result column="init_os_name" property="initOsName"/>
+        <result column="init_os_version" property="initOsVersion"/>
         <result column="hashrate_platform" property="jsonHashRatePlatform"/>
         <result column="product_type" property="productType"/>
         <result column="test_organization" property="testOrganization"/>
@@ -34,6 +36,8 @@
         <result column="product_version" property="productVersion"/>
         <result column="os_name" property="osName"/>
         <result column="os_version" property="osVersion"/>
+        <result column="init_os_name" property="initOsName"/>
+        <result column="init_os_version" property="initOsVersion"/>
         <result column="hashrate_platform" property="jsonHashRatePlatform"/>
         <result column="test_organization" property="testOrganization"/>
         <result column="test_org_id" property="testOrgId"/>
@@ -85,13 +89,13 @@
 
     <sql id="baseFields">
         id, company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
-        hashrate_platform, server_type, product_type, test_organization,test_org_id, status, update_time, application_time,
+        init_os_name, init_os_version, hashrate_platform, server_type, product_type, test_organization,test_org_id, status, update_time, application_time,
         reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code,certification_time
     </sql>
 
     <sql id="insertFields">
         company_id, company_name, product_name, product_function_desc, usage_scenes_desc, product_version, os_name, os_version,
-        hashrate_platform, product_type, test_organization,test_org_id, status, update_time, application_time,
+        init_os_name, init_os_version, hashrate_platform, product_type, test_organization,test_org_id, status, update_time, application_time,
         reviewer,review_role, user_uuid, cpu_vendor, as_id,company_code,delete_flag
     </sql>
 
@@ -256,10 +260,9 @@
     <insert id="insertSoftware" parameterType="com.huawei.it.euler.model.entity.Software"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         insert into software_t(<include refid="insertFields"/>) values (#{companyId}, #{companyName}, #{productName},
-        #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{jsonHashRatePlatform},
-        #{productType}, #{testOrganization},#{testOrgId}, #{status}, #{updateTime}, #{applicationTime},
-        #{reviewer},#{reviewRole},
-        #{userUuid}, #{cpuVendor}, #{asId},#{companyCode},0)
+        #{productFunctionDesc}, #{usageScenesDesc}, #{productVersion}, #{osName}, #{osVersion}, #{initOsName}, #{initOsVersion},
+        #{jsonHashRatePlatform}, #{productType}, #{testOrganization},#{testOrgId}, #{status}, #{updateTime}, #{applicationTime},
+        #{reviewer},#{reviewRole}, #{userUuid}, #{cpuVendor}, #{asId},#{companyCode},0)
     </insert>
 
     <update id="updateSoftware" parameterType="com.huawei.it.euler.model.entity.Software">
@@ -284,8 +287,8 @@
     <select id="getSoftwareList" parameterType="com.huawei.it.euler.model.entity.SoftwareQuery"
             resultMap="softwareMap">
         select s.id, s.company_name, s.product_name, s.product_type, s.product_version, s.os_name, s.os_version,
-        s.hashrate_platform, s.test_organization, s.application_time, s.reviewer, s.authentication_status,
-        s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id,s.certification_time
+        s.init_os_name, s.init_os_version, s.hashrate_platform, s.test_organization, s.application_time, s.reviewer,
+        s.authentication_status, s.cpu_vendor, s.status,  s.user_uuid,s.test_org_id,s.certification_time
         from software_t AS s
         <include refid="whereSoftwareList"/>
         order by
@@ -448,6 +451,8 @@
             product_version       = #{productVersion},
             os_name               = #{osName},
             os_version            = #{osVersion},
+            init_os_name          = #{initOsName},
+            init_os_version       = #{initOsVersion},
             product_function_desc = #{productFunctionDesc},
             usage_scenes_desc     = #{usageScenesDesc},
             hashrate_platform     = #{jsonHashRatePlatform},

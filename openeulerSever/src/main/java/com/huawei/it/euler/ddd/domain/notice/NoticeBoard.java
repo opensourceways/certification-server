@@ -4,8 +4,10 @@
 
 package com.huawei.it.euler.ddd.domain.notice;
 
+import com.huawei.it.euler.ddd.domain.notice.primitive.ActiveStatus;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -25,7 +27,7 @@ public class NoticeBoard {
     /**
      * 是否有效状态
      */
-    String isActive;
+    ActiveStatus isActive;
 
     /**
      * 过期时间
@@ -35,6 +37,11 @@ public class NoticeBoard {
     /**
      * 更新时间
      */
-    private Date updateTime;
+    private LocalDateTime updateTime;
+
+    public void publish() {
+        this.isActive = ActiveStatus.ACTIVE;
+        this.updateTime = LocalDateTime.now();
+    }
 
 }

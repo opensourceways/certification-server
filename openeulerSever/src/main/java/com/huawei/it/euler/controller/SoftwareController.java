@@ -127,6 +127,22 @@ public class SoftwareController {
     }
 
     /**
+     * 作废评测
+     *
+     */
+    @GetMapping("/software/void")
+    @PreAuthorize("hasRole('user')")
+    public JsonResponse<String> softwareVoid(@RequestParam("id") @NotNull(message = "认证id不能为空") Integer id,
+        HttpServletRequest request) throws NoLoginException {
+        String uuid = accountService.getLoginUuid(request);
+        String lockKey = String.valueOf(id);
+        lockCacheConfig.acquireLock(lockKey);
+        softwareService.voidSoftware(id, uuid);
+        lockCacheConfig.releaseLock(lockKey);
+        return JsonResponse.success();
+    }
+
+    /**
      * program_review 方案审核
      */
     @PostMapping("/software/programReview")

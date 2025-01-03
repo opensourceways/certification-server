@@ -61,6 +61,16 @@ public class Software {
     private String osVersion;
 
     /**
+     * 初始os名称
+     */
+    private String initOsName;
+
+    /**
+     * 初始os版本
+     */
+    private String initOsVersion;
+
+    /**
      * 算力平台
      */
     private String jsonHashRatePlatform;
